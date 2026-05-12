@@ -1525,7 +1525,7 @@ async function saveTask() {
   if (type !== 'idea') {
     const firstWord = name.split(' ')[0].toLowerCase().replace(/[^a-z]/g,'');
     if (!ACTION_VERBS.includes(firstWord)) {
-      if (!confirm('This task doesn't start with a clear action verb. Save anyway?')) return;
+      if (!confirm("This task doesn't start with a clear action verb. Save anyway?")) return;
     }
   }
 
