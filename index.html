@@ -6,54 +6,22 @@
 <title>Clarity — GTD</title>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-/* ── DESIGN TOKENS ─────────────────────────────────────── */
 :root {
-  --bg:        #0a0a0b;
-  --surface:   #111113;
-  --surface2:  #18181b;
-  --surface3:  #222226;
-  --border:    #2a2a30;
-  --border2:   #38383f;
-  --text:      #ededf0;
-  --text2:     #8b8b99;
-  --text3:     #4a4a55;
-  --accent:    #b8f060;
-  --accent-d:  #8ab83a;
-  --red:       #f06060;
-  --orange:    #f0a855;
-  --blue:      #60a8f0;
-  --purple:    #a060f0;
-  --r:         10px;
-  --r-sm:      6px;
+  --bg:#0a0a0b; --surface:#111113; --surface2:#18181b; --surface3:#222226;
+  --border:#2a2a30; --border2:#38383f; --text:#ededf0; --text2:#8b8b99; --text3:#4a4a55;
+  --accent:#b8f060; --accent-d:#8ab83a; --red:#f06060; --orange:#f0a855; --blue:#60a8f0;
+  --r:10px; --r-sm:6px;
 }
-
-/* ── RESET ─────────────────────────────────────────────── */
 *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
 html { height:100%; }
-body {
-  background:var(--bg); color:var(--text);
-  font-family:'Instrument Sans',sans-serif; font-size:14px;
-  min-height:100%; display:flex; flex-direction:column;
-}
+body { background:var(--bg); color:var(--text); font-family:'Instrument Sans',sans-serif; font-size:14px; min-height:100%; display:flex; flex-direction:column; }
 
-/* ── TYPOGRAPHY ────────────────────────────────────────── */
-.serif { font-family:'Instrument Serif',serif; }
-.mono  { font-family:'JetBrains Mono',monospace; }
-
-/* ── FORMS ─────────────────────────────────────────────── */
+/* FORMS */
 .form-group { display:flex; flex-direction:column; gap:6px; }
-.form-row   { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 @media(max-width:480px){ .form-row { grid-template-columns:1fr; } }
-.form-label {
-  font-family:'JetBrains Mono',monospace; font-size:10px;
-  font-weight:500; letter-spacing:1px; text-transform:uppercase; color:var(--text3);
-}
-input,select,textarea {
-  background:var(--surface2); border:1px solid var(--border);
-  color:var(--text); padding:10px 12px; border-radius:var(--r-sm);
-  font-family:'Instrument Sans',sans-serif; font-size:13px;
-  width:100%; transition:border-color .15s; -webkit-appearance:none;
-}
+.form-label { font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:500; letter-spacing:1px; text-transform:uppercase; color:var(--text3); }
+input,select,textarea { background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:var(--r-sm); font-family:'Instrument Sans',sans-serif; font-size:13px; width:100%; transition:border-color .15s; -webkit-appearance:none; }
 input:focus,select:focus,textarea:focus { outline:none; border-color:var(--accent); }
 input::placeholder,textarea::placeholder { color:var(--text3); }
 select option { background:var(--surface2); }
@@ -61,220 +29,94 @@ textarea { resize:vertical; min-height:80px; }
 input[type="date"] { color-scheme:dark; cursor:pointer; }
 input[type="date"]::-webkit-calendar-picker-indicator { filter:invert(.6); cursor:pointer; }
 
-/* ── BUTTONS ───────────────────────────────────────────── */
-.btn {
-  background:var(--accent); color:#0a0a0b; border:none;
-  padding:11px 20px; border-radius:var(--r-sm);
-  font-family:'Instrument Sans',sans-serif; font-size:13px; font-weight:600;
-  cursor:pointer; transition:all .15s; width:100%; letter-spacing:.2px;
-}
+/* BUTTONS */
+.btn { background:var(--accent); color:#0a0a0b; border:none; padding:11px 20px; border-radius:var(--r-sm); font-family:'Instrument Sans',sans-serif; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; width:100%; }
 .btn:hover { background:var(--accent-d); }
 .btn:disabled { opacity:.5; cursor:not-allowed; }
-.btn-secondary {
-  background:var(--surface2); color:var(--text); border:1px solid var(--border);
-}
+.btn-secondary { background:var(--surface2); color:var(--text); border:1px solid var(--border); }
 .btn-secondary:hover { border-color:var(--border2); background:var(--surface3); }
 .btn-ghost { background:none; color:var(--text2); border:1px solid var(--border); }
 .btn-ghost:hover { color:var(--text); border-color:var(--border2); }
-.btn-danger { background:#f0606020; color:var(--red); border:1px solid #f0606040; }
-.btn-danger:hover { background:#f0606030; }
 .btn-sm { padding:7px 14px; font-size:12px; width:auto; }
-.btn-icon {
-  background:var(--surface2); border:1px solid var(--border); color:var(--text2);
-  width:34px; height:34px; border-radius:var(--r-sm); cursor:pointer;
-  display:flex; align-items:center; justify-content:center;
-  font-size:15px; transition:all .15s; flex-shrink:0;
-}
+.btn-icon { background:var(--surface2); border:1px solid var(--border); color:var(--text2); width:34px; height:34px; border-radius:var(--r-sm); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:15px; transition:all .15s; flex-shrink:0; }
 .btn-icon:hover { color:var(--text); border-color:var(--border2); }
 
-/* ── AUTH SCREEN ───────────────────────────────────────── */
-#authScreen {
-  flex:1; display:flex; align-items:center;
-  justify-content:center; padding:24px;
-}
-.auth-card {
-  width:100%; max-width:380px; background:var(--surface);
-  border:1px solid var(--border); border-radius:16px;
-  padding:36px 32px; display:flex; flex-direction:column; gap:20px;
-}
+/* AUTH */
+#authScreen { flex:1; display:flex; align-items:center; justify-content:center; padding:24px; }
+.auth-card { width:100%; max-width:380px; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:36px 32px; display:flex; flex-direction:column; gap:20px; }
 .auth-logo { font-family:'Instrument Serif',serif; font-size:30px; letter-spacing:-.5px; }
 .auth-logo span { color:var(--accent); font-style:italic; }
 .auth-tagline { font-size:13px; color:var(--text2); margin-top:-12px; }
-.auth-tabs {
-  display:flex; background:var(--surface2); border-radius:var(--r-sm);
-  padding:3px; border:1px solid var(--border); gap:2px;
-}
-.auth-tab {
-  flex:1; padding:7px; text-align:center; border-radius:4px; cursor:pointer;
-  font-size:12px; font-weight:500; color:var(--text2); transition:all .15s;
-  border:none; background:none; font-family:'JetBrains Mono',monospace; letter-spacing:.5px;
-}
+.auth-tabs { display:flex; background:var(--surface2); border-radius:var(--r-sm); padding:3px; border:1px solid var(--border); gap:2px; }
+.auth-tab { flex:1; padding:7px; text-align:center; border-radius:4px; cursor:pointer; font-size:12px; font-weight:500; color:var(--text2); transition:all .15s; border:none; background:none; font-family:'JetBrains Mono',monospace; letter-spacing:.5px; }
 .auth-tab.active { background:var(--surface3); color:var(--text); }
-.auth-error {
-  color:var(--red); font-size:12px;
-  font-family:'JetBrains Mono',monospace; display:none;
-}
+.auth-error { color:var(--red); font-size:12px; font-family:'JetBrains Mono',monospace; display:none; line-height:1.5; }
 .auth-error.show { display:block; }
-.auth-footer {
-  font-family:'JetBrains Mono',monospace; font-size:10px;
-  color:var(--text3); text-align:center; line-height:1.6;
-}
+.auth-footer { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text3); text-align:center; }
 
-/* ── APP SHELL ─────────────────────────────────────────── */
+/* APP SHELL */
 #appShell { display:none; flex-direction:column; flex:1; }
 #appShell.visible { display:flex; }
 
-/* ── HEADER ────────────────────────────────────────────── */
-header {
-  display:flex; align-items:center; justify-content:space-between;
-  padding:0 20px; height:52px; border-bottom:1px solid var(--border);
-  background:var(--surface); position:sticky; top:0; z-index:100; gap:12px;
-  flex-shrink:0;
-}
+/* HEADER */
+header { display:flex; align-items:center; justify-content:space-between; padding:0 20px; height:52px; border-bottom:1px solid var(--border); background:var(--surface); position:sticky; top:0; z-index:100; gap:12px; flex-shrink:0; }
 .logo { font-family:'Instrument Serif',serif; font-size:20px; letter-spacing:-.5px; flex-shrink:0; }
 .logo span { color:var(--accent); font-style:italic; }
-
-/* ── NAV ───────────────────────────────────────────────── */
-.app-nav {
-  display:flex; gap:2px; background:var(--surface2);
-  border:1px solid var(--border); border-radius:8px;
-  padding:3px; overflow-x:auto; flex:1; max-width:520px;
-}
+.app-nav { display:flex; gap:2px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:3px; overflow-x:auto; flex:1; max-width:560px; }
 .app-nav::-webkit-scrollbar { display:none; }
-.nav-btn {
-  background:none; border:none; color:var(--text2);
-  padding:5px 12px; border-radius:5px; cursor:pointer;
-  font-family:'JetBrains Mono',monospace; font-size:11px;
-  font-weight:500; letter-spacing:.3px; transition:all .15s; white-space:nowrap;
-}
+.nav-btn { background:none; border:none; color:var(--text2); padding:5px 12px; border-radius:5px; cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:500; letter-spacing:.3px; transition:all .15s; white-space:nowrap; }
 .nav-btn:hover { color:var(--text); background:var(--surface3); }
 .nav-btn.active { background:var(--accent); color:#0a0a0b; font-weight:600; }
 .header-right { display:flex; gap:8px; align-items:center; flex-shrink:0; }
 
-/* ── VIEWS ─────────────────────────────────────────────── */
-.app-view {
-  padding:24px 20px; max-width:700px; width:100%;
-  margin:0 auto; display:flex; flex-direction:column; gap:20px;
-  flex:1;
-}
+/* VIEWS */
+.app-view { padding:24px 20px; max-width:700px; width:100%; margin:0 auto; display:flex; flex-direction:column; gap:20px; flex:1; }
 
-/* ── SECTION LABELS ────────────────────────────────────── */
-.page-title {
-  font-family:'Instrument Serif',serif; font-size:28px;
-  letter-spacing:-.8px; line-height:1;
-}
-.page-title small {
-  display:block; font-family:'JetBrains Mono',monospace;
-  font-size:10px; color:var(--text3); font-weight:400;
-  letter-spacing:1px; text-transform:uppercase; margin-bottom:6px;
-}
-.section-label {
-  font-family:'JetBrains Mono',monospace; font-size:10px;
-  font-weight:500; letter-spacing:1.5px; text-transform:uppercase;
-  color:var(--text3); margin-bottom:8px;
-}
-
-/* ── MODALS ────────────────────────────────────────────── */
-.modal-overlay {
-  position:fixed; inset:0; background:rgba(0,0,0,.75);
-  z-index:200; display:none; align-items:flex-end;
-  justify-content:center; backdrop-filter:blur(4px); padding:0;
-}
+/* MODALS */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:200; display:none; align-items:flex-end; justify-content:center; backdrop-filter:blur(4px); }
 @media(min-width:600px){ .modal-overlay { align-items:center; padding:20px; } }
 .modal-overlay.open { display:flex; }
-.modal {
-  background:var(--surface); border:1px solid var(--border);
-  border-radius:16px 16px 0 0; padding:24px 20px; width:100%;
-  max-height:92vh; overflow-y:auto; display:flex;
-  flex-direction:column; gap:16px; position:relative;
-  animation:slideUp .2s ease;
-}
-@media(min-width:600px){
-  .modal { border-radius:16px; max-width:500px; animation:fadeScale .2s ease; }
-}
+.modal { background:var(--surface); border:1px solid var(--border); border-radius:16px 16px 0 0; padding:24px 20px; width:100%; max-height:92vh; overflow-y:auto; display:flex; flex-direction:column; gap:16px; position:relative; animation:slideUp .2s ease; }
+@media(min-width:600px){ .modal { border-radius:16px; max-width:500px; animation:fadeScale .2s ease; } }
 @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
 @keyframes fadeScale { from{transform:scale(.97);opacity:0} to{transform:scale(1);opacity:1} }
-.modal-handle {
-  width:36px; height:4px; background:var(--border2);
-  border-radius:2px; margin:0 auto -8px;
-}
+.modal-handle { width:36px; height:4px; background:var(--border2); border-radius:2px; margin:0 auto -8px; }
 @media(min-width:600px){ .modal-handle{display:none} }
 .modal-title { font-family:'Instrument Serif',serif; font-size:22px; letter-spacing:-.3px; }
-.modal-close {
-  position:absolute; top:16px; right:16px;
-  background:var(--surface2); border:1px solid var(--border);
-  color:var(--text2); width:28px; height:28px; border-radius:6px;
-  cursor:pointer; font-size:14px; display:flex;
-  align-items:center; justify-content:center; transition:all .15s;
-}
+.modal-close { position:absolute; top:16px; right:16px; background:var(--surface2); border:1px solid var(--border); color:var(--text2); width:28px; height:28px; border-radius:6px; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; transition:all .15s; }
 .modal-close:hover { color:var(--text); }
 .modal-actions { display:flex; gap:8px; justify-content:flex-end; padding-top:4px; }
-.modal-divider { height:1px; background:var(--border); margin:4px 0; }
 
-/* ── SETTINGS ──────────────────────────────────────────── */
-.settings-block {
-  background:var(--surface2); border:1px solid var(--border);
-  border-radius:var(--r); padding:16px;
-  display:flex; flex-direction:column; gap:12px;
-}
-.settings-block-title {
-  font-family:'JetBrains Mono',monospace; font-size:10px;
-  color:var(--text3); letter-spacing:1px; text-transform:uppercase;
-}
-.admin-unlock-banner {
-  background:#b8f06015; border:1px solid #b8f06030;
-  border-radius:var(--r-sm); padding:8px 12px;
-  font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--accent);
-}
+/* SETTINGS BLOCKS */
+.settings-block { background:var(--surface2); border:1px solid var(--border); border-radius:var(--r); padding:16px; display:flex; flex-direction:column; gap:12px; }
+.settings-block-title { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text3); letter-spacing:1px; text-transform:uppercase; }
+.admin-unlock-banner { background:#b8f06015; border:1px solid #b8f06030; border-radius:var(--r-sm); padding:8px 12px; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--accent); }
 
-/* ── TOAST ─────────────────────────────────────────────── */
-.toast-wrap {
-  position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
-  z-index:500; display:flex; flex-direction:column;
-  gap:8px; pointer-events:none; align-items:center;
-}
-.toast {
-  background:var(--surface2); border:1px solid var(--border2);
-  border-radius:8px; padding:10px 18px; font-size:13px; color:var(--text);
-  box-shadow:0 4px 24px rgba(0,0,0,.5); white-space:nowrap;
-  animation:toastIn .2s ease, toastOut .2s ease 2.8s forwards;
-}
+/* EMPTY STATE */
+.empty-state { text-align:center; padding:48px 20px; color:var(--text3); display:flex; flex-direction:column; align-items:center; gap:10px; }
+.empty-icon { font-size:32px; }
+.empty-title { font-family:'Instrument Serif',serif; font-size:20px; color:var(--text2); }
+.empty-sub { font-size:13px; line-height:1.5; max-width:300px; }
+
+/* HINT */
+.hint { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text3); margin-top:3px; line-height:1.5; }
+
+/* TOAST */
+.toast-wrap { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); z-index:500; display:flex; flex-direction:column; gap:8px; pointer-events:none; align-items:center; }
+.toast { background:var(--surface2); border:1px solid var(--border2); border-radius:8px; padding:10px 18px; font-size:13px; color:var(--text); box-shadow:0 4px 24px rgba(0,0,0,.5); white-space:nowrap; animation:toastIn .2s ease, toastOut .2s ease 2.8s forwards; }
 .toast.success { border-color:#b8f06040; color:var(--accent); }
 .toast.error   { border-color:#f0606040; color:var(--red); }
 @keyframes toastIn  { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
 @keyframes toastOut { from{opacity:1} to{opacity:0} }
 
-/* ── EMPTY STATE ───────────────────────────────────────── */
-.empty-state {
-  text-align:center; padding:48px 20px; color:var(--text3);
-  display:flex; flex-direction:column; align-items:center; gap:10px;
-}
-.empty-icon { font-size:32px; }
-.empty-title { font-family:'Instrument Serif',serif; font-size:20px; color:var(--text2); }
-.empty-sub   { font-size:13px; line-height:1.5; max-width:300px; }
-
-/* ── CONFIG BANNER ─────────────────────────────────────── */
-.config-banner {
-  background:#f0a85510; border:1px solid #f0a85530;
-  border-radius:var(--r); padding:12px 16px;
-  display:flex; align-items:center; justify-content:space-between;
-  gap:12px; font-size:13px; color:var(--orange);
-  margin:12px 20px 0; max-width:700px;
-  align-self:center; width:calc(100% - 40px);
-}
-
-/* ── SCROLLBAR ─────────────────────────────────────────── */
 ::-webkit-scrollbar { width:5px; }
 ::-webkit-scrollbar-track { background:transparent; }
 ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
-::-webkit-scrollbar-thumb:hover { background:var(--border2); }
 </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════════════════
-     AUTH SCREEN
-════════════════════════════════════════════════════════ -->
+<!-- ── AUTH SCREEN ────────────────────────────────────────── -->
 <div id="authScreen">
   <div class="auth-card">
     <div>
@@ -288,10 +130,6 @@ header {
     </div>
 
     <div style="display:flex;flex-direction:column;gap:12px">
-      <div class="form-group" id="nameGroup" style="display:none">
-        <label class="form-label">Your Name</label>
-        <input type="text" id="authName" placeholder="Aparna">
-      </div>
       <div class="form-group">
         <label class="form-label">Email</label>
         <input type="email" id="authEmail" placeholder="you@example.com"
@@ -307,26 +145,26 @@ header {
     <div class="auth-error" id="authError"></div>
     <button class="btn" id="authBtn" onclick="handleAuth()">Sign In</button>
 
-    <!-- Config button — hidden once credentials are saved -->
-    <div id="authConfigBtn">
-      <button class="btn btn-secondary" style="font-size:12px" onclick="openSettings(true)">
-        ⚙ Configure Supabase
+    <!--
+      First-time setup button.
+      Visible when Supabase is not yet configured.
+      Hidden permanently once credentials are saved.
+    -->
+    <div id="authConfigBtn" style="display:none">
+      <button class="btn btn-secondary" style="font-size:12px" onclick="openFirstTimeConfig()">
+        ⚙ First-time setup — connect Supabase
       </button>
     </div>
 
-    <div class="auth-footer" id="authFooter">not configured</div>
+    <div class="auth-footer" id="authFooter">—</div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════
-     APP SHELL
-════════════════════════════════════════════════════════ -->
+<!-- ── APP SHELL ──────────────────────────────────────────── -->
 <div id="appShell">
-
-  <!-- HEADER -->
   <header>
     <div class="logo">clarity<span>.</span></div>
-    <nav class="app-nav" id="appNav">
+    <nav class="app-nav">
       <button class="nav-btn active" data-view="focus"     onclick="switchView('focus')">Focus</button>
       <button class="nav-btn"        data-view="projects"  onclick="switchView('projects')">Projects</button>
       <button class="nav-btn"        data-view="areas"     onclick="switchView('areas')">Life Areas</button>
@@ -338,102 +176,77 @@ header {
       <button class="nav-btn"        data-view="ideas"     onclick="switchView('ideas')">Ideas</button>
     </nav>
     <div class="header-right">
-      <button class="btn-icon" title="Settings" onclick="openSettings(false)">⚙</button>
+      <button class="btn-icon" title="Settings" onclick="openSettings()">⚙</button>
     </div>
   </header>
 
-  <!-- CONFIG BANNER -->
-  <div class="config-banner" id="configBanner" style="display:none">
-    ⚠ Supabase not configured — app won't load data.
-    <button class="btn btn-sm btn-ghost" onclick="openSettings(false)">Configure</button>
-  </div>
-
-  <!-- FOCUS VIEW -->
+  <!-- VIEWS (placeholders for now) -->
   <main class="app-view" id="viewFocus">
-    <div class="empty-state">
-      <div class="empty-icon">⬛</div>
-      <div class="empty-title">Daily Focus</div>
-      <div class="empty-sub">Coming in Phase 2 — task capture and daily focus view.</div>
-    </div>
+    <div class="empty-state"><div class="empty-icon">⬛</div><div class="empty-title">Daily Focus</div><div class="empty-sub">Coming in Phase 2.</div></div>
   </main>
-
-  <!-- PROJECTS VIEW -->
-  <main class="app-view" id="viewProjects" style="display:none">
-    <div class="empty-state">
-      <div class="empty-icon">📁</div>
-      <div class="empty-title">Projects</div>
-      <div class="empty-sub">Coming in Phase 3.</div>
-    </div>
+  <main class="app-view" id="viewProjects"  style="display:none">
+    <div class="empty-state"><div class="empty-icon">📁</div><div class="empty-title">Projects</div><div class="empty-sub">Coming in Phase 3.</div></div>
   </main>
-
-  <!-- AREAS VIEW -->
-  <main class="app-view" id="viewAreas" style="display:none">
-    <div class="empty-state">
-      <div class="empty-icon">🌱</div>
-      <div class="empty-title">Life Areas</div>
-      <div class="empty-sub">Coming in Phase 3.</div>
-    </div>
+  <main class="app-view" id="viewAreas"     style="display:none">
+    <div class="empty-state"><div class="empty-icon">🌱</div><div class="empty-title">Life Areas</div><div class="empty-sub">Coming in Phase 3.</div></div>
   </main>
-
-  <!-- INBOX VIEW -->
-  <main class="app-view" id="viewInbox" style="display:none">
-    <div class="empty-state">
-      <div class="empty-icon">📥</div>
-      <div class="empty-title">Inbox</div>
-      <div class="empty-sub">Coming in Phase 4.</div>
-    </div>
+  <main class="app-view" id="viewInbox"     style="display:none">
+    <div class="empty-state"><div class="empty-icon">📥</div><div class="empty-title">Inbox</div><div class="empty-sub">Coming in Phase 4.</div></div>
   </main>
-
-  <!-- NEXT VIEW -->
-  <main class="app-view" id="viewNext" style="display:none">
-    <div class="empty-state">
-      <div class="empty-icon">⚡</div>
-      <div class="empty-title">Next Actions</div>
-      <div class="empty-sub">Coming in Phase 4.</div>
-    </div>
+  <main class="app-view" id="viewNext"      style="display:none">
+    <div class="empty-state"><div class="empty-icon">⚡</div><div class="empty-title">Next Actions</div><div class="empty-sub">Coming in Phase 4.</div></div>
   </main>
-
-  <!-- WAITING VIEW -->
-  <main class="app-view" id="viewWaiting" style="display:none">
-    <div class="empty-state">
-      <div class="empty-icon">⏳</div>
-      <div class="empty-title">Waiting For</div>
-      <div class="empty-sub">Coming in Phase 4.</div>
-    </div>
+  <main class="app-view" id="viewWaiting"   style="display:none">
+    <div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-title">Waiting For</div><div class="empty-sub">Coming in Phase 4.</div></div>
   </main>
-
-  <!-- SOMEDAY VIEW -->
-  <main class="app-view" id="viewSomeday" style="display:none">
-    <div class="empty-state">
-      <div class="empty-icon">🌙</div>
-      <div class="empty-title">Someday / Maybe</div>
-      <div class="empty-sub">Coming in Phase 4.</div>
-    </div>
+  <main class="app-view" id="viewSomeday"   style="display:none">
+    <div class="empty-state"><div class="empty-icon">🌙</div><div class="empty-title">Someday</div><div class="empty-sub">Coming in Phase 4.</div></div>
   </main>
-
-  <!-- REFERENCE VIEW -->
   <main class="app-view" id="viewReference" style="display:none">
-    <div class="empty-state">
-      <div class="empty-icon">📚</div>
-      <div class="empty-title">Reference</div>
-      <div class="empty-sub">Coming in Phase 4.</div>
-    </div>
+    <div class="empty-state"><div class="empty-icon">📚</div><div class="empty-title">Reference</div><div class="empty-sub">Coming in Phase 4.</div></div>
   </main>
-
-  <!-- IDEAS VIEW -->
-  <main class="app-view" id="viewIdeas" style="display:none">
-    <div class="empty-state">
-      <div class="empty-icon">💡</div>
-      <div class="empty-title">Ideas</div>
-      <div class="empty-sub">Coming in Phase 4.</div>
-    </div>
+  <main class="app-view" id="viewIdeas"     style="display:none">
+    <div class="empty-state"><div class="empty-icon">💡</div><div class="empty-title">Ideas</div><div class="empty-sub">Coming in Phase 4.</div></div>
   </main>
+</div>
 
-</div><!-- end appShell -->
+<!-- ── FIRST-TIME CONFIG MODAL ────────────────────────────── -->
+<!--
+  Shown ONLY before first login when no credentials exist.
+  After first sign-up this button and modal are never shown again.
+  All credentials live behind the admin panel from that point on.
+-->
+<div class="modal-overlay" id="firstTimeModal">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('firstTimeModal')">✕</button>
+    <div class="modal-title">First-time Setup</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.7">
+      Connect Clarity to your Supabase project. You only need to do this once.
+      After sign-up, all credentials are managed from the Settings panel.
+    </div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);line-height:1.8">
+      In Supabase → <span style="color:var(--accent)">Project Settings → API</span><br>
+      Copy: Project URL + anon/public key
+    </div>
+    <div class="form-group">
+      <label class="form-label">Supabase Project URL</label>
+      <input type="text" id="ftUrl" placeholder="https://xyzxyz.supabase.co">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Anon / Publishable Key</label>
+      <input type="password" id="ftKey" placeholder="eyJ...">
+      <div class="hint">Use the anon key — NOT the service_role key.</div>
+    </div>
+    <div class="auth-error" id="ftError"></div>
+    <div class="modal-actions">
+      <button class="btn btn-sm btn-secondary" onclick="closeModal('firstTimeModal')">Cancel</button>
+      <button class="btn btn-sm" id="ftSaveBtn" onclick="saveFirstTimeConfig()">Save & Connect</button>
+    </div>
+  </div>
+</div>
 
-<!-- ═══════════════════════════════════════════════════════
-     SETTINGS MODAL
-════════════════════════════════════════════════════════ -->
+<!-- ── SETTINGS MODAL ─────────────────────────────────────── -->
 <div class="modal-overlay" id="settingsModal">
   <div class="modal" style="max-width:480px">
     <div class="modal-handle"></div>
@@ -491,10 +304,11 @@ header {
         <div id="adminStatus" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)">Locked</div>
       </div>
 
-      <!-- Locked state -->
+      <!-- Locked -->
       <div id="adminLocked">
         <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:12px">
-          Re-enter your credentials to access API keys. Unlocks for 1 hour.
+          Re-enter your credentials to access API configuration.<br>
+          Unlocks for 1 hour.
         </div>
         <div class="form-group" style="margin-bottom:8px">
           <label class="form-label">Email</label>
@@ -509,25 +323,23 @@ header {
         <button class="btn btn-sm" onclick="unlockAdmin()">Unlock</button>
       </div>
 
-      <!-- Unlocked state -->
+      <!-- Unlocked -->
       <div id="adminUnlocked" style="display:none;flex-direction:column;gap:12px">
         <div class="admin-unlock-banner">
           ✓ Unlocked — auto-locks in <span id="adminCountdown">60:00</span>
         </div>
         <div class="form-group">
           <label class="form-label">Supabase Project URL</label>
-          <input type="text" id="settingsUrl" placeholder="https://xyzxyz.supabase.co">
+          <input type="text" id="adminUrl" placeholder="https://xyzxyz.supabase.co">
         </div>
         <div class="form-group">
           <label class="form-label">Supabase Anon Key</label>
-          <input type="password" id="settingsKey" placeholder="eyJ...">
+          <input type="password" id="adminKey" placeholder="eyJ...">
         </div>
         <div class="form-group">
-          <label class="form-label">Anthropic API Key (optional — for AI auto-tagging)</label>
-          <input type="password" id="settingsAI" placeholder="sk-ant-...">
-          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);margin-top:3px">
-            Only used locally to suggest task metadata.
-          </div>
+          <label class="form-label">Anthropic API Key (optional)</label>
+          <input type="password" id="adminAI" placeholder="sk-ant-...">
+          <div class="hint">For AI auto-tagging of task metadata.</div>
         </div>
         <div style="display:flex;gap:8px;justify-content:flex-end">
           <button class="btn btn-sm btn-secondary" onclick="lockAdmin()">Lock Now</button>
@@ -538,16 +350,12 @@ header {
 
     <!-- SIGN OUT -->
     <button class="btn btn-ghost" onclick="signOut()">↪ Sign Out</button>
-
   </div>
 </div>
 
-<!-- TOAST CONTAINER -->
+<!-- TOAST -->
 <div class="toast-wrap" id="toastWrap"></div>
 
-<!-- ═══════════════════════════════════════════════════════
-     JAVASCRIPT
-════════════════════════════════════════════════════════ -->
 <script>
 'use strict';
 
@@ -589,41 +397,27 @@ function setSession(s) {
   else   localStorage.removeItem('clarity_session');
 }
 
-// ── APP STATE ─────────────────────────────────────────────
+// ── STATE ─────────────────────────────────────────────────
 const state = {
-  workspaceId:   null,
-  workspaceName: null,
-  domains:       [],
-  categories:    [],
-  projects:      [],
-  tasks:         [],
+  workspaceId: null, workspaceName: null,
+  domains: [], categories: [], projects: [], tasks: [],
 };
 
 // ── INIT ──────────────────────────────────────────────────
 async function init() {
   const configured = !!(SUPABASE_URL && SUPABASE_KEY);
 
-  // Auth screen footer
+  // Show first-time setup button only if not yet configured
+  document.getElementById('authConfigBtn').style.display = configured ? 'none' : 'block';
   document.getElementById('authFooter').textContent =
-    configured ? new URL(SUPABASE_URL).hostname : 'not configured';
+    configured ? `Connected: ${new URL(SUPABASE_URL).hostname}` : 'Not configured — click setup button above';
 
-  // Show/hide config button
-  document.getElementById('authConfigBtn').style.display =
-    configured ? 'none' : 'block';
-
-  // If session exists and configured, boot app
-  const session = getSession();
-  if (configured && session?.access_token) {
+  if (configured && getSession()?.access_token) {
     await bootApp();
   }
 }
 
 async function bootApp() {
-  if (!SUPABASE_URL || !SUPABASE_KEY) {
-    showApp();
-    document.getElementById('configBanner').style.display = 'flex';
-    return;
-  }
   showApp();
   await loadCoreData();
 }
@@ -633,26 +427,23 @@ function showApp() {
   document.getElementById('appShell').classList.add('visible');
 }
 
-// ── LOAD CORE DATA ────────────────────────────────────────
 async function loadCoreData() {
   try {
     const [r1, r2, r3] = await Promise.all([
       supa('workspaces?select=id,name&limit=1'),
       supa('domains?select=id,name,icon,color,sort_order&order=sort_order'),
-      supa('categories?select=id,name,domain_id,description,review_interval_days,is_paused,paused_until,sort_order&order=sort_order'),
+      supa('categories?select=id,name,domain_id,description,review_interval_days,is_paused,sort_order&order=sort_order'),
     ]);
-
-    const workspaces = await r1.json();
+    const ws = await r1.json();
     state.domains    = await r2.json() || [];
     state.categories = await r3.json() || [];
-
-    if (workspaces?.length) {
-      state.workspaceId   = workspaces[0].id;
-      state.workspaceName = workspaces[0].name;
+    if (ws?.length) {
+      state.workspaceId   = ws[0].id;
+      state.workspaceName = ws[0].name;
     }
   } catch(e) {
-    console.error('loadCoreData error:', e);
-    toast('Could not load data from Supabase', 'error');
+    console.error('loadCoreData:', e);
+    toast('Could not load data — check Supabase connection', 'error');
   }
 }
 
@@ -662,9 +453,8 @@ let authTab = 'login';
 function setAuthTab(tab) {
   authTab = tab;
   document.querySelectorAll('.auth-tab').forEach((b, i) => {
-    b.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'signup'));
+    b.classList.toggle('active', (i===0&&tab==='login')||(i===1&&tab==='signup'));
   });
-  document.getElementById('nameGroup').style.display = tab === 'signup' ? 'flex' : 'none';
   document.getElementById('authBtn').textContent = tab === 'login' ? 'Sign In' : 'Create Account';
   document.getElementById('authError').classList.remove('show');
 }
@@ -673,11 +463,14 @@ async function handleAuth() {
   const email    = document.getElementById('authEmail').value.trim();
   const password = document.getElementById('authPassword').value;
   const btn      = document.getElementById('authBtn');
-  const errEl    = document.getElementById('authError');
 
-  errEl.classList.remove('show');
+  document.getElementById('authError').classList.remove('show');
+
   if (!email || !password) { showAuthError('Email and password required.'); return; }
-  if (!SUPABASE_URL || !SUPABASE_KEY) { showAuthError('Configure Supabase first.'); return; }
+  if (!SUPABASE_URL || !SUPABASE_KEY) {
+    showAuthError('Supabase not configured. Click the setup button below.');
+    return;
+  }
 
   btn.disabled = true;
   btn.textContent = '...';
@@ -687,15 +480,15 @@ async function handleAuth() {
     const res  = await supaAuth(endpoint, { email, password });
     const data = await res.json();
 
-    if (data.error || (!data.access_token && authTab === 'login')) {
-      showAuthError(data.error_description || data.message || 'Authentication failed.');
-      return;
-    }
-
     if (authTab === 'signup') {
-      // Check if email confirmation is required
+      if (data.error) { showAuthError(data.error_description || data.message || 'Sign up failed.'); return; }
       if (!data.access_token) {
-        showAuthError('Check your email for a confirmation link, or disable email confirmation in Supabase Auth settings.');
+        showAuthError('Account created! Check your email for a confirmation link. Or disable email confirmation in Supabase Auth → Providers → Email.');
+        return;
+      }
+    } else {
+      if (data.error || !data.access_token) {
+        showAuthError(data.error_description || data.message || 'Sign in failed.');
         return;
       }
     }
@@ -723,34 +516,97 @@ async function signOut() {
   location.reload();
 }
 
+// ── FIRST-TIME CONFIG ─────────────────────────────────────
+// Only used once, before the very first sign-up.
+// After that, all config lives behind the admin panel.
+
+function openFirstTimeConfig() {
+  document.getElementById('ftUrl').value = '';
+  document.getElementById('ftKey').value = '';
+  document.getElementById('ftError').classList.remove('show');
+  document.getElementById('firstTimeModal').classList.add('open');
+  setTimeout(() => document.getElementById('ftUrl').focus(), 200);
+}
+
+async function saveFirstTimeConfig() {
+  const url   = document.getElementById('ftUrl').value.trim();
+  const key   = document.getElementById('ftKey').value.trim();
+  const errEl = document.getElementById('ftError');
+  const btn   = document.getElementById('ftSaveBtn');
+  errEl.classList.remove('show');
+
+  if (!url || !key) {
+    errEl.textContent = 'Both fields are required.';
+    errEl.classList.add('show');
+    return;
+  }
+
+  try { new URL(url); } catch {
+    errEl.textContent = 'Invalid URL — should start with https://';
+    errEl.classList.add('show');
+    return;
+  }
+
+  // Test connection
+  btn.disabled = true;
+  btn.textContent = 'Testing...';
+
+  try {
+    const res = await fetch(`${url}/rest/v1/workspaces?select=id&limit=1`, {
+      headers: { 'apikey': key, 'Authorization': `Bearer ${key}` },
+    });
+    // 200 = connected, 401 = connected but RLS blocked (still means URL+key work)
+    if (res.status !== 200 && res.status !== 401) {
+      errEl.textContent = `Connection failed (${res.status}). Check your URL and key.`;
+      errEl.classList.add('show');
+      return;
+    }
+  } catch(e) {
+    errEl.textContent = 'Could not reach Supabase. Check the URL.';
+    errEl.classList.add('show');
+    return;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save & Connect';
+  }
+
+  // Save
+  SUPABASE_URL = url;
+  SUPABASE_KEY = key;
+  localStorage.setItem('clarity_url', url);
+  localStorage.setItem('clarity_key', key);
+
+  // Hide first-time button permanently
+  document.getElementById('authConfigBtn').style.display = 'none';
+  document.getElementById('authFooter').textContent = `Connected: ${new URL(url).hostname}`;
+
+  closeModal('firstTimeModal');
+  toast('Supabase connected ✓ — now sign up or sign in', 'success');
+}
+
 // ── VIEW SWITCHING ────────────────────────────────────────
 function switchView(view) {
   document.querySelectorAll('.app-view').forEach(v => v.style.display = 'none');
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-
-  const viewEl = document.getElementById('view' + view.charAt(0).toUpperCase() + view.slice(1));
-  if (viewEl) viewEl.style.display = 'flex';
-
-  const navBtn = document.querySelector(`[data-view="${view}"]`);
-  if (navBtn) navBtn.classList.add('active');
+  const el = document.getElementById('view' + view.charAt(0).toUpperCase() + view.slice(1));
+  if (el) el.style.display = 'flex';
+  const btn = document.querySelector(`[data-view="${view}"]`);
+  if (btn) btn.classList.add('active');
 }
 
 // ── SETTINGS ──────────────────────────────────────────────
 let adminUnlockExpiry   = null;
 let adminCountdownTimer = null;
 
-function openSettings(fromAuth = false) {
+function openSettings() {
   const email = localStorage.getItem('clarity_email') || getSession()?.user?.email || '—';
   document.getElementById('settingsEmail').textContent  = email;
   document.getElementById('settingsAvatar').textContent = email.charAt(0).toUpperCase();
   document.getElementById('settingsWsName').value       = state.workspaceName || 'Personal';
   document.getElementById('settingsWsId').textContent   = state.workspaceId   || '—';
   document.getElementById('pwdError').classList.remove('show');
-
-  const now = Date.now();
-  if (adminUnlockExpiry && now < adminUnlockExpiry) showAdminUnlocked();
+  if (adminUnlockExpiry && Date.now() < adminUnlockExpiry) showAdminUnlocked();
   else showAdminLocked();
-
   document.getElementById('settingsModal').classList.add('open');
 }
 
@@ -767,9 +623,9 @@ function showAdminUnlocked() {
   document.getElementById('adminUnlocked').style.display = 'flex';
   document.getElementById('adminStatus').textContent     = 'Unlocked';
   document.getElementById('adminStatus').style.color     = 'var(--accent)';
-  document.getElementById('settingsUrl').value           = SUPABASE_URL || '';
-  document.getElementById('settingsKey').value           = SUPABASE_KEY || '';
-  document.getElementById('settingsAI').value            = AI_KEY       || '';
+  document.getElementById('adminUrl').value              = SUPABASE_URL || '';
+  document.getElementById('adminKey').value              = SUPABASE_KEY || '';
+  document.getElementById('adminAI').value               = AI_KEY       || '';
   startAdminCountdown();
 }
 
@@ -786,31 +642,27 @@ function startAdminCountdown() {
 }
 
 async function unlockAdmin() {
-  const email    = document.getElementById('adminEmail').value.trim();
-  const password = document.getElementById('adminPwd').value;
-  const errEl    = document.getElementById('adminError');
+  const email  = document.getElementById('adminEmail').value.trim();
+  const pwd    = document.getElementById('adminPwd').value;
+  const errEl  = document.getElementById('adminError');
   errEl.classList.remove('show');
 
-  if (!email || !password) {
-    errEl.textContent = 'Email and password required.';
-    errEl.classList.add('show');
-    return;
-  }
+  if (!email || !pwd) { errEl.textContent = 'Email and password required.'; errEl.classList.add('show'); return; }
 
   try {
-    const res  = await supaAuth('token?grant_type=password', { email, password });
+    const res  = await supaAuth('token?grant_type=password', { email, password: pwd });
     const data = await res.json();
     if (data.error || !data.access_token) {
       errEl.textContent = data.error_description || 'Invalid credentials.';
       errEl.classList.add('show');
       return;
     }
-    adminUnlockExpiry = Date.now() + 60 * 60 * 1000; // 1 hour
+    adminUnlockExpiry = Date.now() + 60 * 60 * 1000;
     localStorage.setItem('clarity_email', email);
     showAdminUnlocked();
     toast('Admin panel unlocked for 1 hour', 'success');
   } catch(e) {
-    errEl.textContent = 'Network error.';
+    errEl.textContent = 'Network error — check Supabase connection.';
     errEl.classList.add('show');
   }
 }
@@ -822,18 +674,12 @@ function lockAdmin() {
 }
 
 function saveAdminSettings() {
-  const url = document.getElementById('settingsUrl').value.trim();
-  const key = document.getElementById('settingsKey').value.trim();
-  const ai  = document.getElementById('settingsAI').value.trim();
-
+  const url = document.getElementById('adminUrl').value.trim();
+  const key = document.getElementById('adminKey').value.trim();
+  const ai  = document.getElementById('adminAI').value.trim();
   if (url) { SUPABASE_URL = url; localStorage.setItem('clarity_url', url); }
   if (key) { SUPABASE_KEY = key; localStorage.setItem('clarity_key', key); }
   if (ai)  { AI_KEY = ai;        localStorage.setItem('clarity_ai',  ai); }
-
-  // Update auth footer
-  document.getElementById('authConfigBtn').style.display = 'none';
-  document.getElementById('authFooter').textContent = url ? new URL(url).hostname : 'configured';
-
   toast('Settings saved — reloading...', 'success');
   setTimeout(() => location.reload(), 1200);
 }
@@ -842,48 +688,30 @@ async function saveWorkspaceName() {
   const name = document.getElementById('settingsWsName').value.trim();
   if (!name || !state.workspaceId) return;
   const res = await supa(`workspaces?id=eq.${state.workspaceId}`, {
-    method: 'PATCH',
-    body:   JSON.stringify({ name }),
+    method: 'PATCH', body: JSON.stringify({ name }),
   });
-  if (res.ok) {
-    state.workspaceName = name;
-    toast('Workspace name updated', 'success');
-  } else {
-    toast('Could not update workspace name', 'error');
-  }
+  if (res.ok) { state.workspaceName = name; toast('Workspace name updated', 'success'); }
+  else toast('Could not update workspace name', 'error');
 }
 
 async function changePassword() {
-  const newPwd     = document.getElementById('settingsNewPwd').value;
-  const confirmPwd = document.getElementById('settingsConfirmPwd').value;
-  const errEl      = document.getElementById('pwdError');
+  const newPwd  = document.getElementById('settingsNewPwd').value;
+  const confPwd = document.getElementById('settingsConfirmPwd').value;
+  const errEl   = document.getElementById('pwdError');
   errEl.classList.remove('show');
-
-  if (!newPwd || !confirmPwd) {
-    errEl.textContent = 'Both fields required.'; errEl.classList.add('show'); return;
-  }
-  if (newPwd !== confirmPwd) {
-    errEl.textContent = 'Passwords do not match.'; errEl.classList.add('show'); return;
-  }
-  if (newPwd.length < 8) {
-    errEl.textContent = 'Minimum 8 characters.'; errEl.classList.add('show'); return;
-  }
-
+  if (!newPwd || !confPwd) { errEl.textContent = 'Both fields required.'; errEl.classList.add('show'); return; }
+  if (newPwd !== confPwd)  { errEl.textContent = 'Passwords do not match.'; errEl.classList.add('show'); return; }
+  if (newPwd.length < 8)   { errEl.textContent = 'Minimum 8 characters.'; errEl.classList.add('show'); return; }
   const session = getSession();
   const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-    method:  'PUT',
-    headers: {
-      'apikey':        SUPABASE_KEY,
-      'Authorization': `Bearer ${session?.access_token}`,
-      'Content-Type':  'application/json',
-    },
+    method: 'PUT',
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${session?.access_token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ password: newPwd }),
   });
-
   if (res.ok) {
-    document.getElementById('settingsNewPwd').value    = '';
+    document.getElementById('settingsNewPwd').value  = '';
     document.getElementById('settingsConfirmPwd').value = '';
-    toast('Password updated successfully', 'success');
+    toast('Password updated', 'success');
   } else {
     const err = await res.json();
     errEl.textContent = err.message || 'Could not update password.';
@@ -892,24 +720,21 @@ async function changePassword() {
 }
 
 // ── UTILS ─────────────────────────────────────────────────
-function closeModal(id) {
-  document.getElementById(id).classList.remove('open');
-}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
 function toast(msg, type = '') {
   const wrap = document.getElementById('toastWrap');
   const el   = document.createElement('div');
-  el.className = `toast${type ? ' ' + type : ''}`;
+  el.className   = `toast${type ? ' ' + type : ''}`;
   el.textContent = msg;
   wrap.appendChild(el);
   setTimeout(() => el.remove(), 3200);
 }
 
 function escHtml(str) {
-  return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// Close modal on backdrop click
 document.querySelectorAll('.modal-overlay').forEach(el => {
   el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
 });
