@@ -109,6 +109,118 @@ header { display:flex; align-items:center; justify-content:space-between; paddin
 @keyframes toastIn  { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
 @keyframes toastOut { from{opacity:1} to{opacity:0} }
 
+
+/* TAGS */
+.tag { font-family:'JetBrains Mono',monospace; font-size:10px; padding:3px 7px; border-radius:4px; letter-spacing:.3px; white-space:nowrap; display:inline-flex; align-items:center; }
+.tag-cat      { background:var(--surface3); color:var(--text2); border:1px solid var(--border); }
+.tag-iq-iu    { background:#f0606018; color:var(--red);    border:1px solid #f0606030; }
+.tag-iq-inu   { background:#b8f06018; color:var(--accent); border:1px solid #b8f06030; }
+.tag-iq-niu   { background:#f0a85518; color:var(--orange); border:1px solid #f0a85530; }
+.tag-iq-ninu  { background:#60a8f018; color:var(--blue);   border:1px solid #60a8f030; }
+.tag-due      { background:var(--surface3); color:var(--text2); border:1px solid var(--border); }
+.tag-overdue  { background:#f0606015; color:var(--red);    border:1px solid #f0606030; }
+.tag-recur    { background:#a060f015; color:#a060f0;       border:1px solid #a060f030; }
+.tag-idea     { background:#f0a85515; color:var(--orange); border:1px solid #f0a85530; }
+.tag-review   { background:#60a8f015; color:var(--blue);   border:1px solid #60a8f030; }
+
+/* TASK CARDS */
+.task-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--r); padding:14px 16px;
+  display:flex; align-items:flex-start; gap:12px;
+  transition:border-color .15s; position:relative; overflow:hidden;
+  animation:cardIn .15s ease;
+}
+@keyframes cardIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+.task-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; }
+.task-card[data-iq="important_urgent"]::before         { background:var(--red); }
+.task-card[data-iq="important_not_urgent"]::before     { background:var(--accent); }
+.task-card[data-iq="not_important_urgent"]::before     { background:var(--orange); }
+.task-card[data-iq="not_important_not_urgent"]::before { background:var(--blue); }
+.task-card:hover { border-color:var(--border2); }
+.task-card.done  { opacity:.4; }
+.task-card.done .task-name { text-decoration:line-through; color:var(--text3); }
+
+.task-check {
+  width:20px; height:20px; border:1.5px solid var(--border2); border-radius:5px;
+  cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+  background:none; transition:all .15s; margin-top:1px;
+}
+.task-check:hover  { border-color:var(--accent); }
+.task-check.done   { background:var(--accent); border-color:var(--accent); }
+.task-check.done::after { content:'✓'; color:#0a0a0b; font-size:11px; font-weight:700; }
+
+.task-body   { flex:1; min-width:0; }
+.task-name   { font-size:14px; font-weight:500; line-height:1.4; word-break:break-word; }
+.task-notes  { font-size:12px; color:var(--text2); margin-top:3px; line-height:1.4; }
+.task-meta   { display:flex; gap:5px; flex-wrap:wrap; margin-top:8px; align-items:center; }
+.task-actions { display:flex; gap:4px; flex-shrink:0; opacity:0; transition:opacity .15s; }
+.task-card:hover .task-actions { opacity:1; }
+
+/* CATEGORY PICKER */
+.cat-tags-wrap {
+  display:flex; flex-wrap:wrap; gap:6px; min-height:38px;
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:var(--r-sm); padding:6px 10px; cursor:pointer;
+  transition:border-color .15s; align-items:center;
+}
+.cat-tags-wrap:hover { border-color:var(--border2); }
+.cat-tags-wrap:focus-within { border-color:var(--accent); }
+.cat-ph { color:var(--text3); font-size:13px; line-height:1; }
+.cat-chip {
+  display:inline-flex; align-items:center; gap:4px;
+  background:var(--surface3); border:1px solid var(--border2);
+  border-radius:4px; padding:3px 8px; font-size:12px; color:var(--text);
+}
+.cat-chip-x { color:var(--text3); cursor:pointer; font-size:11px; padding:0 2px; line-height:1; }
+.cat-chip-x:hover { color:var(--red); }
+
+.cat-pick-item {
+  display:flex; align-items:center; gap:10px; padding:10px 12px;
+  border-radius:var(--r-sm); border:1px solid var(--border);
+  background:var(--surface2); cursor:pointer; transition:all .15s; font-size:13px;
+}
+.cat-pick-item:hover  { border-color:var(--border2); }
+.cat-pick-item.sel    { border-color:var(--accent); background:#b8f06010; }
+.cat-pick-check {
+  width:18px; height:18px; border:1.5px solid var(--border2);
+  border-radius:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center;
+}
+.cat-pick-item.sel .cat-pick-check { background:var(--accent); border-color:var(--accent); }
+.cat-pick-item.sel .cat-pick-check::after { content:'✓'; color:#0a0a0b; font-size:11px; font-weight:700; }
+.cat-pick-domain { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text3); margin-left:auto; }
+
+/* RECURRING TOGGLE */
+.recur-toggle-wrap {
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:var(--r); padding:14px; display:flex; flex-direction:column; gap:12px;
+}
+.toggle-row { display:flex; align-items:center; justify-content:space-between; cursor:pointer; }
+.toggle-track {
+  position:relative; width:36px; height:20px;
+  background:var(--border); border-radius:20px;
+  transition:background .2s; cursor:pointer; flex-shrink:0;
+}
+.toggle-track.on { background:var(--accent); }
+.toggle-thumb {
+  position:absolute; top:2px; left:2px; width:16px; height:16px;
+  background:white; border-radius:50%; transition:transform .2s;
+}
+.toggle-track.on .toggle-thumb { transform:translateX(16px); }
+
+/* DAY BUTTONS */
+.day-btn {
+  background:var(--surface3); border:1px solid var(--border); color:var(--text2);
+  padding:5px 9px; border-radius:6px; font-family:'JetBrains Mono',monospace;
+  font-size:11px; cursor:pointer; transition:all .15s;
+}
+.day-btn.on { background:var(--purple,#a060f0); border-color:var(--purple,#a060f0); color:white; }
+
+/* HINT */
+.hint { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text3); margin-top:3px; line-height:1.5; }
+.verb-warn { color:var(--orange); display:none; }
+.verb-warn.show { display:block; }
+
 ::-webkit-scrollbar { width:5px; }
 ::-webkit-scrollbar-track { background:transparent; }
 ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
@@ -156,7 +268,7 @@ header { display:flex; align-items:center; justify-content:space-between; paddin
       </button>
     </div>
 
-    <div class="auth-footer" id="authFooter">—</div>
+    <div class="auth-footer" id="authFooter" style="display:none">—</div>
   </div>
 </div>
 
@@ -182,7 +294,38 @@ header { display:flex; align-items:center; justify-content:space-between; paddin
 
   <!-- VIEWS (placeholders for now) -->
   <main class="app-view" id="viewFocus">
-    <div class="empty-state"><div class="empty-icon">⬛</div><div class="empty-title">Daily Focus</div><div class="empty-sub">Coming in Phase 2.</div></div>
+    <!-- Page header -->
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px" id="focusDateLabel">Today</div>
+        <div style="font-family:'Instrument Serif',serif;font-size:30px;letter-spacing:-.8px;line-height:1" id="focusDayName">Loading...</div>
+      </div>
+      <button class="btn btn-sm btn-secondary" onclick="openCapture()">+ Capture</button>
+    </div>
+
+    <!-- Quick capture bar -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:4px 4px 4px 16px;display:flex;align-items:center;gap:8px;transition:border-color .15s" id="captureBar">
+      <input id="quickInput" placeholder="Quick capture — type and press Enter..." style="background:none;border:none;flex:1;font-size:14px;padding:8px 0;color:var(--text);font-family:'Instrument Sans',sans-serif" onkeydown="if(event.key==='Enter')quickCapture()" onfocus="document.getElementById('captureBar').style.borderColor='var(--accent)'" onblur="document.getElementById('captureBar').style.borderColor='var(--border)'">
+      <button class="btn btn-sm" style="flex-shrink:0" onclick="quickCapture()">Capture</button>
+    </div>
+
+    <!-- Inbox alert -->
+    <div id="inboxAlert" style="display:none;background:#f0a85510;border:1px solid #f0a85530;border-radius:var(--r);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;color:var(--orange)">
+      <span id="inboxAlertText">Items in inbox need processing</span>
+      <button class="btn btn-sm btn-ghost" style="color:var(--orange);border-color:#f0a85540;flex-shrink:0" onclick="switchView('inbox')">Process →</button>
+    </div>
+
+    <!-- Overdue section -->
+    <div id="overdueSection" style="display:none">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);margin-bottom:8px">⚠ Overdue</div>
+      <div id="overdueList" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+
+    <!-- Today section -->
+    <div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:8px">Today's tasks</div>
+      <div id="focusList" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
   </main>
   <main class="app-view" id="viewProjects"  style="display:none">
     <div class="empty-state"><div class="empty-icon">📁</div><div class="empty-title">Projects</div><div class="empty-sub">Coming in Phase 3.</div></div>
@@ -353,6 +496,274 @@ header { display:flex; align-items:center; justify-content:space-between; paddin
   </div>
 </div>
 
+
+<!-- ── CAPTURE MODAL ─────────────────────────────────────── -->
+<div class="modal-overlay" id="captureModal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('captureModal')">✕</button>
+    <div class="modal-title" id="captureTitle">Capture Task</div>
+
+    <!-- Task name -->
+    <div class="form-group">
+      <label class="form-label">Name</label>
+      <input type="text" id="cName" placeholder="Start with an action verb — Call, Write, Review..."
+             oninput="onNameInput()">
+      <div class="hint verb-warn" id="verbWarn">⚠ Start with an action verb to keep this actionable</div>
+      <div class="hint" id="ideaHint" style="display:none">💡 Ideas don't need action verbs</div>
+    </div>
+
+    <!-- Type -->
+    <div class="form-group">
+      <label class="form-label">Type</label>
+      <select id="cType" onchange="onTypeChange()">
+        <option value="task">Task — actionable, has a verb</option>
+        <option value="idea">Idea — a thought, no action yet</option>
+      </select>
+    </div>
+
+    <!-- Categories -->
+    <div class="form-group">
+      <label class="form-label">Categories</label>
+      <div class="cat-tags-wrap" id="cCatWrap" onclick="openCatPicker()">
+        <span class="cat-ph" id="cCatPh">— tap to select categories —</span>
+      </div>
+      <input type="hidden" id="cCatIds" value="">
+    </div>
+
+    <!-- Importance + Context -->
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Importance / Speed</label>
+        <select id="cIQ">
+          <option value="">— optional —</option>
+          <option value="important_urgent">🔴 Important + Urgent</option>
+          <option value="important_not_urgent">🟢 Important + Not Urgent</option>
+          <option value="not_important_urgent">🟡 Not Important + Urgent</option>
+          <option value="not_important_not_urgent">🔵 Not Important + Not Urgent</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Context</label>
+        <select id="cContext">
+          <option value="">— optional —</option>
+          <option value="@phone">📞 @phone</option>
+          <option value="@computer">💻 @computer</option>
+          <option value="@errands">🚗 @errands</option>
+          <option value="@home">🏠 @home</option>
+          <option value="@anywhere">🌐 @anywhere</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Due date + Estimated time -->
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Due Date</label>
+        <input type="date" id="cDue">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Estimated Time (mins)</label>
+        <input type="number" id="cEstimated" placeholder="e.g. 30" min="1">
+      </div>
+    </div>
+
+    <!-- Project -->
+    <div class="form-group">
+      <label class="form-label">Project (optional)</label>
+      <select id="cProject">
+        <option value="">— no project —</option>
+      </select>
+    </div>
+
+    <!-- Recurring toggle -->
+    <div class="recur-toggle-wrap" id="recurWrap">
+      <div class="toggle-row" onclick="toggleRecur()">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span>🔄</span>
+          <span style="font-size:13px;font-weight:500">Make this recurring</span>
+        </div>
+        <div class="toggle-track" id="recurTrack">
+          <div class="toggle-thumb"></div>
+        </div>
+      </div>
+
+      <div id="recurFields" style="display:none;flex-direction:column;gap:12px">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Mode</label>
+            <select id="rMode">
+              <option value="fixed">Fixed — calendar anchored</option>
+              <option value="relative">Relative — from completion</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Pattern</label>
+            <select id="rPattern" onchange="onPatternChange()">
+              <option value="daily">Daily</option>
+              <option value="x_per_day">X times per day</option>
+              <option value="x_per_week">Specific days of week</option>
+              <option value="weekly">Weekly</option>
+              <option value="fortnightly">Fortnightly (every 2 weeks)</option>
+              <option value="every_x_weeks">Every X weeks</option>
+              <option value="monthly">Monthly</option>
+              <option value="every_x_months">Every X months</option>
+              <option value="quarterly">Quarterly</option>
+              <option value="every_6_months">Every 6 months</option>
+              <option value="yearly">Yearly</option>
+              <option value="random">Random (within a range)</option>
+              <option value="adhoc">Ad-hoc (I set next date each time)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- x_per_day -->
+        <div id="rXPerDayFields" style="display:none;flex-direction:column;gap:10px">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Times per day</label>
+              <input type="number" id="rTimesPerDay" value="2" min="2" max="20">
+            </div>
+            <div class="form-group">
+              <label class="form-label">If target missed</label>
+              <select id="rResetMode">
+                <option value="daily_reset">Fresh start next day</option>
+                <option value="carry_over">Carry over deficit</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- x_per_week -->
+        <div id="rDaysFields" style="display:none;flex-direction:column;gap:8px">
+          <label class="form-label">Days of week</label>
+          <div style="display:flex;gap:6px;flex-wrap:wrap" id="rDayBtns">
+            <button type="button" class="day-btn" data-d="0" onclick="toggleDay(0)">Sun</button>
+            <button type="button" class="day-btn" data-d="1" onclick="toggleDay(1)">Mon</button>
+            <button type="button" class="day-btn" data-d="2" onclick="toggleDay(2)">Tue</button>
+            <button type="button" class="day-btn" data-d="3" onclick="toggleDay(3)">Wed</button>
+            <button type="button" class="day-btn" data-d="4" onclick="toggleDay(4)">Thu</button>
+            <button type="button" class="day-btn" data-d="5" onclick="toggleDay(5)">Fri</button>
+            <button type="button" class="day-btn" data-d="6" onclick="toggleDay(6)">Sat</button>
+          </div>
+        </div>
+
+        <!-- every_x_weeks / every_x_months -->
+        <div id="rIntervalFields" style="display:none">
+          <div class="form-group">
+            <label class="form-label" id="rIntervalLabel">Every X weeks</label>
+            <input type="number" id="rIntervalVal" value="3" min="1">
+          </div>
+        </div>
+
+        <!-- random -->
+        <div id="rRandomFields" style="display:none">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Min days</label>
+              <input type="number" id="rRandMin" value="7" min="1">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Max days</label>
+              <input type="number" id="rRandMax" value="21" min="1">
+            </div>
+          </div>
+        </div>
+
+        <!-- anchor date -->
+        <div id="rAnchorFields" style="display:none">
+          <div class="form-group">
+            <label class="form-label" id="rAnchorLabel">Anchor date</label>
+            <input type="date" id="rAnchorDate">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">First due date</label>
+          <input type="date" id="rFirstDue">
+        </div>
+      </div>
+    </div>
+
+    <!-- Notes -->
+    <div class="form-group">
+      <label class="form-label">Notes (optional)</label>
+      <textarea id="cNotes" placeholder="Context, links, details..."></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-sm btn-secondary" onclick="closeModal('captureModal')">Cancel</button>
+      <button class="btn btn-sm" onclick="saveTask()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── CATEGORY PICKER MODAL ──────────────────────────────── -->
+<div class="modal-overlay" id="catPickerModal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('catPickerModal')">✕</button>
+    <div class="modal-title">Select Categories</div>
+    <div style="font-size:12px;color:var(--text2);margin-top:-8px">Select one or more</div>
+    <div id="catPickerList" style="display:flex;flex-direction:column;gap:6px;max-height:50vh;overflow-y:auto"></div>
+    <div class="modal-actions">
+      <button class="btn btn-sm btn-secondary" onclick="closeModal('catPickerModal')">Cancel</button>
+      <button class="btn btn-sm" onclick="confirmCatPicker()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── RESCHEDULE MODAL ───────────────────────────────────── -->
+<div class="modal-overlay" id="rescheduleModal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('rescheduleModal')">✕</button>
+    <div class="modal-title">Reschedule Task</div>
+    <div id="rescheduleWarn" style="background:#f0a85510;border:1px solid #f0a85530;border-radius:var(--r-sm);padding:10px 12px;font-size:12px;color:var(--orange);font-family:'JetBrains Mono',monospace;line-height:1.5"></div>
+    <div class="form-group">
+      <label class="form-label">New Due Date</label>
+      <input type="date" id="rNewDate">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Reason (required)</label>
+      <select id="rReason">
+        <option value="">— select a reason —</option>
+        <option value="waiting_on_someone">Waiting on someone else</option>
+        <option value="need_more_info">Need more information first</option>
+        <option value="higher_priority">Higher priority came up</option>
+        <option value="underestimated">Underestimated complexity</option>
+        <option value="personal">Personal circumstances</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="form-group" id="rOtherGroup" style="display:none">
+      <label class="form-label">Describe reason</label>
+      <input type="text" id="rOtherReason" placeholder="Brief description...">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-sm btn-secondary" onclick="closeModal('rescheduleModal')">Cancel</button>
+      <button class="btn btn-sm" onclick="confirmReschedule()">Reschedule</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── ADHOC DATE MODAL ───────────────────────────────────── -->
+<div class="modal-overlay" id="adhocModal">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-handle"></div>
+    <div class="modal-title">When next?</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.5">This is an ad-hoc recurring task. When should it next appear?</div>
+    <div class="form-group">
+      <label class="form-label">Next Due Date</label>
+      <input type="date" id="adhocDate">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-sm btn-secondary" onclick="skipAdhoc()">Skip — don't reschedule</button>
+      <button class="btn btn-sm" onclick="confirmAdhoc()">Set Date</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast-wrap" id="toastWrap"></div>
 
@@ -409,8 +820,7 @@ async function init() {
 
   // Show first-time setup button only if not yet configured
   document.getElementById('authConfigBtn').style.display = configured ? 'none' : 'block';
-  document.getElementById('authFooter').textContent =
-    configured ? `Connected: ${new URL(SUPABASE_URL).hostname}` : 'Not configured — click setup button above';
+  // Footer hidden — kept in DOM for debugging only
 
   if (configured && getSession()?.access_token) {
     await bootApp();
@@ -420,6 +830,8 @@ async function init() {
 async function bootApp() {
   showApp();
   await loadCoreData();
+  await loadTasks();
+  renderFocus();
 }
 
 function showApp() {
@@ -578,7 +990,6 @@ async function saveFirstTimeConfig() {
 
   // Hide first-time button permanently
   document.getElementById('authConfigBtn').style.display = 'none';
-  document.getElementById('authFooter').textContent = `Connected: ${new URL(url).hostname}`;
 
   closeModal('firstTimeModal');
   toast('Supabase connected ✓ — now sign up or sign in', 'success');
@@ -738,6 +1149,662 @@ function escHtml(str) {
 document.querySelectorAll('.modal-overlay').forEach(el => {
   el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
 });
+
+
+// ── PHASE 2: DAILY FOCUS + TASK CAPTURE ──────────────────
+
+const ACTION_VERBS = ['call','email','write','review','research','schedule','draft',
+  'send','book','fix','read','decide','check','update','prepare','create','finish',
+  'contact','follow','complete','submit','plan','buy','order','discuss','confirm',
+  'ask','find','make','set','get','do','meet','test','clean','organize','print',
+  'download','upload','reply','forward','file','sign','pay','cancel','register',
+  'attend','watch','listen','learn','explore','analyze','compare','document',
+  'record','build','design','define','outline','draft','collect','gather','sort'];
+
+const IQ_LABELS = {
+  important_urgent:         '🔴 Imp+Urgent',
+  important_not_urgent:     '🟢 Imp+Not Urgent',
+  not_important_urgent:     '🟡 Not Imp+Urgent',
+  not_important_not_urgent: '🔵 Not Imp+Not Urgent',
+};
+
+// ── RENDER FOCUS VIEW ─────────────────────────────────────
+
+function renderFocus() {
+  const today = todayStr();
+  const now   = new Date();
+
+  // Date label
+  document.getElementById('focusDateLabel').textContent =
+    now.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+  document.getElementById('focusDayName').textContent =
+    now.toLocaleDateString('en-US', { weekday:'long' });
+
+  const active  = state.tasks.filter(t => t.status !== 'done' && t.status !== 'cancelled');
+  const overdue = active.filter(t => t.due_date && t.due_date < today && t.status !== 'someday' && t.status !== 'reference');
+  const focus   = active.filter(t => t.due_date === today || t.status === 'next');
+  const inbox   = active.filter(t => t.status === 'inbox');
+
+  // Overdue
+  const od = document.getElementById('overdueSection');
+  const ol = document.getElementById('overdueList');
+  if (overdue.length) {
+    od.style.display = 'block';
+    ol.innerHTML = overdue.map(t => renderTaskCard(t, true)).join('');
+  } else {
+    od.style.display = 'none';
+  }
+
+  // Focus list
+  const fl = document.getElementById('focusList');
+  if (focus.length) {
+    fl.innerHTML = focus.map(t => renderTaskCard(t)).join('');
+  } else {
+    fl.innerHTML = `<div class="empty-state" style="padding:32px 0">
+      <div class="empty-icon">✦</div>
+      <div class="empty-title">All clear</div>
+      <div class="empty-sub">No tasks for today. Capture something or enjoy the space.</div>
+    </div>`;
+  }
+
+  // Inbox alert
+  const alert = document.getElementById('inboxAlert');
+  if (inbox.length) {
+    alert.style.display = 'flex';
+    document.getElementById('inboxAlertText').textContent =
+      `${inbox.length} item${inbox.length > 1 ? 's' : ''} in inbox need processing`;
+  } else {
+    alert.style.display = 'none';
+  }
+}
+
+function renderTaskCard(task, overdue = false) {
+  const iq      = task.importance_speed || '';
+  const cats    = (task._categories || []).map(c =>
+    `<span class="tag tag-cat">${escHtml(c.name)}</span>`).join('');
+  const dueTag  = task.due_date
+    ? `<span class="tag ${overdue ? 'tag-overdue' : 'tag-due'}">${overdue ? '⚠ ' : '📅 '}${task.due_date}</span>`
+    : '';
+  const typeTag = task.type === 'recurring' ? '<span class="tag tag-recur">🔄 Recurring</span>'
+                : task.type === 'idea'      ? '<span class="tag tag-idea">💡 Idea</span>'
+                : task.type === 'review'    ? '<span class="tag tag-review">📋 Review</span>'
+                : '';
+  const estTag  = task.estimated_mins
+    ? `<span class="tag tag-cat">⏱ ${task.estimated_mins}m</span>` : '';
+  const iqTag   = iq ? `<span class="tag tag-iq-${iqKey(iq)}">${IQ_LABELS[iq]}</span>` : '';
+
+  return `<div class="task-card" data-id="${task.id}" data-iq="${iq}">
+    <button class="task-check ${task.status === 'done' ? 'done' : ''}"
+            onclick="completeTask('${task.id}')"></button>
+    <div class="task-body">
+      <div class="task-name">${escHtml(task.name)}</div>
+      ${task.notes ? `<div class="task-notes">${escHtml(task.notes.slice(0,100))}${task.notes.length > 100 ? '…' : ''}</div>` : ''}
+      <div class="task-meta">
+        ${typeTag}${iqTag}${cats}${dueTag}${estTag}
+      </div>
+    </div>
+    <div class="task-actions">
+      <button class="btn-icon" style="font-size:12px" title="Reschedule"
+              onclick="openReschedule('${task.id}')">↻</button>
+      <button class="btn-icon" style="font-size:12px" title="Edit"
+              onclick="openEdit('${task.id}')">✎</button>
+    </div>
+  </div>`;
+}
+
+function iqKey(iq) {
+  return { important_urgent:'iu', important_not_urgent:'inu',
+           not_important_urgent:'niu', not_important_not_urgent:'ninu' }[iq] || '';
+}
+
+// ── COMPLETE TASK ─────────────────────────────────────────
+
+let pendingAdhocId = null;
+
+async function completeTask(id) {
+  const task = state.tasks.find(t => t.id === id);
+  if (!task) return;
+
+  // Recurring — handle counter and next instance
+  if (task.type === 'recurring' && task.recurrence_id) {
+    if (task.recur_pattern === 'x_per_day') {
+      const newCount = (task.current_count || 0) + 1;
+      const target   = task.target_count || 1;
+      if (newCount < target) {
+        await supa(`tasks?id=eq.${id}`, { method:'PATCH', body:JSON.stringify({ current_count: newCount }) });
+        task.current_count = newCount;
+        toast(`${newCount}/${target} done today`, 'success');
+        renderFocus();
+        return;
+      }
+    }
+    if (task.recur_pattern === 'adhoc') {
+      pendingAdhocId = id;
+      document.getElementById('adhocDate').value = '';
+      document.getElementById('adhocModal').classList.add('open');
+      return;
+    }
+    await finishRecurring(id, null);
+    return;
+  }
+
+  // Regular task
+  await supa(`tasks?id=eq.${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status:'done', completed_at: new Date().toISOString() })
+  });
+  await logEvent('task', id, 'task_completed', { name: task.name });
+  toast('Done ✓', 'success');
+  await loadTasks();
+  renderFocus();
+}
+
+async function finishRecurring(id, adhocDate) {
+  const task = state.tasks.find(t => t.id === id);
+  if (!task) return;
+  const today = todayStr();
+
+  await supa(`tasks?id=eq.${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status:'done', completed_at: new Date().toISOString(), last_occurrence: today })
+  });
+
+  // Fetch template
+  const res = await supa(`recurrences?id=eq.${task.recurrence_id}&select=*`);
+  const templates = await res.json();
+  if (!templates?.length) { toast('Done ✓', 'success'); await loadTasks(); renderFocus(); return; }
+  const tmpl = templates[0];
+
+  const nextDate = adhocDate || calcNextDate(tmpl);
+  if (nextDate) {
+    // Create next instance
+    const newTask = {
+      workspace_id: state.workspaceId,
+      recurrence_id: tmpl.id,
+      name: tmpl.name, notes: tmpl.notes, type:'recurring', status:'next',
+      importance_speed: tmpl.importance_speed, context: tmpl.context,
+      estimated_mins: tmpl.estimated_mins, due_date: nextDate,
+      current_count: 0, target_count: tmpl.recur_times_per_day,
+      reschedule_count: 0, reschedule_reasons: [], ai_suggestions: {},
+      recur_pattern: tmpl.recur_pattern,
+    };
+    const nr = await supa('tasks', { method:'POST', body: JSON.stringify(newTask) });
+    if (nr.ok) {
+      const newTaskData = await nr.json();
+      const newId = newTaskData[0]?.id;
+      // Copy categories
+      if (newId) {
+        const rcRes = await supa(`recurrence_categories?recurrence_id=eq.${tmpl.id}&select=category_id`);
+        const rcs   = await rcRes.json() || [];
+        if (rcs.length) {
+          await supa('task_categories', {
+            method:'POST', prefer:'return=minimal',
+            body: JSON.stringify(rcs.map(r => ({ task_id: newId, category_id: r.category_id })))
+          });
+        }
+      }
+    }
+    // Update template
+    await supa(`recurrences?id=eq.${tmpl.id}`, {
+      method:'PATCH',
+      body: JSON.stringify({ last_occurrence: today, next_occurrence: nextDate, last_generated_at: new Date().toISOString() })
+    });
+    toast(`Done ✓ — next due ${nextDate}`, 'success');
+  } else {
+    toast('Done ✓', 'success');
+  }
+  await loadTasks();
+  renderFocus();
+}
+
+async function confirmAdhoc() {
+  const date = document.getElementById('adhocDate').value;
+  if (!date) { toast('Please select a date', 'error'); return; }
+  closeModal('adhocModal');
+  await finishRecurring(pendingAdhocId, date);
+  pendingAdhocId = null;
+}
+function skipAdhoc() {
+  closeModal('adhocModal');
+  if (pendingAdhocId) {
+    supa(`tasks?id=eq.${pendingAdhocId}`, { method:'PATCH', body: JSON.stringify({ status:'done', completed_at: new Date().toISOString() }) })
+      .then(() => loadTasks().then(() => renderFocus()));
+  }
+  pendingAdhocId = null;
+  toast('Task completed', 'success');
+}
+
+function calcNextDate(tmpl) {
+  const today = new Date();
+  const pad   = n => n.toString().padStart(2,'0');
+  const fmt   = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const addD  = (d,n) => { const r = new Date(d); r.setDate(r.getDate()+n); return r; };
+  const addM  = (d,n) => { const r = new Date(d); r.setMonth(r.getMonth()+n); return r; };
+  switch(tmpl.recur_pattern) {
+    case 'daily': case 'x_per_day': return fmt(addD(today,1));
+    case 'x_per_week': {
+      const days = tmpl.recur_days_of_week||[1];
+      let n = addD(today,1);
+      while(!days.includes(n.getDay())) n = addD(n,1);
+      return fmt(n);
+    }
+    case 'weekly':
+      if (tmpl.recur_mode==='fixed'&&tmpl.recur_anchor_date) {
+        const a=new Date(tmpl.recur_anchor_date); let n=addD(today,1);
+        while(n.getDay()!==a.getDay()) n=addD(n,1); return fmt(n);
+      }
+      return fmt(addD(today,7));
+    case 'fortnightly':    return fmt(addD(today,14));
+    case 'every_x_weeks':  return fmt(addD(today,(tmpl.recur_interval_value||2)*7));
+    case 'monthly':
+      if (tmpl.recur_mode==='fixed'&&tmpl.recur_anchor_date) {
+        const a=new Date(tmpl.recur_anchor_date); const n=addM(today,1); n.setDate(a.getDate()); return fmt(n);
+      }
+      return fmt(addM(today,1));
+    case 'every_x_months': return fmt(addM(today,tmpl.recur_interval_value||2));
+    case 'quarterly':      return fmt(addM(today,3));
+    case 'every_6_months': return fmt(addM(today,6));
+    case 'yearly':
+      if (tmpl.recur_mode==='fixed'&&tmpl.recur_anchor_date) {
+        const a=new Date(tmpl.recur_anchor_date); const n=addM(today,12);
+        n.setMonth(a.getMonth()); n.setDate(a.getDate()); return fmt(n);
+      }
+      return fmt(addM(today,12));
+    case 'random': {
+      const min=tmpl.recur_random_min_days||7, max=tmpl.recur_random_max_days||21;
+      return fmt(addD(today, min+Math.floor(Math.random()*(max-min+1))));
+    }
+    default: return fmt(addD(today,7));
+  }
+}
+
+// ── LOAD TASKS ────────────────────────────────────────────
+
+async function loadTasks() {
+  try {
+    const res = await supa(
+      'tasks?select=id,name,notes,type,status,importance_speed,context,due_date,estimated_mins,reschedule_count,recurrence_id,recur_pattern,current_count,target_count,project_id,created_at&status=neq.done&status=neq.cancelled&order=created_at.desc'
+    );
+    state.tasks = await res.json() || [];
+
+    // Load categories for each task
+    if (state.tasks.length) {
+      const ids = state.tasks.map(t => t.id).join(',');
+      const cr  = await supa(`task_categories?task_id=in.(${ids})&select=task_id,category_id`);
+      const tcs = await cr.json() || [];
+      state.tasks.forEach(t => {
+        const catIds = tcs.filter(tc => tc.task_id === t.id).map(tc => tc.category_id);
+        t._categories = state.categories.filter(c => catIds.includes(c.id));
+      });
+    }
+  } catch(e) {
+    console.error('loadTasks:', e);
+    toast('Could not load tasks', 'error');
+  }
+}
+
+// ── CAPTURE ───────────────────────────────────────────────
+
+let editingTaskId    = null;
+let catPickerSel     = [];
+let recurOn          = false;
+let selectedDays     = [];
+
+function openCapture(prefillName) {
+  editingTaskId = null;
+  resetCaptureForm();
+  document.getElementById('captureTitle').textContent = 'Capture Task';
+  if (prefillName) document.getElementById('cName').value = prefillName;
+  document.getElementById('cDue').value = todayStr();
+  populateProjectSelect();
+  document.getElementById('captureModal').classList.add('open');
+  setTimeout(() => document.getElementById('cName').focus(), 200);
+}
+
+function openEdit(id) {
+  const task = state.tasks.find(t => t.id === id);
+  if (!task) return;
+  editingTaskId = id;
+  resetCaptureForm();
+  document.getElementById('captureTitle').textContent = 'Edit Task';
+  document.getElementById('cName').value      = task.name;
+  document.getElementById('cType').value      = task.type === 'idea' ? 'idea' : 'task';
+  document.getElementById('cIQ').value        = task.importance_speed || '';
+  document.getElementById('cContext').value   = task.context || '';
+  document.getElementById('cDue').value       = task.due_date || '';
+  document.getElementById('cEstimated').value = task.estimated_mins || '';
+  document.getElementById('cNotes').value     = task.notes || '';
+  document.getElementById('cProject').value   = task.project_id || '';
+  onTypeChange();
+  // Set categories
+  const catIds = (task._categories || []).map(c => c.id);
+  setCatSelection(catIds);
+  populateProjectSelect(task.project_id);
+  document.getElementById('captureModal').classList.add('open');
+}
+
+function resetCaptureForm() {
+  ['cName','cNotes','cDue','cEstimated'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('cType').value    = 'task';
+  document.getElementById('cIQ').value      = '';
+  document.getElementById('cContext').value = '';
+  document.getElementById('cProject').value = '';
+  setCatSelection([]);
+  resetRecur();
+  onTypeChange();
+  document.getElementById('verbWarn').classList.remove('show');
+}
+
+function onNameInput() {
+  const name      = document.getElementById('cName').value.trim();
+  const type      = document.getElementById('cType').value;
+  if (type === 'idea') return;
+  const firstWord = name.split(' ')[0].toLowerCase().replace(/[^a-z]/g,'');
+  const showWarn  = name.length > 4 && !ACTION_VERBS.includes(firstWord);
+  document.getElementById('verbWarn').classList.toggle('show', showWarn);
+}
+
+function onTypeChange() {
+  const isIdea = document.getElementById('cType').value === 'idea';
+  document.getElementById('verbWarn').classList.remove('show');
+  document.getElementById('ideaHint').style.display  = isIdea ? 'block' : 'none';
+  document.getElementById('recurWrap').style.display = isIdea ? 'none'  : 'block';
+}
+
+function populateProjectSelect(selected) {
+  const sel = document.getElementById('cProject');
+  sel.innerHTML = '<option value="">— no project —</option>' +
+    state.projects.map(p => `<option value="${p.id}"${p.id===selected?' selected':''}>${escHtml(p.name)}</option>`).join('');
+}
+
+async function saveTask() {
+  const name  = document.getElementById('cName').value.trim();
+  const type  = document.getElementById('cType').value;
+  if (!name) { toast('Task name is required', 'error'); return; }
+
+  if (type !== 'idea') {
+    const firstWord = name.split(' ')[0].toLowerCase().replace(/[^a-z]/g,'');
+    if (!ACTION_VERBS.includes(firstWord)) {
+      if (!confirm('This task doesn't start with a clear action verb. Save anyway?')) return;
+    }
+  }
+
+  const due   = document.getElementById('cDue').value;
+  const today = todayStr();
+  const isRecurring = recurOn && type !== 'idea';
+  let recurrenceId = null;
+
+  const taskPayload = {
+    workspace_id:     state.workspaceId,
+    name,
+    notes:            document.getElementById('cNotes').value.trim() || null,
+    type:             isRecurring ? 'recurring' : type,
+    status:           due && due <= today ? 'next' : 'inbox',
+    importance_speed: document.getElementById('cIQ').value      || null,
+    context:          document.getElementById('cContext').value  || null,
+    due_date:         due || null,
+    estimated_mins:   parseInt(document.getElementById('cEstimated').value) || null,
+    project_id:       document.getElementById('cProject').value  || null,
+    reschedule_count: 0,
+    reschedule_reasons: [],
+    ai_suggestions:   {},
+  };
+
+  // Create recurrence template if recurring
+  if (isRecurring && !editingTaskId) {
+    const pattern = document.getElementById('rPattern').value;
+    if (pattern === 'x_per_week' && selectedDays.length === 0) {
+      toast('Please select at least one day of the week', 'error'); return;
+    }
+    const recurPayload = {
+      workspace_id:         state.workspaceId,
+      project_id:           taskPayload.project_id,
+      name,
+      notes:                taskPayload.notes,
+      importance_speed:     taskPayload.importance_speed,
+      context:              taskPayload.context,
+      estimated_mins:       taskPayload.estimated_mins,
+      recur_mode:           document.getElementById('rMode').value,
+      recur_pattern:        pattern,
+      recur_interval_value: ['every_x_weeks','every_x_months'].includes(pattern) ? parseInt(document.getElementById('rIntervalVal').value) : null,
+      recur_days_of_week:   pattern === 'x_per_week' ? selectedDays : null,
+      recur_times_per_day:  pattern === 'x_per_day'  ? parseInt(document.getElementById('rTimesPerDay').value) : null,
+      counter_reset_mode:   pattern === 'x_per_day'  ? document.getElementById('rResetMode').value : null,
+      recur_random_min_days: pattern === 'random' ? parseInt(document.getElementById('rRandMin').value) : null,
+      recur_random_max_days: pattern === 'random' ? parseInt(document.getElementById('rRandMax').value) : null,
+      recur_anchor_date:    ['monthly','yearly','weekly'].includes(pattern) ? (document.getElementById('rAnchorDate').value || null) : null,
+      next_occurrence:      document.getElementById('rFirstDue').value || due || null,
+      is_active:            true,
+    };
+    const rr = await supa('recurrences', { method:'POST', body: JSON.stringify(recurPayload) });
+    if (!rr.ok) { const e = await rr.json(); toast('Error creating recurrence: '+(e.message||'unknown'),'error'); return; }
+    const rData = await rr.json();
+    recurrenceId = rData[0]?.id;
+    taskPayload.recurrence_id  = recurrenceId;
+    taskPayload.recur_pattern  = recurPayload.recur_pattern;
+    taskPayload.target_count   = recurPayload.recur_times_per_day;
+    taskPayload.current_count  = 0;
+    taskPayload.due_date       = recurPayload.next_occurrence || due || null;
+  }
+
+  let res;
+  if (editingTaskId) {
+    res = await supa(`tasks?id=eq.${editingTaskId}`, { method:'PATCH', body: JSON.stringify(taskPayload) });
+  } else {
+    res = await supa('tasks', { method:'POST', body: JSON.stringify(taskPayload) });
+  }
+
+  if (!res.ok) {
+    const err = await res.json();
+    if (recurrenceId) await supa(`recurrences?id=eq.${recurrenceId}`, { method:'DELETE' });
+    toast('Error saving task: '+(err.message||'unknown'), 'error');
+    return;
+  }
+
+  const saved   = await res.json();
+  const savedId = editingTaskId || saved[0]?.id;
+
+  // Save task categories
+  if (savedId && catPickerSel.length) {
+    if (editingTaskId) await supa(`task_categories?task_id=eq.${editingTaskId}`, { method:'DELETE', prefer:'return=minimal' });
+    await supa('task_categories', {
+      method:'POST', prefer:'return=minimal',
+      body: JSON.stringify(catPickerSel.map(cid => ({ task_id: savedId, category_id: cid })))
+    });
+  }
+
+  // Save recurrence categories
+  if (recurrenceId && catPickerSel.length) {
+    await supa('recurrence_categories', {
+      method:'POST', prefer:'return=minimal',
+      body: JSON.stringify(catPickerSel.map(cid => ({ recurrence_id: recurrenceId, category_id: cid })))
+    });
+  }
+
+  await logEvent('task', savedId, editingTaskId ? 'task_status_changed' : 'task_created', { name });
+  toast(editingTaskId ? 'Task updated ✓' : 'Task captured ✓', 'success');
+  closeModal('captureModal');
+  await loadTasks();
+  renderFocus();
+}
+
+// Quick capture from the bar
+function quickCapture() {
+  const val = document.getElementById('quickInput').value.trim();
+  document.getElementById('quickInput').value = '';
+  if (!val) return;
+  openCapture(val);
+}
+
+// ── RESCHEDULE ────────────────────────────────────────────
+
+let reschedulingId = null;
+
+function openReschedule(id) {
+  const task = state.tasks.find(t => t.id === id);
+  if (!task) return;
+  reschedulingId = id;
+  const count = task.reschedule_count || 0;
+  document.getElementById('rescheduleWarn').textContent = count === 0
+    ? 'Rescheduling requires a reason. This helps track procrastination patterns.'
+    : `This task has been rescheduled ${count} time${count>1?'s':''} already. A reason is required.`;
+  document.getElementById('rNewDate').value = task.due_date || todayStr();
+  document.getElementById('rReason').value  = '';
+  document.getElementById('rOtherGroup').style.display = 'none';
+  document.getElementById('rescheduleModal').classList.add('open');
+}
+
+document.addEventListener('change', e => {
+  if (e.target.id === 'rReason') {
+    document.getElementById('rOtherGroup').style.display =
+      e.target.value === 'other' ? 'flex' : 'none';
+  }
+});
+
+async function confirmReschedule() {
+  const id      = reschedulingId;
+  const task    = state.tasks.find(t => t.id === id);
+  const newDate = document.getElementById('rNewDate').value;
+  const reason  = document.getElementById('rReason').value;
+  const other   = document.getElementById('rOtherReason').value.trim();
+  if (!newDate) { toast('Please select a new date', 'error'); return; }
+  if (!reason)  { toast('Please select a reason', 'error'); return; }
+  if (reason === 'other' && !other) { toast('Please describe the reason', 'error'); return; }
+  const finalReason = reason === 'other' ? other : reason;
+  const newCount    = (task.reschedule_count || 0) + 1;
+  await supa(`tasks?id=eq.${id}`, {
+    method:'PATCH',
+    body: JSON.stringify({
+      due_date: newDate,
+      reschedule_count: newCount,
+      reschedule_reasons: [...(task.reschedule_reasons||[]), finalReason],
+    })
+  });
+  await logEvent('task', id, 'task_rescheduled', { reason: finalReason, new_date: newDate, count: newCount });
+  toast('Task rescheduled', 'success');
+  closeModal('rescheduleModal');
+  await loadTasks();
+  renderFocus();
+}
+
+// ── CATEGORY PICKER ───────────────────────────────────────
+
+function openCatPicker() {
+  const list = document.getElementById('catPickerList');
+  list.innerHTML = state.categories.map(c => {
+    const domain = state.domains.find(d => d.id === c.domain_id);
+    const sel    = catPickerSel.includes(c.id);
+    return `<div class="cat-pick-item ${sel?'sel':''}" data-id="${c.id}" onclick="toggleCatItem('${c.id}')">
+      <div class="cat-pick-check"></div>
+      <span>${escHtml(c.name)}</span>
+      <span class="cat-pick-domain">${domain ? (domain.icon||'')+ ' '+domain.name : ''}</span>
+    </div>`;
+  }).join('') || '<div style="color:var(--text3);padding:12px;font-size:13px">No categories found</div>';
+  document.getElementById('catPickerModal').classList.add('open');
+}
+
+function toggleCatItem(id) {
+  const el = document.querySelector(`#catPickerList [data-id="${id}"]`);
+  if (catPickerSel.includes(id)) {
+    catPickerSel = catPickerSel.filter(x => x !== id);
+    el?.classList.remove('sel');
+  } else {
+    catPickerSel.push(id);
+    el?.classList.add('sel');
+  }
+}
+
+function confirmCatPicker() {
+  setCatSelection(catPickerSel);
+  closeModal('catPickerModal');
+}
+
+function setCatSelection(ids) {
+  catPickerSel = ids;
+  const wrap = document.getElementById('cCatWrap');
+  const ph   = document.getElementById('cCatPh');
+  document.getElementById('cCatIds').value = ids.join(',');
+  if (!ids.length) {
+    wrap.innerHTML = '';
+    wrap.appendChild(ph);
+    return;
+  }
+  ph.style.display = 'none';
+  wrap.innerHTML = ids.map(id => {
+    const cat = state.categories.find(c => c.id === id);
+    return cat ? `<span class="cat-chip">${escHtml(cat.name)}<span class="cat-chip-x" onclick="removeCat('${id}',event)">✕</span></span>` : '';
+  }).join('') + ph.outerHTML;
+  document.getElementById('cCatPh').style.display = 'none';
+}
+
+function removeCat(id, e) {
+  e.stopPropagation();
+  setCatSelection(catPickerSel.filter(x => x !== id));
+}
+
+// ── RECURRING TOGGLE ──────────────────────────────────────
+
+function toggleRecur() {
+  recurOn = !recurOn;
+  const track = document.getElementById('recurTrack');
+  track.classList.toggle('on', recurOn);
+  document.getElementById('recurFields').style.display = recurOn ? 'flex' : 'none';
+  if (recurOn) {
+    const today = todayStr();
+    document.getElementById('rFirstDue').value = today;
+    onPatternChange();
+  }
+}
+
+function resetRecur() {
+  recurOn = false;
+  selectedDays = [];
+  const track = document.getElementById('recurTrack');
+  if (track) track.classList.remove('on');
+  const fields = document.getElementById('recurFields');
+  if (fields) fields.style.display = 'none';
+  document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('on'));
+}
+
+function onPatternChange() {
+  const p = document.getElementById('rPattern').value;
+  document.getElementById('rXPerDayFields').style.display  = p === 'x_per_day'    ? 'flex' : 'none';
+  document.getElementById('rDaysFields').style.display     = p === 'x_per_week'   ? 'flex' : 'none';
+  document.getElementById('rIntervalFields').style.display = ['every_x_weeks','every_x_months'].includes(p) ? 'block' : 'none';
+  document.getElementById('rRandomFields').style.display   = p === 'random'       ? 'flex' : 'none';
+  document.getElementById('rAnchorFields').style.display   = ['monthly','yearly','weekly'].includes(p) ? 'block' : 'none';
+  const il = document.getElementById('rIntervalLabel');
+  if (il) il.textContent = p === 'every_x_weeks' ? 'Every X weeks' : 'Every X months';
+  const al = document.getElementById('rAnchorLabel');
+  if (al) al.textContent = p === 'monthly' ? 'Anchor date (day of month)' : p === 'yearly' ? 'Anchor date (month + day)' : 'Anchor date (sets day of week)';
+}
+
+function toggleDay(day) {
+  if (selectedDays.includes(day)) selectedDays = selectedDays.filter(d => d !== day);
+  else selectedDays.push(day);
+  document.querySelectorAll('.day-btn').forEach(b => {
+    b.classList.toggle('on', selectedDays.includes(parseInt(b.dataset.d)));
+  });
+}
+
+// ── ANALYTICS ─────────────────────────────────────────────
+
+async function logEvent(entityType, entityId, eventType, metadata = {}) {
+  if (!state.workspaceId || !entityId) return;
+  try {
+    await supa('analytics_events', {
+      method:'POST', prefer:'return=minimal',
+      body: JSON.stringify({ workspace_id: state.workspaceId, entity_type: entityType, entity_id: entityId, event_type: eventType, metadata })
+    });
+  } catch(e) { console.warn('logEvent failed:', e); }
+}
+
+// ── UTILS ─────────────────────────────────────────────────
+
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
 
 // ── START ──────────────────────────────────────────────────
 init();
