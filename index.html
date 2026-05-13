@@ -1572,6 +1572,13 @@ async function saveTask() {
   const isRecurring = recurOn && type !== 'idea';
   let recurrenceId = null;
 
+  // Verify workspace_id is available
+  if (!state.workspaceId) {
+    toast('Workspace not loaded — please refresh the page', 'error');
+    console.error('workspaceId is null — state:', state);
+    return;
+  }
+
   const taskPayload = {
     workspace_id:     state.workspaceId,
     name,
@@ -1634,21 +1641,30 @@ async function saveTask() {
 
   if (!res.ok) {
     const err = await res.json();
+    console.error('saveTask error:', err);
     if (recurrenceId) await supa(`recurrences?id=eq.${recurrenceId}`, { method:'DELETE' });
-    toast('Error saving task: '+(err.message||'unknown'), 'error');
+    toast('Error saving task: '+(err.message||err.details||'unknown'), 'error');
     return;
   }
 
   const saved   = await res.json();
+  console.log('Task saved:', saved);
   const savedId = editingTaskId || saved[0]?.id;
 
+  if (!savedId) {
+    toast('Task save returned no ID — check console', 'error');
+    console.error('No savedId from:', saved);
+    return;
+  }
+
   // Save task categories
-  if (savedId && catPickerSel.length) {
+  if (catPickerSel.length) {
     if (editingTaskId) await supa(`task_categories?task_id=eq.${editingTaskId}`, { method:'DELETE', prefer:'return=minimal' });
-    await supa('task_categories', {
+    const tcRes = await supa('task_categories', {
       method:'POST', prefer:'return=minimal',
       body: JSON.stringify(catPickerSel.map(cid => ({ task_id: savedId, category_id: cid })))
     });
+    if (!tcRes.ok) console.warn('task_categories save failed:', await tcRes.json());
   }
 
   // Save recurrence categories
