@@ -1218,6 +1218,7 @@ function renderFocus() {
   document.getElementById('focusDayName').textContent =
     now.toLocaleDateString('en-US', { weekday:'long' });
 
+  if (!Array.isArray(state.tasks)) { state.tasks = []; }
   const active  = state.tasks.filter(t => t.status !== 'done' && t.status !== 'cancelled');
   const overdue = active.filter(t => t.due_date && t.due_date < today && t.status !== 'someday' && t.status !== 'reference');
   const focus   = active.filter(t => t.due_date === today || t.status === 'next');
@@ -1461,22 +1462,46 @@ function calcNextDate(tmpl) {
 async function loadTasks() {
   try {
     const res = await supa(
-      'tasks?select=id,name,notes,type,status,importance_speed,context,due_date,estimated_mins,reschedule_count,recurrence_id,recur_pattern,current_count,target_count,project_id,created_at&status=neq.done&status=neq.cancelled&order=created_at.desc'
+      'tasks?select=id,name,notes,type,status,importance_speed,context,due_date,estimated_mins,reschedule_count,recurrence_id,recur_pattern,current_count,target_count,project_id,created_at&order=created_at.desc'
     );
-    state.tasks = await res.json() || [];
+    const data = await res.json();
+
+    // Handle error response
+    if (!Array.isArray(data)) {
+      console.error('loadTasks bad response:', data);
+      // Try simpler query if columns missing
+      const res2 = await supa('tasks?select=id,name,notes,type,status,importance_speed,context,due_date,estimated_mins,reschedule_count,project_id,created_at&order=created_at.desc');
+      const data2 = await res2.json();
+      if (!Array.isArray(data2)) {
+        console.error('loadTasks fallback also failed:', data2);
+        state.tasks = [];
+        toast('Could not load tasks: ' + (data2.message || 'unknown error'), 'error');
+        return;
+      }
+      state.tasks = data2;
+    } else {
+      state.tasks = data;
+    }
+
+    // Filter out done and cancelled for display
+    // (keep in state.tasks but mark — renderFocus filters by status)
 
     // Load categories for each task
     if (state.tasks.length) {
       const ids = state.tasks.map(t => t.id).join(',');
       const cr  = await supa(`task_categories?task_id=in.(${ids})&select=task_id,category_id`);
-      const tcs = await cr.json() || [];
+      const tcs = await cr.json();
+      const tcsArr = Array.isArray(tcs) ? tcs : [];
       state.tasks.forEach(t => {
-        const catIds = tcs.filter(tc => tc.task_id === t.id).map(tc => tc.category_id);
+        const catIds = tcsArr.filter(tc => tc.task_id === t.id).map(tc => tc.category_id);
         t._categories = state.categories.filter(c => catIds.includes(c.id));
       });
     }
+
+    console.log(`loadTasks: ${state.tasks.length} tasks loaded`);
   } catch(e) {
-    console.error('loadTasks:', e);
+    console.error('loadTasks exception:', e);
+    state.tasks = [];
     toast('Could not load tasks', 'error');
   }
 }
