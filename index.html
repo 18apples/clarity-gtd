@@ -524,10 +524,8 @@ header { display:flex; align-items:center; justify-content:space-between; paddin
 
     <!-- Categories -->
     <div class="form-group">
-      <label class="form-label">Categories</label>
-      <div class="cat-tags-wrap" id="cCatWrap" onclick="openCatPicker()">
-        <span class="cat-ph" id="cCatPh">— tap to select categories —</span>
-      </div>
+      <label class="form-label">Categories <span style="color:var(--text3);font-weight:400">(tap to select)</span></label>
+      <div id="inlineCatPicker" style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px"></div>
       <input type="hidden" id="cCatIds" value="">
     </div>
 
@@ -1462,26 +1460,17 @@ function calcNextDate(tmpl) {
 async function loadTasks() {
   try {
     const res = await supa(
-      'tasks?select=id,name,notes,type,status,importance_speed,context,due_date,estimated_mins,reschedule_count,recurrence_id,recur_pattern,current_count,target_count,project_id,created_at&order=created_at.desc'
+      'tasks?select=id,name,notes,type,status,importance_speed,context,due_date,estimated_mins,reschedule_count,reschedule_reasons,recurrence_id,recur_pattern,current_count,target_count,project_id,created_at&order=created_at.desc'
     );
     const data = await res.json();
 
-    // Handle error response
     if (!Array.isArray(data)) {
       console.error('loadTasks bad response:', data);
-      // Try simpler query if columns missing
-      const res2 = await supa('tasks?select=id,name,notes,type,status,importance_speed,context,due_date,estimated_mins,reschedule_count,project_id,created_at&order=created_at.desc');
-      const data2 = await res2.json();
-      if (!Array.isArray(data2)) {
-        console.error('loadTasks fallback also failed:', data2);
-        state.tasks = [];
-        toast('Could not load tasks: ' + (data2.message || 'unknown error'), 'error');
-        return;
-      }
-      state.tasks = data2;
-    } else {
-      state.tasks = data;
+      state.tasks = [];
+      toast('Could not load tasks: ' + (data.message || 'unknown error'), 'error');
+      return;
     }
+    state.tasks = data;
 
     // Filter out done and cancelled for display
     // (keep in state.tasks but mark — renderFocus filters by status)
@@ -1520,6 +1509,7 @@ function openCapture(prefillName) {
   if (prefillName) document.getElementById('cName').value = prefillName;
   document.getElementById('cDue').value = todayStr();
   populateProjectSelect();
+  renderInlineCatPicker();
   document.getElementById('captureModal').classList.add('open');
   setTimeout(() => document.getElementById('cName').focus(), 200);
 }
@@ -1552,7 +1542,8 @@ function resetCaptureForm() {
   document.getElementById('cIQ').value      = '';
   document.getElementById('cContext').value = '';
   document.getElementById('cProject').value = '';
-  setCatSelection([]);
+  catPickerSel = [];
+  document.getElementById('cCatIds').value = '';
   resetRecur();
   onTypeChange();
   document.getElementById('verbWarn').classList.remove('show');
@@ -1768,58 +1759,58 @@ async function confirmReschedule() {
 
 // ── CATEGORY PICKER ───────────────────────────────────────
 
-function openCatPicker() {
-  const list = document.getElementById('catPickerList');
-  list.innerHTML = state.categories.map(c => {
+function renderInlineCatPicker() {
+  const container = document.getElementById('inlineCatPicker');
+  if (!container) return;
+
+  // Group by domain
+  const grouped = {};
+  state.categories.forEach(c => {
     const domain = state.domains.find(d => d.id === c.domain_id);
-    const sel    = catPickerSel.includes(c.id);
-    return `<div class="cat-pick-item ${sel?'sel':''}" data-id="${c.id}" onclick="toggleCatItem('${c.id}')">
-      <div class="cat-pick-check"></div>
-      <span>${escHtml(c.name)}</span>
-      <span class="cat-pick-domain">${domain ? (domain.icon||'')+ ' '+domain.name : ''}</span>
-    </div>`;
-  }).join('') || '<div style="color:var(--text3);padding:12px;font-size:13px">No categories found</div>';
-  document.getElementById('catPickerModal').classList.add('open');
+    const key    = domain ? domain.id : 'none';
+    if (!grouped[key]) grouped[key] = { domain, cats: [] };
+    grouped[key].cats.push(c);
+  });
+
+  if (!Object.keys(grouped).length) {
+    container.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:4px">No categories found</div>';
+    return;
+  }
+
+  container.innerHTML = Object.values(grouped).map(({ domain, cats }) => {
+    const domainLabel = domain
+      ? `<div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;padding:4px 2px 6px;margin-top:4px">${domain.icon||''} ${domain.name}</div>`
+      : '';
+    const catButtons = cats.map(c => {
+      const sel = catPickerSel.includes(c.id);
+      return `<button type="button"
+        style="background:${sel ? 'var(--accent)' : 'var(--surface3)'};color:${sel ? '#0a0a0b' : 'var(--text2)'};border:1px solid ${sel ? 'var(--accent)' : 'var(--border)'};border-radius:var(--r-sm);padding:5px 10px;font-size:12px;cursor:pointer;transition:all .15s;font-family:'Instrument Sans',sans-serif;margin:2px;"
+        onclick="toggleInlineCat('${c.id}')">${escHtml(c.name)}</button>`;
+    }).join('');
+    return domainLabel + `<div style="display:flex;flex-wrap:wrap;gap:2px">${catButtons}</div>`;
+  }).join('');
 }
 
-function toggleCatItem(id) {
-  const el = document.querySelector(`#catPickerList [data-id="${id}"]`);
+function toggleInlineCat(id) {
   if (catPickerSel.includes(id)) {
     catPickerSel = catPickerSel.filter(x => x !== id);
-    el?.classList.remove('sel');
   } else {
     catPickerSel.push(id);
-    el?.classList.add('sel');
   }
-}
-
-function confirmCatPicker() {
-  setCatSelection(catPickerSel);
-  closeModal('catPickerModal');
+  document.getElementById('cCatIds').value = catPickerSel.join(',');
+  renderInlineCatPicker();
 }
 
 function setCatSelection(ids) {
   catPickerSel = ids;
-  const wrap = document.getElementById('cCatWrap');
-  const ph   = document.getElementById('cCatPh');
   document.getElementById('cCatIds').value = ids.join(',');
-  if (!ids.length) {
-    wrap.innerHTML = '';
-    wrap.appendChild(ph);
-    return;
-  }
-  ph.style.display = 'none';
-  wrap.innerHTML = ids.map(id => {
-    const cat = state.categories.find(c => c.id === id);
-    return cat ? `<span class="cat-chip">${escHtml(cat.name)}<span class="cat-chip-x" onclick="removeCat('${id}',event)">✕</span></span>` : '';
-  }).join('') + ph.outerHTML;
-  document.getElementById('cCatPh').style.display = 'none';
+  renderInlineCatPicker();
 }
 
-function removeCat(id, e) {
-  e.stopPropagation();
-  setCatSelection(catPickerSel.filter(x => x !== id));
-}
+// Keep these for backward compatibility
+function openCatPicker() { renderInlineCatPicker(); }
+function confirmCatPicker() { closeModal('catPickerModal'); }
+function removeCat(id, e) { if(e) e.stopPropagation(); toggleInlineCat(id); }
 
 // ── RECURRING TOGGLE ──────────────────────────────────────
 
