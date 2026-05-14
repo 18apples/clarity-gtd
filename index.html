@@ -12,267 +12,153 @@
   --accent:#b8f060; --accent-d:#8ab83a; --red:#f06060; --orange:#f0a855; --blue:#60a8f0;
   --r:10px; --r-sm:6px;
 }
-*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
-html { height:100%; }
-body { background:var(--bg); color:var(--text); font-family:'Instrument Sans',sans-serif; font-size:14px; min-height:100%; display:flex; flex-direction:column; }
-
-/* FORMS */
-.form-group { display:flex; flex-direction:column; gap:6px; }
-.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-@media(max-width:480px){ .form-row { grid-template-columns:1fr; } }
-.form-label { font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:500; letter-spacing:1px; text-transform:uppercase; color:var(--text3); }
-input,select,textarea { background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:10px 12px; border-radius:var(--r-sm); font-family:'Instrument Sans',sans-serif; font-size:13px; width:100%; transition:border-color .15s; -webkit-appearance:none; }
-input:focus,select:focus,textarea:focus { outline:none; border-color:var(--accent); }
-input::placeholder,textarea::placeholder { color:var(--text3); }
-select option { background:var(--surface2); }
-textarea { resize:vertical; min-height:80px; }
-input[type="date"] { color-scheme:dark; cursor:pointer; }
-input[type="date"]::-webkit-calendar-picker-indicator { filter:invert(.6); cursor:pointer; }
-
-/* BUTTONS */
-.btn { background:var(--accent); color:#0a0a0b; border:none; padding:11px 20px; border-radius:var(--r-sm); font-family:'Instrument Sans',sans-serif; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; width:100%; }
-.btn:hover { background:var(--accent-d); }
-.btn:disabled { opacity:.5; cursor:not-allowed; }
-.btn-secondary { background:var(--surface2); color:var(--text); border:1px solid var(--border); }
-.btn-secondary:hover { border-color:var(--border2); background:var(--surface3); }
-.btn-ghost { background:none; color:var(--text2); border:1px solid var(--border); }
-.btn-ghost:hover { color:var(--text); border-color:var(--border2); }
-.btn-sm { padding:7px 14px; font-size:12px; width:auto; }
-.btn-icon { background:var(--surface2); border:1px solid var(--border); color:var(--text2); width:34px; height:34px; border-radius:var(--r-sm); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:15px; transition:all .15s; flex-shrink:0; }
-.btn-icon:hover { color:var(--text); border-color:var(--border2); }
-
-/* AUTH */
-#authScreen { flex:1; display:flex; align-items:center; justify-content:center; padding:24px; }
-.auth-card { width:100%; max-width:380px; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:36px 32px; display:flex; flex-direction:column; gap:20px; }
-.auth-logo { font-family:'Instrument Serif',serif; font-size:30px; letter-spacing:-.5px; }
-.auth-logo span { color:var(--accent); font-style:italic; }
-.auth-tagline { font-size:13px; color:var(--text2); margin-top:-12px; }
-.auth-tabs { display:flex; background:var(--surface2); border-radius:var(--r-sm); padding:3px; border:1px solid var(--border); gap:2px; }
-.auth-tab { flex:1; padding:7px; text-align:center; border-radius:4px; cursor:pointer; font-size:12px; font-weight:500; color:var(--text2); transition:all .15s; border:none; background:none; font-family:'JetBrains Mono',monospace; letter-spacing:.5px; }
-.auth-tab.active { background:var(--surface3); color:var(--text); }
-.auth-error { color:var(--red); font-size:12px; font-family:'JetBrains Mono',monospace; display:none; line-height:1.5; }
-.auth-error.show { display:block; }
-.auth-footer { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text3); text-align:center; }
-
-/* APP SHELL */
-#appShell { display:none; flex-direction:column; flex:1; }
-#appShell.visible { display:flex; }
-
-/* HEADER */
-header { display:flex; align-items:center; justify-content:space-between; padding:0 20px; height:52px; border-bottom:1px solid var(--border); background:var(--surface); position:sticky; top:0; z-index:100; gap:12px; flex-shrink:0; }
-.logo { font-family:'Instrument Serif',serif; font-size:20px; letter-spacing:-.5px; flex-shrink:0; }
-.logo span { color:var(--accent); font-style:italic; }
-.app-nav { display:flex; gap:2px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:3px; overflow-x:auto; flex:1; max-width:560px; }
-.app-nav::-webkit-scrollbar { display:none; }
-.nav-btn { background:none; border:none; color:var(--text2); padding:5px 12px; border-radius:5px; cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:500; letter-spacing:.3px; transition:all .15s; white-space:nowrap; }
-.nav-btn:hover { color:var(--text); background:var(--surface3); }
-.nav-btn.active { background:var(--accent); color:#0a0a0b; font-weight:600; }
-.header-right { display:flex; gap:8px; align-items:center; flex-shrink:0; }
-
-/* VIEWS */
-.app-view { padding:24px 20px; max-width:700px; width:100%; margin:0 auto; display:flex; flex-direction:column; gap:20px; flex:1; }
-
-/* MODALS */
-.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:200; display:none; align-items:flex-end; justify-content:center; backdrop-filter:blur(4px); }
-@media(min-width:600px){ .modal-overlay { align-items:center; padding:20px; } }
-.modal-overlay.open { display:flex; }
-.modal { background:var(--surface); border:1px solid var(--border); border-radius:16px 16px 0 0; padding:24px 20px; width:100%; max-height:92vh; overflow-y:auto; display:flex; flex-direction:column; gap:16px; position:relative; animation:slideUp .2s ease; }
-@media(min-width:600px){ .modal { border-radius:16px; max-width:500px; animation:fadeScale .2s ease; } }
-@keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
-@keyframes fadeScale { from{transform:scale(.97);opacity:0} to{transform:scale(1);opacity:1} }
-.modal-handle { width:36px; height:4px; background:var(--border2); border-radius:2px; margin:0 auto -8px; }
-@media(min-width:600px){ .modal-handle{display:none} }
-.modal-title { font-family:'Instrument Serif',serif; font-size:22px; letter-spacing:-.3px; }
-.modal-close { position:absolute; top:16px; right:16px; background:var(--surface2); border:1px solid var(--border); color:var(--text2); width:28px; height:28px; border-radius:6px; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; transition:all .15s; }
-.modal-close:hover { color:var(--text); }
-.modal-actions { display:flex; gap:8px; justify-content:flex-end; padding-top:4px; }
-
-/* SETTINGS BLOCKS */
-.settings-block { background:var(--surface2); border:1px solid var(--border); border-radius:var(--r); padding:16px; display:flex; flex-direction:column; gap:12px; }
-.settings-block-title { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text3); letter-spacing:1px; text-transform:uppercase; }
-.admin-unlock-banner { background:#b8f06015; border:1px solid #b8f06030; border-radius:var(--r-sm); padding:8px 12px; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--accent); }
-
-/* EMPTY STATE */
-.empty-state { text-align:center; padding:48px 20px; color:var(--text3); display:flex; flex-direction:column; align-items:center; gap:10px; }
-.empty-icon { font-size:32px; }
-.empty-title { font-family:'Instrument Serif',serif; font-size:20px; color:var(--text2); }
-.empty-sub { font-size:13px; line-height:1.5; max-width:300px; }
-
-/* HINT */
-.hint { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text3); margin-top:3px; line-height:1.5; }
-
-/* TOAST */
-.toast-wrap { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); z-index:500; display:flex; flex-direction:column; gap:8px; pointer-events:none; align-items:center; }
-.toast { background:var(--surface2); border:1px solid var(--border2); border-radius:8px; padding:10px 18px; font-size:13px; color:var(--text); box-shadow:0 4px 24px rgba(0,0,0,.5); white-space:nowrap; animation:toastIn .2s ease, toastOut .2s ease 2.8s forwards; }
-.toast.success { border-color:#b8f06040; color:var(--accent); }
-.toast.error   { border-color:#f0606040; color:var(--red); }
-@keyframes toastIn  { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-@keyframes toastOut { from{opacity:1} to{opacity:0} }
-
-
-/* TAGS */
-.tag { font-family:'JetBrains Mono',monospace; font-size:10px; padding:3px 7px; border-radius:4px; letter-spacing:.3px; white-space:nowrap; display:inline-flex; align-items:center; }
-.tag-cat      { background:var(--surface3); color:var(--text2); border:1px solid var(--border); }
-.tag-iq-iu    { background:#f0606018; color:var(--red);    border:1px solid #f0606030; }
-.tag-iq-inu   { background:#b8f06018; color:var(--accent); border:1px solid #b8f06030; }
-.tag-iq-niu   { background:#f0a85518; color:var(--orange); border:1px solid #f0a85530; }
-.tag-iq-ninu  { background:#60a8f018; color:var(--blue);   border:1px solid #60a8f030; }
-.tag-due      { background:var(--surface3); color:var(--text2); border:1px solid var(--border); }
-.tag-overdue  { background:#f0606015; color:var(--red);    border:1px solid #f0606030; }
-.tag-recur    { background:#a060f015; color:#a060f0;       border:1px solid #a060f030; }
-.tag-idea     { background:#f0a85515; color:var(--orange); border:1px solid #f0a85530; }
-.tag-review   { background:#60a8f015; color:var(--blue);   border:1px solid #60a8f030; }
-
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{height:100%}
+body{background:var(--bg);color:var(--text);font-family:'Instrument Sans',sans-serif;font-size:14px;min-height:100%;display:flex;flex-direction:column}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:480px){.form-row{grid-template-columns:1fr}}
+.form-label{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:var(--text3)}
+input,select,textarea{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:var(--r-sm);font-family:'Instrument Sans',sans-serif;font-size:13px;width:100%;transition:border-color .15s;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+input::placeholder,textarea::placeholder{color:var(--text3)}
+select option{background:var(--surface2)}
+textarea{resize:vertical;min-height:80px}
+input[type="date"]{color-scheme:dark;cursor:pointer}
+input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.6);cursor:pointer}
+.btn{background:var(--accent);color:#0a0a0b;border:none;padding:11px 20px;border-radius:var(--r-sm);font-family:'Instrument Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;width:100%}
+.btn:hover{background:var(--accent-d)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--border2);background:var(--surface3)}
+.btn-ghost{background:none;color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{color:var(--text);border-color:var(--border2)}
+.btn-sm{padding:7px 14px;font-size:12px;width:auto}
+.btn-icon{background:var(--surface2);border:1px solid var(--border);color:var(--text2);width:34px;height:34px;border-radius:var(--r-sm);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;transition:all .15s;flex-shrink:0}
+.btn-icon:hover{color:var(--text);border-color:var(--border2)}
+#authScreen{flex:1;display:flex;align-items:center;justify-content:center;padding:24px}
+.auth-card{width:100%;max-width:380px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px 32px;display:flex;flex-direction:column;gap:20px}
+.auth-logo{font-family:'Instrument Serif',serif;font-size:30px;letter-spacing:-.5px}
+.auth-logo span{color:var(--accent);font-style:italic}
+.auth-tagline{font-size:13px;color:var(--text2);margin-top:-12px}
+.auth-tabs{display:flex;background:var(--surface2);border-radius:var(--r-sm);padding:3px;border:1px solid var(--border);gap:2px}
+.auth-tab{flex:1;padding:7px;text-align:center;border-radius:4px;cursor:pointer;font-size:12px;font-weight:500;color:var(--text2);transition:all .15s;border:none;background:none;font-family:'JetBrains Mono',monospace;letter-spacing:.5px}
+.auth-tab.active{background:var(--surface3);color:var(--text)}
+.auth-error{color:var(--red);font-size:12px;font-family:'JetBrains Mono',monospace;display:none;line-height:1.5}
+.auth-error.show{display:block}
+#appShell{display:none;flex-direction:column;flex:1}
+#appShell.visible{display:flex}
+header{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:100;gap:12px;flex-shrink:0}
+.logo{font-family:'Instrument Serif',serif;font-size:20px;letter-spacing:-.5px;flex-shrink:0}
+.logo span{color:var(--accent);font-style:italic}
+.app-nav{display:flex;gap:2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:3px;overflow-x:auto;flex:1;max-width:560px}
+.app-nav::-webkit-scrollbar{display:none}
+.nav-btn{background:none;border:none;color:var(--text2);padding:5px 12px;border-radius:5px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;letter-spacing:.3px;transition:all .15s;white-space:nowrap}
+.nav-btn:hover{color:var(--text);background:var(--surface3)}
+.nav-btn.active{background:var(--accent);color:#0a0a0b;font-weight:600}
+.header-right{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.app-view{padding:24px 20px;max-width:700px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:20px;flex:1}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
+@media(min-width:600px){.modal-overlay{align-items:center;padding:20px}}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px 16px 0 0;padding:24px 20px;width:100%;max-height:92vh;overflow-y:auto;display:flex;flex-direction:column;gap:16px;position:relative;animation:slideUp .2s ease}
+@media(min-width:600px){.modal{border-radius:16px;max-width:520px;animation:fadeScale .2s ease}}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes fadeScale{from{transform:scale(.97);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto -8px}
+@media(min-width:600px){.modal-handle{display:none}}
+.modal-title{font-family:'Instrument Serif',serif;font-size:22px;letter-spacing:-.3px}
+.modal-close{position:absolute;top:16px;right:16px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.modal-close:hover{color:var(--text)}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;padding-top:4px}
+.settings-block{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px}
+.settings-block-title{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase}
+.admin-unlock-banner{background:#b8f06015;border:1px solid #b8f06030;border-radius:var(--r-sm);padding:8px 12px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent)}
+.empty-state{text-align:center;padding:48px 20px;color:var(--text3);display:flex;flex-direction:column;align-items:center;gap:10px}
+.empty-icon{font-size:32px}
+.empty-title{font-family:'Instrument Serif',serif;font-size:20px;color:var(--text2)}
+.empty-sub{font-size:13px;line-height:1.5;max-width:300px}
+.hint{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);margin-top:3px;line-height:1.5}
+.verb-warn{color:var(--orange);display:none}
+.verb-warn.show{display:block}
+.toast-wrap{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:500;display:flex;flex-direction:column;gap:8px;pointer-events:none;align-items:center}
+.toast{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 18px;font-size:13px;color:var(--text);box-shadow:0 4px 24px rgba(0,0,0,.5);white-space:nowrap;animation:toastIn .2s ease,toastOut .2s ease 2.8s forwards}
+.toast.success{border-color:#b8f06040;color:var(--accent)}
+.toast.error{border-color:#f0606040;color:var(--red)}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes toastOut{from{opacity:1}to{opacity:0}}
 /* TASK CARDS */
-.task-card {
-  background:var(--surface); border:1px solid var(--border);
-  border-radius:var(--r); padding:14px 16px;
-  display:flex; align-items:flex-start; gap:12px;
-  transition:border-color .15s; position:relative; overflow:hidden;
-  animation:cardIn .15s ease;
-}
-@keyframes cardIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
-.task-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; }
-.task-card[data-iq="important_urgent"]::before         { background:var(--red); }
-.task-card[data-iq="important_not_urgent"]::before     { background:var(--accent); }
-.task-card[data-iq="not_important_urgent"]::before     { background:var(--orange); }
-.task-card[data-iq="not_important_not_urgent"]::before { background:var(--blue); }
-.task-card:hover { border-color:var(--border2); }
-.task-card.done  { opacity:.4; }
-.task-card.done .task-name { text-decoration:line-through; color:var(--text3); }
-
-.task-check {
-  width:20px; height:20px; border:1.5px solid var(--border2); border-radius:5px;
-  cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center;
-  background:none; transition:all .15s; margin-top:1px;
-}
-.task-check:hover  { border-color:var(--accent); }
-.task-check.done   { background:var(--accent); border-color:var(--accent); }
-.task-check.done::after { content:'✓'; color:#0a0a0b; font-size:11px; font-weight:700; }
-
-.task-body   { flex:1; min-width:0; }
-.task-name   { font-size:14px; font-weight:500; line-height:1.4; word-break:break-word; }
-.task-notes  { font-size:12px; color:var(--text2); margin-top:3px; line-height:1.4; }
-.task-meta   { display:flex; gap:5px; flex-wrap:wrap; margin-top:8px; align-items:center; }
-.task-actions { display:flex; gap:4px; flex-shrink:0; opacity:0; transition:opacity .15s; }
-.task-card:hover .task-actions { opacity:1; }
-
-/* CATEGORY PICKER */
-.cat-tags-wrap {
-  display:flex; flex-wrap:wrap; gap:6px; min-height:38px;
-  background:var(--surface2); border:1px solid var(--border);
-  border-radius:var(--r-sm); padding:6px 10px; cursor:pointer;
-  transition:border-color .15s; align-items:center;
-}
-.cat-tags-wrap:hover { border-color:var(--border2); }
-.cat-tags-wrap:focus-within { border-color:var(--accent); }
-.cat-ph { color:var(--text3); font-size:13px; line-height:1; }
-.cat-chip {
-  display:inline-flex; align-items:center; gap:4px;
-  background:var(--surface3); border:1px solid var(--border2);
-  border-radius:4px; padding:3px 8px; font-size:12px; color:var(--text);
-}
-.cat-chip-x { color:var(--text3); cursor:pointer; font-size:11px; padding:0 2px; line-height:1; }
-.cat-chip-x:hover { color:var(--red); }
-
-.cat-pick-item {
-  display:flex; align-items:center; gap:10px; padding:10px 12px;
-  border-radius:var(--r-sm); border:1px solid var(--border);
-  background:var(--surface2); cursor:pointer; transition:all .15s; font-size:13px;
-}
-.cat-pick-item:hover  { border-color:var(--border2); }
-.cat-pick-item.sel    { border-color:var(--accent); background:#b8f06010; }
-.cat-pick-check {
-  width:18px; height:18px; border:1.5px solid var(--border2);
-  border-radius:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center;
-}
-.cat-pick-item.sel .cat-pick-check { background:var(--accent); border-color:var(--accent); }
-.cat-pick-item.sel .cat-pick-check::after { content:'✓'; color:#0a0a0b; font-size:11px; font-weight:700; }
-.cat-pick-domain { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text3); margin-left:auto; }
-
+.task-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;display:flex;align-items:flex-start;gap:12px;transition:border-color .15s;position:relative;overflow:hidden}
+.task-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.task-card[data-iq="important_urgent"]::before{background:var(--red)}
+.task-card[data-iq="important_not_urgent"]::before{background:var(--accent)}
+.task-card[data-iq="not_important_urgent"]::before{background:var(--orange)}
+.task-card[data-iq="not_important_not_urgent"]::before{background:var(--blue)}
+.task-card:hover{border-color:var(--border2)}
+.task-check{width:20px;height:20px;border:1.5px solid var(--border2);border-radius:5px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:none;transition:all .15s;margin-top:1px}
+.task-check:hover{border-color:var(--accent)}
+.task-check.checked{background:var(--accent);border-color:var(--accent)}
+.task-check.checked::after{content:'✓';color:#0a0a0b;font-size:11px;font-weight:700}
+.task-body{flex:1;min-width:0}
+.task-name{font-size:14px;font-weight:500;line-height:1.4;word-break:break-word}
+.task-notes{font-size:12px;color:var(--text2);margin-top:3px;line-height:1.4}
+.task-meta{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;align-items:center}
+.task-actions{display:flex;gap:4px;flex-shrink:0;opacity:0;transition:opacity .15s}
+.task-card:hover .task-actions{opacity:1}
+.tag{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 7px;border-radius:4px;letter-spacing:.3px;white-space:nowrap}
+.tag-cat{background:var(--surface3);color:var(--text2);border:1px solid var(--border)}
+.tag-iu{background:#f0606018;color:var(--red);border:1px solid #f0606030}
+.tag-inu{background:#b8f06018;color:var(--accent);border:1px solid #b8f06030}
+.tag-niu{background:#f0a85518;color:var(--orange);border:1px solid #f0a85530}
+.tag-ninu{background:#60a8f018;color:var(--blue);border:1px solid #60a8f030}
+.tag-due{background:var(--surface3);color:var(--text2);border:1px solid var(--border)}
+.tag-overdue{background:#f0606015;color:var(--red);border:1px solid #f0606030}
+.tag-recur{background:#a060f015;color:#a060f0;border:1px solid #a060f030}
+.tag-idea{background:#f0a85515;color:var(--orange);border:1px solid #f0a85530}
 /* RECURRING TOGGLE */
-.recur-toggle-wrap {
-  background:var(--surface2); border:1px solid var(--border);
-  border-radius:var(--r); padding:14px; display:flex; flex-direction:column; gap:12px;
-}
-.toggle-row { display:flex; align-items:center; justify-content:space-between; cursor:pointer; }
-.toggle-track {
-  position:relative; width:36px; height:20px;
-  background:var(--border); border-radius:20px;
-  transition:background .2s; cursor:pointer; flex-shrink:0;
-}
-.toggle-track.on { background:var(--accent); }
-.toggle-thumb {
-  position:absolute; top:2px; left:2px; width:16px; height:16px;
-  background:white; border-radius:50%; transition:transform .2s;
-}
-.toggle-track.on .toggle-thumb { transform:translateX(16px); }
-
-/* DAY BUTTONS */
-.day-btn {
-  background:var(--surface3); border:1px solid var(--border); color:var(--text2);
-  padding:5px 9px; border-radius:6px; font-family:'JetBrains Mono',monospace;
-  font-size:11px; cursor:pointer; transition:all .15s;
-}
-.day-btn.on { background:var(--purple,#a060f0); border-color:var(--purple,#a060f0); color:white; }
-
-/* HINT */
-.hint { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text3); margin-top:3px; line-height:1.5; }
-.verb-warn { color:var(--orange); display:none; }
-.verb-warn.show { display:block; }
-
-::-webkit-scrollbar { width:5px; }
-::-webkit-scrollbar-track { background:transparent; }
-::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+.toggle-track{position:relative;width:36px;height:20px;background:var(--border);border-radius:20px;transition:background .2s;cursor:pointer;flex-shrink:0}
+.toggle-track.on{background:var(--accent)}
+.toggle-thumb{position:absolute;top:2px;left:2px;width:16px;height:16px;background:white;border-radius:50%;transition:transform .2s}
+.toggle-track.on .toggle-thumb{transform:translateX(16px)}
+.day-btn{background:var(--surface3);border:1px solid var(--border);color:var(--text2);padding:5px 9px;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;transition:all .15s}
+.day-btn.on{background:#a060f0;border-color:#a060f0;color:white}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 </style>
 </head>
 <body>
 
-<!-- ── AUTH SCREEN ────────────────────────────────────────── -->
+<!-- AUTH -->
 <div id="authScreen">
   <div class="auth-card">
     <div>
       <div class="auth-logo">clarity<span>.</span></div>
       <div class="auth-tagline">Your personal GTD system</div>
     </div>
-
     <div class="auth-tabs">
       <button class="auth-tab active" onclick="setAuthTab('login')">Sign In</button>
       <button class="auth-tab" onclick="setAuthTab('signup')">Sign Up</button>
     </div>
-
     <div style="display:flex;flex-direction:column;gap:12px">
       <div class="form-group">
         <label class="form-label">Email</label>
-        <input type="email" id="authEmail" placeholder="you@example.com"
-               onkeydown="if(event.key==='Enter')handleAuth()">
+        <input type="email" id="authEmail" placeholder="you@example.com" onkeydown="if(event.key==='Enter')handleAuth()">
       </div>
       <div class="form-group">
         <label class="form-label">Password</label>
-        <input type="password" id="authPassword" placeholder="••••••••"
-               onkeydown="if(event.key==='Enter')handleAuth()">
+        <input type="password" id="authPassword" placeholder="••••••••" onkeydown="if(event.key==='Enter')handleAuth()">
       </div>
     </div>
-
     <div class="auth-error" id="authError"></div>
     <button class="btn" id="authBtn" onclick="handleAuth()">Sign In</button>
-
-    <!--
-      First-time setup button.
-      Visible when Supabase is not yet configured.
-      Hidden permanently once credentials are saved.
-    -->
     <div id="authConfigBtn" style="display:none">
-      <button class="btn btn-secondary" style="font-size:12px" onclick="openFirstTimeConfig()">
-        ⚙ First-time setup — connect Supabase
-      </button>
+      <button class="btn btn-secondary" style="font-size:12px" onclick="openFirstTimeConfig()">⚙ First-time setup — connect Supabase</button>
     </div>
-
-    <div class="auth-footer" id="authFooter" style="display:none">—</div>
   </div>
 </div>
 
-<!-- ── APP SHELL ──────────────────────────────────────────── -->
+<!-- APP -->
 <div id="appShell">
   <header>
     <div class="logo">clarity<span>.</span></div>
@@ -288,90 +174,56 @@ header { display:flex; align-items:center; justify-content:space-between; paddin
       <button class="nav-btn"        data-view="ideas"     onclick="switchView('ideas')">Ideas</button>
     </nav>
     <div class="header-right">
-      <button class="btn-icon" title="Settings" onclick="openSettings()">⚙</button>
+      <button class="btn-icon" onclick="openSettings()">⚙</button>
     </div>
   </header>
 
-  <!-- VIEWS (placeholders for now) -->
+  <!-- FOCUS VIEW -->
   <main class="app-view" id="viewFocus">
-    <!-- Page header -->
     <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap">
       <div>
         <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px" id="focusDateLabel">Today</div>
-        <div style="font-family:'Instrument Serif',serif;font-size:30px;letter-spacing:-.8px;line-height:1" id="focusDayName">Loading...</div>
+        <div style="font-family:'Instrument Serif',serif;font-size:30px;letter-spacing:-.8px;line-height:1" id="focusDayName">—</div>
       </div>
       <button class="btn btn-sm btn-secondary" onclick="openCapture()">+ Capture</button>
     </div>
-
-    <!-- Quick capture bar -->
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:4px 4px 4px 16px;display:flex;align-items:center;gap:8px;transition:border-color .15s" id="captureBar">
-      <input id="quickInput" placeholder="Quick capture — type and press Enter..." style="background:none;border:none;flex:1;font-size:14px;padding:8px 0;color:var(--text);font-family:'Instrument Sans',sans-serif" onkeydown="if(event.key==='Enter')quickCapture()" onfocus="document.getElementById('captureBar').style.borderColor='var(--accent)'" onblur="document.getElementById('captureBar').style.borderColor='var(--border)'">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:4px 4px 4px 16px;display:flex;align-items:center;gap:8px" id="captureBar">
+      <input id="quickInput" placeholder="Quick capture — type and press Enter..." style="background:none;border:none;flex:1;font-size:14px;padding:8px 0;color:var(--text);font-family:'Instrument Sans',sans-serif" onkeydown="if(event.key==='Enter')quickCapture()">
       <button class="btn btn-sm" style="flex-shrink:0" onclick="quickCapture()">Capture</button>
     </div>
-
-    <!-- Inbox alert -->
-    <div id="inboxAlert" style="display:none;background:#f0a85510;border:1px solid #f0a85530;border-radius:var(--r);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;color:var(--orange)">
-      <span id="inboxAlertText">Items in inbox need processing</span>
+    <div id="inboxAlert" style="display:none;background:#f0a85510;border:1px solid #f0a85530;border-radius:var(--r);padding:12px 16px;align-items:center;justify-content:space-between;gap:12px;font-size:13px;color:var(--orange)">
+      <span id="inboxAlertText"></span>
       <button class="btn btn-sm btn-ghost" style="color:var(--orange);border-color:#f0a85540;flex-shrink:0" onclick="switchView('inbox')">Process →</button>
     </div>
-
-    <!-- Overdue section -->
     <div id="overdueSection" style="display:none">
       <div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);margin-bottom:8px">⚠ Overdue</div>
       <div id="overdueList" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
-
-    <!-- Today section -->
     <div>
       <div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:8px">Today's tasks</div>
       <div id="focusList" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
   </main>
-  <main class="app-view" id="viewProjects"  style="display:none">
-    <div class="empty-state"><div class="empty-icon">📁</div><div class="empty-title">Projects</div><div class="empty-sub">Coming in Phase 3.</div></div>
-  </main>
-  <main class="app-view" id="viewAreas"     style="display:none">
-    <div class="empty-state"><div class="empty-icon">🌱</div><div class="empty-title">Life Areas</div><div class="empty-sub">Coming in Phase 3.</div></div>
-  </main>
-  <main class="app-view" id="viewInbox"     style="display:none">
-    <div class="empty-state"><div class="empty-icon">📥</div><div class="empty-title">Inbox</div><div class="empty-sub">Coming in Phase 4.</div></div>
-  </main>
-  <main class="app-view" id="viewNext"      style="display:none">
-    <div class="empty-state"><div class="empty-icon">⚡</div><div class="empty-title">Next Actions</div><div class="empty-sub">Coming in Phase 4.</div></div>
-  </main>
-  <main class="app-view" id="viewWaiting"   style="display:none">
-    <div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-title">Waiting For</div><div class="empty-sub">Coming in Phase 4.</div></div>
-  </main>
-  <main class="app-view" id="viewSomeday"   style="display:none">
-    <div class="empty-state"><div class="empty-icon">🌙</div><div class="empty-title">Someday</div><div class="empty-sub">Coming in Phase 4.</div></div>
-  </main>
-  <main class="app-view" id="viewReference" style="display:none">
-    <div class="empty-state"><div class="empty-icon">📚</div><div class="empty-title">Reference</div><div class="empty-sub">Coming in Phase 4.</div></div>
-  </main>
-  <main class="app-view" id="viewIdeas"     style="display:none">
-    <div class="empty-state"><div class="empty-icon">💡</div><div class="empty-title">Ideas</div><div class="empty-sub">Coming in Phase 4.</div></div>
-  </main>
+
+  <!-- OTHER VIEWS -->
+  <main class="app-view" id="viewProjects"  style="display:none"><div class="empty-state"><div class="empty-icon">📁</div><div class="empty-title">Projects</div><div class="empty-sub">Coming in Phase 3.</div></div></main>
+  <main class="app-view" id="viewAreas"     style="display:none"><div class="empty-state"><div class="empty-icon">🌱</div><div class="empty-title">Life Areas</div><div class="empty-sub">Coming in Phase 3.</div></div></main>
+  <main class="app-view" id="viewInbox"     style="display:none"><div class="empty-state"><div class="empty-icon">📥</div><div class="empty-title">Inbox</div><div class="empty-sub">Coming in Phase 4.</div></div></main>
+  <main class="app-view" id="viewNext"      style="display:none"><div class="empty-state"><div class="empty-icon">⚡</div><div class="empty-title">Next Actions</div><div class="empty-sub">Coming in Phase 4.</div></div></main>
+  <main class="app-view" id="viewWaiting"   style="display:none"><div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-title">Waiting For</div><div class="empty-sub">Coming in Phase 4.</div></div></main>
+  <main class="app-view" id="viewSomeday"   style="display:none"><div class="empty-state"><div class="empty-icon">🌙</div><div class="empty-title">Someday</div><div class="empty-sub">Coming in Phase 4.</div></div></main>
+  <main class="app-view" id="viewReference" style="display:none"><div class="empty-state"><div class="empty-icon">📚</div><div class="empty-title">Reference</div><div class="empty-sub">Coming in Phase 4.</div></div></main>
+  <main class="app-view" id="viewIdeas"     style="display:none"><div class="empty-state"><div class="empty-icon">💡</div><div class="empty-title">Ideas</div><div class="empty-sub">Coming in Phase 4.</div></div></main>
 </div>
 
-<!-- ── FIRST-TIME CONFIG MODAL ────────────────────────────── -->
-<!--
-  Shown ONLY before first login when no credentials exist.
-  After first sign-up this button and modal are never shown again.
-  All credentials live behind the admin panel from that point on.
--->
+<!-- FIRST TIME CONFIG MODAL -->
 <div class="modal-overlay" id="firstTimeModal">
   <div class="modal" style="max-width:460px">
     <div class="modal-handle"></div>
     <button class="modal-close" onclick="closeModal('firstTimeModal')">✕</button>
     <div class="modal-title">First-time Setup</div>
-    <div style="font-size:13px;color:var(--text2);line-height:1.7">
-      Connect Clarity to your Supabase project. You only need to do this once.
-      After sign-up, all credentials are managed from the Settings panel.
-    </div>
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);line-height:1.8">
-      In Supabase → <span style="color:var(--accent)">Project Settings → API</span><br>
-      Copy: Project URL + anon/public key
-    </div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.7">Connect Clarity to your Supabase project. You only need to do this once.</div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);line-height:1.8">In Supabase → <span style="color:var(--accent)">Project Settings → API</span><br>Copy: Project URL + anon/public key</div>
     <div class="form-group">
       <label class="form-label">Supabase Project URL</label>
       <input type="text" id="ftUrl" placeholder="https://xyzxyz.supabase.co">
@@ -389,131 +241,18 @@ header { display:flex; align-items:center; justify-content:space-between; paddin
   </div>
 </div>
 
-<!-- ── SETTINGS MODAL ─────────────────────────────────────── -->
-<div class="modal-overlay" id="settingsModal">
-  <div class="modal" style="max-width:480px">
-    <div class="modal-handle"></div>
-    <button class="modal-close" onclick="closeModal('settingsModal')">✕</button>
-    <div class="modal-title">Settings</div>
-
-    <!-- PROFILE -->
-    <div class="settings-block">
-      <div class="settings-block-title">Profile</div>
-      <div style="display:flex;align-items:center;gap:12px">
-        <div id="settingsAvatar" style="width:40px;height:40px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;color:#0a0a0b;font-size:18px;flex-shrink:0">A</div>
-        <div>
-          <div id="settingsEmail" style="font-size:14px;font-weight:600">—</div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);margin-top:2px">★ Super User</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- WORKSPACE -->
-    <div class="settings-block">
-      <div class="settings-block-title">Workspace</div>
-      <div class="form-group">
-        <label class="form-label">Workspace Name</label>
-        <input type="text" id="settingsWsName" placeholder="Personal">
-      </div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)">
-        ID: <span id="settingsWsId">—</span>
-      </div>
-      <div style="display:flex;justify-content:flex-end">
-        <button class="btn btn-sm btn-secondary" onclick="saveWorkspaceName()">Save Name</button>
-      </div>
-    </div>
-
-    <!-- PASSWORD -->
-    <div class="settings-block">
-      <div class="settings-block-title">Change Password</div>
-      <div class="form-group">
-        <label class="form-label">New Password</label>
-        <input type="password" id="settingsNewPwd" placeholder="Min 8 characters">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Confirm Password</label>
-        <input type="password" id="settingsConfirmPwd" placeholder="Repeat password">
-      </div>
-      <div class="auth-error" id="pwdError"></div>
-      <div style="display:flex;justify-content:flex-end">
-        <button class="btn btn-sm btn-secondary" onclick="changePassword()">Update Password</button>
-      </div>
-    </div>
-
-    <!-- ADMIN PANEL -->
-    <div class="settings-block">
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <div class="settings-block-title">🔒 Admin Panel</div>
-        <div id="adminStatus" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)">Locked</div>
-      </div>
-
-      <!-- Locked -->
-      <div id="adminLocked">
-        <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:12px">
-          Re-enter your credentials to access API configuration.<br>
-          Unlocks for 1 hour.
-        </div>
-        <div class="form-group" style="margin-bottom:8px">
-          <label class="form-label">Email</label>
-          <input type="email" id="adminEmail" placeholder="your@email.com">
-        </div>
-        <div class="form-group" style="margin-bottom:12px">
-          <label class="form-label">Password</label>
-          <input type="password" id="adminPwd" placeholder="••••••••"
-                 onkeydown="if(event.key==='Enter')unlockAdmin()">
-        </div>
-        <div class="auth-error" id="adminError"></div>
-        <button class="btn btn-sm" onclick="unlockAdmin()">Unlock</button>
-      </div>
-
-      <!-- Unlocked -->
-      <div id="adminUnlocked" style="display:none;flex-direction:column;gap:12px">
-        <div class="admin-unlock-banner">
-          ✓ Unlocked — auto-locks in <span id="adminCountdown">60:00</span>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Supabase Project URL</label>
-          <input type="text" id="adminUrl" placeholder="https://xyzxyz.supabase.co">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Supabase Anon Key</label>
-          <input type="password" id="adminKey" placeholder="eyJ...">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Anthropic API Key (optional)</label>
-          <input type="password" id="adminAI" placeholder="sk-ant-...">
-          <div class="hint">For AI auto-tagging of task metadata.</div>
-        </div>
-        <div style="display:flex;gap:8px;justify-content:flex-end">
-          <button class="btn btn-sm btn-secondary" onclick="lockAdmin()">Lock Now</button>
-          <button class="btn btn-sm" onclick="saveAdminSettings()">Save & Reconnect</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- SIGN OUT -->
-    <button class="btn btn-ghost" onclick="signOut()">↪ Sign Out</button>
-  </div>
-</div>
-
-
-<!-- ── CAPTURE MODAL ─────────────────────────────────────── -->
+<!-- CAPTURE MODAL -->
 <div class="modal-overlay" id="captureModal">
   <div class="modal" style="max-width:520px">
     <div class="modal-handle"></div>
     <button class="modal-close" onclick="closeModal('captureModal')">✕</button>
     <div class="modal-title" id="captureTitle">Capture Task</div>
-
-    <!-- Task name -->
     <div class="form-group">
       <label class="form-label">Name</label>
-      <input type="text" id="cName" placeholder="Start with an action verb — Call, Write, Review..."
-             oninput="onNameInput()">
+      <input type="text" id="cName" placeholder="Start with an action verb — Call, Write, Review..." oninput="onNameInput()">
       <div class="hint verb-warn" id="verbWarn">⚠ Start with an action verb to keep this actionable</div>
       <div class="hint" id="ideaHint" style="display:none">💡 Ideas don't need action verbs</div>
     </div>
-
-    <!-- Type -->
     <div class="form-group">
       <label class="form-label">Type</label>
       <select id="cType" onchange="onTypeChange()">
@@ -521,15 +260,11 @@ header { display:flex; align-items:center; justify-content:space-between; paddin
         <option value="idea">Idea — a thought, no action yet</option>
       </select>
     </div>
-
-    <!-- Categories -->
     <div class="form-group">
-      <label class="form-label">Categories <span style="color:var(--text3);font-weight:400">(tap to select)</span></label>
-      <div id="inlineCatPicker" style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px"></div>
+      <label class="form-label">Categories <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">(tap to select)</span></label>
+      <div id="inlineCatPicker" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px;max-height:220px;overflow-y:auto"></div>
       <input type="hidden" id="cCatIds" value="">
     </div>
-
-    <!-- Importance + Context -->
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">Importance / Speed</label>
@@ -553,8 +288,6 @@ header { display:flex; align-items:center; justify-content:space-between; paddin
         </select>
       </div>
     </div>
-
-    <!-- Due date + Estimated time -->
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">Due Date</label>
@@ -565,27 +298,18 @@ header { display:flex; align-items:center; justify-content:space-between; paddin
         <input type="number" id="cEstimated" placeholder="e.g. 30" min="1">
       </div>
     </div>
-
-    <!-- Project -->
     <div class="form-group">
       <label class="form-label">Project (optional)</label>
-      <select id="cProject">
-        <option value="">— no project —</option>
-      </select>
+      <select id="cProject"><option value="">— no project —</option></select>
     </div>
-
-    <!-- Recurring toggle -->
-    <div class="recur-toggle-wrap" id="recurWrap">
-      <div class="toggle-row" onclick="toggleRecur()">
+    <!-- RECURRING TOGGLE -->
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:12px" id="recurWrap">
+      <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="toggleRecur()">
         <div style="display:flex;align-items:center;gap:8px">
-          <span>🔄</span>
-          <span style="font-size:13px;font-weight:500">Make this recurring</span>
+          <span>🔄</span><span style="font-size:13px;font-weight:500">Make this recurring</span>
         </div>
-        <div class="toggle-track" id="recurTrack">
-          <div class="toggle-thumb"></div>
-        </div>
+        <div class="toggle-track" id="recurTrack"><div class="toggle-thumb"></div></div>
       </div>
-
       <div id="recurFields" style="display:none;flex-direction:column;gap:12px">
         <div class="form-row">
           <div class="form-group">
@@ -602,37 +326,24 @@ header { display:flex; align-items:center; justify-content:space-between; paddin
               <option value="x_per_day">X times per day</option>
               <option value="x_per_week">Specific days of week</option>
               <option value="weekly">Weekly</option>
-              <option value="fortnightly">Fortnightly (every 2 weeks)</option>
+              <option value="fortnightly">Fortnightly</option>
               <option value="every_x_weeks">Every X weeks</option>
               <option value="monthly">Monthly</option>
               <option value="every_x_months">Every X months</option>
               <option value="quarterly">Quarterly</option>
               <option value="every_6_months">Every 6 months</option>
               <option value="yearly">Yearly</option>
-              <option value="random">Random (within a range)</option>
+              <option value="random">Random (within range)</option>
               <option value="adhoc">Ad-hoc (I set next date each time)</option>
             </select>
           </div>
         </div>
-
-        <!-- x_per_day -->
         <div id="rXPerDayFields" style="display:none;flex-direction:column;gap:10px">
           <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Times per day</label>
-              <input type="number" id="rTimesPerDay" value="2" min="2" max="20">
-            </div>
-            <div class="form-group">
-              <label class="form-label">If target missed</label>
-              <select id="rResetMode">
-                <option value="daily_reset">Fresh start next day</option>
-                <option value="carry_over">Carry over deficit</option>
-              </select>
-            </div>
+            <div class="form-group"><label class="form-label">Times per day</label><input type="number" id="rTimesPerDay" value="2" min="2" max="20"></div>
+            <div class="form-group"><label class="form-label">If target missed</label><select id="rResetMode"><option value="daily_reset">Fresh start next day</option><option value="carry_over">Carry over deficit</option></select></div>
           </div>
         </div>
-
-        <!-- x_per_week -->
         <div id="rDaysFields" style="display:none;flex-direction:column;gap:8px">
           <label class="form-label">Days of week</label>
           <div style="display:flex;gap:6px;flex-wrap:wrap" id="rDayBtns">
@@ -645,50 +356,25 @@ header { display:flex; align-items:center; justify-content:space-between; paddin
             <button type="button" class="day-btn" data-d="6" onclick="toggleDay(6)">Sat</button>
           </div>
         </div>
-
-        <!-- every_x_weeks / every_x_months -->
         <div id="rIntervalFields" style="display:none">
-          <div class="form-group">
-            <label class="form-label" id="rIntervalLabel">Every X weeks</label>
-            <input type="number" id="rIntervalVal" value="3" min="1">
-          </div>
+          <div class="form-group"><label class="form-label" id="rIntervalLabel">Every X weeks</label><input type="number" id="rIntervalVal" value="3" min="1"></div>
         </div>
-
-        <!-- random -->
         <div id="rRandomFields" style="display:none">
           <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Min days</label>
-              <input type="number" id="rRandMin" value="7" min="1">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Max days</label>
-              <input type="number" id="rRandMax" value="21" min="1">
-            </div>
+            <div class="form-group"><label class="form-label">Min days</label><input type="number" id="rRandMin" value="7" min="1"></div>
+            <div class="form-group"><label class="form-label">Max days</label><input type="number" id="rRandMax" value="21" min="1"></div>
           </div>
         </div>
-
-        <!-- anchor date -->
         <div id="rAnchorFields" style="display:none">
-          <div class="form-group">
-            <label class="form-label" id="rAnchorLabel">Anchor date</label>
-            <input type="date" id="rAnchorDate">
-          </div>
+          <div class="form-group"><label class="form-label" id="rAnchorLabel">Anchor date</label><input type="date" id="rAnchorDate"></div>
         </div>
-
-        <div class="form-group">
-          <label class="form-label">First due date</label>
-          <input type="date" id="rFirstDue">
-        </div>
+        <div class="form-group"><label class="form-label">First due date</label><input type="date" id="rFirstDue"></div>
       </div>
     </div>
-
-    <!-- Notes -->
     <div class="form-group">
       <label class="form-label">Notes (optional)</label>
       <textarea id="cNotes" placeholder="Context, links, details..."></textarea>
     </div>
-
     <div class="modal-actions">
       <button class="btn btn-sm btn-secondary" onclick="closeModal('captureModal')">Cancel</button>
       <button class="btn btn-sm" onclick="saveTask()">Save</button>
@@ -696,32 +382,14 @@ header { display:flex; align-items:center; justify-content:space-between; paddin
   </div>
 </div>
 
-<!-- ── CATEGORY PICKER MODAL ──────────────────────────────── -->
-<div class="modal-overlay" id="catPickerModal">
-  <div class="modal" style="max-width:420px">
-    <div class="modal-handle"></div>
-    <button class="modal-close" onclick="closeModal('catPickerModal')">✕</button>
-    <div class="modal-title">Select Categories</div>
-    <div style="font-size:12px;color:var(--text2);margin-top:-8px">Select one or more</div>
-    <div id="catPickerList" style="display:flex;flex-direction:column;gap:6px;max-height:50vh;overflow-y:auto"></div>
-    <div class="modal-actions">
-      <button class="btn btn-sm btn-secondary" onclick="closeModal('catPickerModal')">Cancel</button>
-      <button class="btn btn-sm" onclick="confirmCatPicker()">Confirm</button>
-    </div>
-  </div>
-</div>
-
-<!-- ── RESCHEDULE MODAL ───────────────────────────────────── -->
+<!-- RESCHEDULE MODAL -->
 <div class="modal-overlay" id="rescheduleModal">
   <div class="modal" style="max-width:420px">
     <div class="modal-handle"></div>
     <button class="modal-close" onclick="closeModal('rescheduleModal')">✕</button>
     <div class="modal-title">Reschedule Task</div>
     <div id="rescheduleWarn" style="background:#f0a85510;border:1px solid #f0a85530;border-radius:var(--r-sm);padding:10px 12px;font-size:12px;color:var(--orange);font-family:'JetBrains Mono',monospace;line-height:1.5"></div>
-    <div class="form-group">
-      <label class="form-label">New Due Date</label>
-      <input type="date" id="rNewDate">
-    </div>
+    <div class="form-group"><label class="form-label">New Due Date</label><input type="date" id="rNewDate"></div>
     <div class="form-group">
       <label class="form-label">Reason (required)</label>
       <select id="rReason">
@@ -745,24 +413,76 @@ header { display:flex; align-items:center; justify-content:space-between; paddin
   </div>
 </div>
 
-<!-- ── ADHOC DATE MODAL ───────────────────────────────────── -->
+<!-- ADHOC MODAL -->
 <div class="modal-overlay" id="adhocModal">
   <div class="modal" style="max-width:360px">
     <div class="modal-handle"></div>
     <div class="modal-title">When next?</div>
-    <div style="font-size:13px;color:var(--text2);line-height:1.5">This is an ad-hoc recurring task. When should it next appear?</div>
-    <div class="form-group">
-      <label class="form-label">Next Due Date</label>
-      <input type="date" id="adhocDate">
-    </div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.5">Ad-hoc recurring task — when should it next appear?</div>
+    <div class="form-group"><label class="form-label">Next Due Date</label><input type="date" id="adhocDate"></div>
     <div class="modal-actions">
-      <button class="btn btn-sm btn-secondary" onclick="skipAdhoc()">Skip — don't reschedule</button>
+      <button class="btn btn-sm btn-secondary" onclick="skipAdhoc()">Skip</button>
       <button class="btn btn-sm" onclick="confirmAdhoc()">Set Date</button>
     </div>
   </div>
 </div>
 
-<!-- TOAST -->
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('settingsModal')">✕</button>
+    <div class="modal-title">Settings</div>
+    <div class="settings-block">
+      <div class="settings-block-title">Profile</div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div id="settingsAvatar" style="width:40px;height:40px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;color:#0a0a0b;font-size:18px;flex-shrink:0">A</div>
+        <div>
+          <div id="settingsEmail" style="font-size:14px;font-weight:600">—</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);margin-top:2px">★ Super User</div>
+        </div>
+      </div>
+    </div>
+    <div class="settings-block">
+      <div class="settings-block-title">Workspace</div>
+      <div class="form-group"><label class="form-label">Workspace Name</label><input type="text" id="settingsWsName" placeholder="Personal"></div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)">ID: <span id="settingsWsId">—</span></div>
+      <div style="display:flex;justify-content:flex-end"><button class="btn btn-sm btn-secondary" onclick="saveWorkspaceName()">Save Name</button></div>
+    </div>
+    <div class="settings-block">
+      <div class="settings-block-title">Change Password</div>
+      <div class="form-group"><label class="form-label">New Password</label><input type="password" id="settingsNewPwd" placeholder="Min 8 characters"></div>
+      <div class="form-group"><label class="form-label">Confirm Password</label><input type="password" id="settingsConfirmPwd" placeholder="Repeat password"></div>
+      <div class="auth-error" id="pwdError"></div>
+      <div style="display:flex;justify-content:flex-end"><button class="btn btn-sm btn-secondary" onclick="changePassword()">Update Password</button></div>
+    </div>
+    <div class="settings-block">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div class="settings-block-title">🔒 Admin Panel</div>
+        <div id="adminStatus" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)">Locked</div>
+      </div>
+      <div id="adminLocked">
+        <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:12px">Re-enter your credentials to access API configuration. Unlocks for 1 hour.</div>
+        <div class="form-group" style="margin-bottom:8px"><label class="form-label">Email</label><input type="email" id="adminEmail" placeholder="your@email.com"></div>
+        <div class="form-group" style="margin-bottom:12px"><label class="form-label">Password</label><input type="password" id="adminPwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')unlockAdmin()"></div>
+        <div class="auth-error" id="adminError"></div>
+        <button class="btn btn-sm" onclick="unlockAdmin()">Unlock</button>
+      </div>
+      <div id="adminUnlocked" style="display:none;flex-direction:column;gap:12px">
+        <div class="admin-unlock-banner">✓ Unlocked — auto-locks in <span id="adminCountdown">60:00</span></div>
+        <div class="form-group"><label class="form-label">Supabase Project URL</label><input type="text" id="adminUrl" placeholder="https://xyzxyz.supabase.co"></div>
+        <div class="form-group"><label class="form-label">Supabase Anon Key</label><input type="password" id="adminKey" placeholder="eyJ..."></div>
+        <div class="form-group"><label class="form-label">Anthropic API Key (optional)</label><input type="password" id="adminAI" placeholder="sk-ant-..."><div class="hint">For AI auto-tagging.</div></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn btn-sm btn-secondary" onclick="lockAdmin()">Lock Now</button>
+          <button class="btn btn-sm" onclick="saveAdminSettings()">Save & Reconnect</button>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-ghost" onclick="signOut()">↪ Sign Out</button>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toastWrap"></div>
 
 <script>
@@ -773,18 +493,18 @@ let SUPABASE_URL = localStorage.getItem('clarity_url') || '';
 let SUPABASE_KEY = localStorage.getItem('clarity_key') || '';
 let AI_KEY       = localStorage.getItem('clarity_ai')  || '';
 
-// ── SUPABASE CLIENT ───────────────────────────────────────
-async function supa(path, opts = {}) {
+// ── SUPABASE ──────────────────────────────────────────────
+async function supa(path, opts={}) {
   await maybeRefreshSession();
   const session = getSession();
-  const token   = session?.access_token;
+  const token = session?.access_token;
   if (!token) { setSession(null); location.reload(); return; }
   return fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     headers: {
-      'apikey':        SUPABASE_KEY,
+      'apikey': SUPABASE_KEY,
       'Authorization': `Bearer ${token}`,
-      'Content-Type':  'application/json',
-      'Prefer':        opts.prefer || 'return=representation',
+      'Content-Type': 'application/json',
+      'Prefer': opts.prefer || 'return=representation',
       ...opts.headers,
     },
     ...opts,
@@ -793,30 +513,27 @@ async function supa(path, opts = {}) {
 
 function supaAuth(path, body) {
   return fetch(`${SUPABASE_URL}/auth/v1/${path}`, {
-    method:  'POST',
+    method: 'POST',
     headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
-    body:    JSON.stringify(body),
+    body: JSON.stringify(body),
   });
 }
 
-// ── SESSION ───────────────────────────────────────────────
 function getSession() {
-  try { return JSON.parse(localStorage.getItem('clarity_session')); }
-  catch { return null; }
+  try { return JSON.parse(localStorage.getItem('clarity_session')); } catch { return null; }
 }
 function setSession(s) {
   if (s) localStorage.setItem('clarity_session', JSON.stringify(s));
-  else   localStorage.removeItem('clarity_session');
+  else localStorage.removeItem('clarity_session');
 }
 
 async function maybeRefreshSession() {
   const session = getSession();
   if (!session?.refresh_token) return;
   const expiresAt = session.expires_at || 0;
-  const nowSecs   = Math.floor(Date.now() / 1000);
-  if (expiresAt - nowSecs > 300) return;
+  if (Math.floor(Date.now()/1000) < expiresAt - 300) return;
   try {
-    const res  = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
       method: 'POST',
       headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({ refresh_token: session.refresh_token }),
@@ -836,14 +553,15 @@ const state = {
 // ── INIT ──────────────────────────────────────────────────
 async function init() {
   const configured = !!(SUPABASE_URL && SUPABASE_KEY);
-
-  // Show first-time setup button only if not yet configured
   document.getElementById('authConfigBtn').style.display = configured ? 'none' : 'block';
-  // Footer hidden — kept in DOM for debugging only
 
-  if (configured && getSession()?.access_token) {
-    await bootApp();
-  }
+  const now = new Date();
+  document.getElementById('focusDateLabel').textContent =
+    now.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+  document.getElementById('focusDayName').textContent =
+    now.toLocaleDateString('en-US', { weekday:'long' });
+
+  if (configured && getSession()?.access_token) await bootApp();
 }
 
 async function bootApp() {
@@ -858,945 +576,274 @@ function showApp() {
   document.getElementById('appShell').classList.add('visible');
 }
 
+// ── LOAD DATA ─────────────────────────────────────────────
 async function loadCoreData() {
   try {
-    const [r1, r2, r3, r4] = await Promise.all([
+    const [r1,r2,r3,r4] = await Promise.all([
       supa('workspaces?select=id,name&limit=1'),
-      supa('domains?select=id,name,icon,color,sort_order&order=sort_order'),
-      supa('categories?select=id,name,domain_id,description,review_interval_days,is_paused,sort_order&order=sort_order'),
+      supa('domains?select=id,name,icon,sort_order&order=sort_order'),
+      supa('categories?select=id,name,domain_id,review_interval_days,is_paused,sort_order&order=sort_order'),
       supa('projects?select=id,name,status&status=eq.active&order=created_at.desc'),
     ]);
-
     const ws = await r1.json();
     const d  = await r2.json();
     const c  = await r3.json();
     const p  = await r4.json();
-
-    // Check for errors
-    if (ws?.code || d?.code || c?.code) {
-      console.error('loadCoreData errors:', {ws, d, c});
-      toast('Error loading data — check console for details', 'error');
-      return;
-    }
-
     state.domains    = Array.isArray(d) ? d : [];
     state.categories = Array.isArray(c) ? c : [];
     state.projects   = Array.isArray(p) ? p : [];
-
     if (Array.isArray(ws) && ws.length) {
       state.workspaceId   = ws[0].id;
       state.workspaceName = ws[0].name;
     }
-
     console.log(`Loaded: ${state.domains.length} domains, ${state.categories.length} categories, ${state.projects.length} projects`);
   } catch(e) {
     console.error('loadCoreData:', e);
-    toast('Could not load data — check Supabase connection', 'error');
+    toast('Could not load data', 'error');
   }
 }
 
-// ── AUTH ──────────────────────────────────────────────────
-let authTab = 'login';
-
-function setAuthTab(tab) {
-  authTab = tab;
-  document.querySelectorAll('.auth-tab').forEach((b, i) => {
-    b.classList.toggle('active', (i===0&&tab==='login')||(i===1&&tab==='signup'));
-  });
-  document.getElementById('authBtn').textContent = tab === 'login' ? 'Sign In' : 'Create Account';
-  document.getElementById('authError').classList.remove('show');
-}
-
-async function handleAuth() {
-  const email    = document.getElementById('authEmail').value.trim();
-  const password = document.getElementById('authPassword').value;
-  const btn      = document.getElementById('authBtn');
-
-  document.getElementById('authError').classList.remove('show');
-
-  if (!email || !password) { showAuthError('Email and password required.'); return; }
-  if (!SUPABASE_URL || !SUPABASE_KEY) {
-    showAuthError('Supabase not configured. Click the setup button below.');
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = '...';
-
+async function loadTasks() {
   try {
-    const endpoint = authTab === 'login' ? 'token?grant_type=password' : 'signup';
-    const res  = await supaAuth(endpoint, { email, password });
+    const res = await supa('tasks?select=id,name,notes,type,status,importance_speed,context,due_date,estimated_mins,reschedule_count,reschedule_reasons,recurrence_id,recur_pattern,current_count,target_count,project_id,created_at&order=created_at.desc');
     const data = await res.json();
-
-    if (authTab === 'signup') {
-      if (data.error) { showAuthError(data.error_description || data.message || 'Sign up failed.'); return; }
-      if (!data.access_token) {
-        showAuthError('Account created! Check your email for a confirmation link. Or disable email confirmation in Supabase Auth → Providers → Email.');
-        return;
-      }
-    } else {
-      if (data.error || !data.access_token) {
-        showAuthError(data.error_description || data.message || 'Sign in failed.');
-        return;
-      }
-    }
-
-    localStorage.setItem('clarity_email', email);
-    setSession(data);
-    await bootApp();
-
-  } catch(e) {
-    showAuthError('Network error — check your Supabase URL.');
-  } finally {
-    btn.disabled = false;
-    btn.textContent = authTab === 'login' ? 'Sign In' : 'Create Account';
-  }
-}
-
-function showAuthError(msg) {
-  const el = document.getElementById('authError');
-  el.textContent = msg;
-  el.classList.add('show');
-}
-
-async function signOut() {
-  setSession(null);
-  location.reload();
-}
-
-// ── FIRST-TIME CONFIG ─────────────────────────────────────
-// Only used once, before the very first sign-up.
-// After that, all config lives behind the admin panel.
-
-function openFirstTimeConfig() {
-  document.getElementById('ftUrl').value = '';
-  document.getElementById('ftKey').value = '';
-  document.getElementById('ftError').classList.remove('show');
-  document.getElementById('firstTimeModal').classList.add('open');
-  setTimeout(() => document.getElementById('ftUrl').focus(), 200);
-}
-
-async function saveFirstTimeConfig() {
-  const url   = document.getElementById('ftUrl').value.trim();
-  const key   = document.getElementById('ftKey').value.trim();
-  const errEl = document.getElementById('ftError');
-  const btn   = document.getElementById('ftSaveBtn');
-  errEl.classList.remove('show');
-
-  if (!url || !key) {
-    errEl.textContent = 'Both fields are required.';
-    errEl.classList.add('show');
-    return;
-  }
-
-  try { new URL(url); } catch {
-    errEl.textContent = 'Invalid URL — should start with https://';
-    errEl.classList.add('show');
-    return;
-  }
-
-  // Test connection
-  btn.disabled = true;
-  btn.textContent = 'Testing...';
-
-  try {
-    const res = await fetch(`${url}/rest/v1/workspaces?select=id&limit=1`, {
-      headers: { 'apikey': key, 'Authorization': `Bearer ${key}` },
-    });
-    // 200 = connected, 401 = connected but RLS blocked (still means URL+key work)
-    if (res.status !== 200 && res.status !== 401) {
-      errEl.textContent = `Connection failed (${res.status}). Check your URL and key.`;
-      errEl.classList.add('show');
+    if (!Array.isArray(data)) {
+      console.error('loadTasks error:', data);
+      state.tasks = [];
+      toast('Could not load tasks: ' + (data.message||'unknown'), 'error');
       return;
     }
-  } catch(e) {
-    errEl.textContent = 'Could not reach Supabase. Check the URL.';
-    errEl.classList.add('show');
-    return;
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Save & Connect';
-  }
-
-  // Save
-  SUPABASE_URL = url;
-  SUPABASE_KEY = key;
-  localStorage.setItem('clarity_url', url);
-  localStorage.setItem('clarity_key', key);
-
-  // Hide first-time button permanently
-  document.getElementById('authConfigBtn').style.display = 'none';
-
-  closeModal('firstTimeModal');
-  toast('Supabase connected ✓ — now sign up or sign in', 'success');
-}
-
-// ── VIEW SWITCHING ────────────────────────────────────────
-function switchView(view) {
-  document.querySelectorAll('.app-view').forEach(v => v.style.display = 'none');
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  const el = document.getElementById('view' + view.charAt(0).toUpperCase() + view.slice(1));
-  if (el) el.style.display = 'flex';
-  const btn = document.querySelector(`[data-view="${view}"]`);
-  if (btn) btn.classList.add('active');
-}
-
-// ── SETTINGS ──────────────────────────────────────────────
-let adminUnlockExpiry   = null;
-let adminCountdownTimer = null;
-
-function openSettings() {
-  const email = localStorage.getItem('clarity_email') || getSession()?.user?.email || '—';
-  document.getElementById('settingsEmail').textContent  = email;
-  document.getElementById('settingsAvatar').textContent = email.charAt(0).toUpperCase();
-  document.getElementById('settingsWsName').value       = state.workspaceName || 'Personal';
-  document.getElementById('settingsWsId').textContent   = state.workspaceId   || '—';
-  document.getElementById('pwdError').classList.remove('show');
-  if (adminUnlockExpiry && Date.now() < adminUnlockExpiry) showAdminUnlocked();
-  else showAdminLocked();
-  document.getElementById('settingsModal').classList.add('open');
-}
-
-function showAdminLocked() {
-  document.getElementById('adminLocked').style.display   = 'block';
-  document.getElementById('adminUnlocked').style.display = 'none';
-  document.getElementById('adminStatus').textContent     = 'Locked';
-  document.getElementById('adminStatus').style.color     = 'var(--text3)';
-  if (adminCountdownTimer) { clearInterval(adminCountdownTimer); adminCountdownTimer = null; }
-}
-
-function showAdminUnlocked() {
-  document.getElementById('adminLocked').style.display   = 'none';
-  document.getElementById('adminUnlocked').style.display = 'flex';
-  document.getElementById('adminStatus').textContent     = 'Unlocked';
-  document.getElementById('adminStatus').style.color     = 'var(--accent)';
-  document.getElementById('adminUrl').value              = SUPABASE_URL || '';
-  document.getElementById('adminKey').value              = SUPABASE_KEY || '';
-  document.getElementById('adminAI').value               = AI_KEY       || '';
-  startAdminCountdown();
-}
-
-function startAdminCountdown() {
-  if (adminCountdownTimer) clearInterval(adminCountdownTimer);
-  adminCountdownTimer = setInterval(() => {
-    const remaining = adminUnlockExpiry - Date.now();
-    if (remaining <= 0) { lockAdmin(); return; }
-    const m = Math.floor(remaining / 60000);
-    const s = Math.floor((remaining % 60000) / 1000);
-    const el = document.getElementById('adminCountdown');
-    if (el) el.textContent = `${m}:${s.toString().padStart(2, '0')}`;
-  }, 1000);
-}
-
-async function unlockAdmin() {
-  const email  = document.getElementById('adminEmail').value.trim();
-  const pwd    = document.getElementById('adminPwd').value;
-  const errEl  = document.getElementById('adminError');
-  errEl.classList.remove('show');
-
-  if (!email || !pwd) { errEl.textContent = 'Email and password required.'; errEl.classList.add('show'); return; }
-
-  try {
-    const res  = await supaAuth('token?grant_type=password', { email, password: pwd });
-    const data = await res.json();
-    if (data.error || !data.access_token) {
-      errEl.textContent = data.error_description || 'Invalid credentials.';
-      errEl.classList.add('show');
-      return;
+    state.tasks = data;
+    // Attach categories
+    if (state.tasks.length) {
+      const ids = state.tasks.map(t=>t.id).join(',');
+      const cr  = await supa(`task_categories?task_id=in.(${ids})&select=task_id,category_id`);
+      const tcs = await cr.json();
+      const tcsArr = Array.isArray(tcs) ? tcs : [];
+      state.tasks.forEach(t => {
+        const catIds = tcsArr.filter(tc=>tc.task_id===t.id).map(tc=>tc.category_id);
+        t._categories = state.categories.filter(c=>catIds.includes(c.id));
+      });
     }
-    adminUnlockExpiry = Date.now() + 60 * 60 * 1000;
-    localStorage.setItem('clarity_email', email);
-    showAdminUnlocked();
-    toast('Admin panel unlocked for 1 hour', 'success');
+    console.log(`loadTasks: ${state.tasks.length} tasks`);
   } catch(e) {
-    errEl.textContent = 'Network error — check Supabase connection.';
-    errEl.classList.add('show');
+    console.error('loadTasks:', e);
+    state.tasks = [];
   }
 }
 
-function lockAdmin() {
-  adminUnlockExpiry = null;
-  if (adminCountdownTimer) { clearInterval(adminCountdownTimer); adminCountdownTimer = null; }
-  showAdminLocked();
-}
-
-function saveAdminSettings() {
-  const url = document.getElementById('adminUrl').value.trim();
-  const key = document.getElementById('adminKey').value.trim();
-  const ai  = document.getElementById('adminAI').value.trim();
-  if (url) { SUPABASE_URL = url; localStorage.setItem('clarity_url', url); }
-  if (key) { SUPABASE_KEY = key; localStorage.setItem('clarity_key', key); }
-  if (ai)  { AI_KEY = ai;        localStorage.setItem('clarity_ai',  ai); }
-  toast('Settings saved — reloading...', 'success');
-  setTimeout(() => location.reload(), 1200);
-}
-
-async function saveWorkspaceName() {
-  const name = document.getElementById('settingsWsName').value.trim();
-  if (!name || !state.workspaceId) return;
-  const res = await supa(`workspaces?id=eq.${state.workspaceId}`, {
-    method: 'PATCH', body: JSON.stringify({ name }),
-  });
-  if (res.ok) { state.workspaceName = name; toast('Workspace name updated', 'success'); }
-  else toast('Could not update workspace name', 'error');
-}
-
-async function changePassword() {
-  const newPwd  = document.getElementById('settingsNewPwd').value;
-  const confPwd = document.getElementById('settingsConfirmPwd').value;
-  const errEl   = document.getElementById('pwdError');
-  errEl.classList.remove('show');
-  if (!newPwd || !confPwd) { errEl.textContent = 'Both fields required.'; errEl.classList.add('show'); return; }
-  if (newPwd !== confPwd)  { errEl.textContent = 'Passwords do not match.'; errEl.classList.add('show'); return; }
-  if (newPwd.length < 8)   { errEl.textContent = 'Minimum 8 characters.'; errEl.classList.add('show'); return; }
-  const session = getSession();
-  const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-    method: 'PUT',
-    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${session?.access_token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ password: newPwd }),
-  });
-  if (res.ok) {
-    document.getElementById('settingsNewPwd').value  = '';
-    document.getElementById('settingsConfirmPwd').value = '';
-    toast('Password updated', 'success');
-  } else {
-    const err = await res.json();
-    errEl.textContent = err.message || 'Could not update password.';
-    errEl.classList.add('show');
-  }
-}
-
-// ── UTILS ─────────────────────────────────────────────────
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
-function toast(msg, type = '') {
-  const wrap = document.getElementById('toastWrap');
-  const el   = document.createElement('div');
-  el.className   = `toast${type ? ' ' + type : ''}`;
-  el.textContent = msg;
-  wrap.appendChild(el);
-  setTimeout(() => el.remove(), 3200);
-}
-
-function escHtml(str) {
-  return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-document.querySelectorAll('.modal-overlay').forEach(el => {
-  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
-});
-
-
-// ── PHASE 2: DAILY FOCUS + TASK CAPTURE ──────────────────
-
-const ACTION_VERBS = ['call','email','write','review','research','schedule','draft',
-  'send','book','fix','read','decide','check','update','prepare','create','finish',
-  'contact','follow','complete','submit','plan','buy','order','discuss','confirm',
-  'ask','find','make','set','get','do','meet','test','clean','organize','print',
-  'download','upload','reply','forward','file','sign','pay','cancel','register',
-  'attend','watch','listen','learn','explore','analyze','compare','document',
-  'record','build','design','define','outline','draft','collect','gather','sort'];
-
-const IQ_LABELS = {
-  important_urgent:         '🔴 Imp+Urgent',
-  important_not_urgent:     '🟢 Imp+Not Urgent',
-  not_important_urgent:     '🟡 Not Imp+Urgent',
-  not_important_not_urgent: '🔵 Not Imp+Not Urgent',
-};
-
-// ── RENDER FOCUS VIEW ─────────────────────────────────────
-
+// ── RENDER FOCUS ──────────────────────────────────────────
 function renderFocus() {
-  const today = todayStr();
-  const now   = new Date();
-
-  // Date label
-  document.getElementById('focusDateLabel').textContent =
-    now.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
-  document.getElementById('focusDayName').textContent =
-    now.toLocaleDateString('en-US', { weekday:'long' });
-
-  if (!Array.isArray(state.tasks)) { state.tasks = []; }
-  const active  = state.tasks.filter(t => t.status !== 'done' && t.status !== 'cancelled');
+  if (!Array.isArray(state.tasks)) state.tasks = [];
+  const today  = todayStr();
+  const active = state.tasks.filter(t => t.status !== 'done' && t.status !== 'cancelled');
   const overdue = active.filter(t => t.due_date && t.due_date < today && t.status !== 'someday' && t.status !== 'reference');
   const focus   = active.filter(t => t.due_date === today || t.status === 'next');
   const inbox   = active.filter(t => t.status === 'inbox');
 
   // Overdue
   const od = document.getElementById('overdueSection');
-  const ol = document.getElementById('overdueList');
-  if (overdue.length) {
-    od.style.display = 'block';
-    ol.innerHTML = overdue.map(t => renderTaskCard(t, true)).join('');
-  } else {
-    od.style.display = 'none';
-  }
+  od.style.display = overdue.length ? 'block' : 'none';
+  if (overdue.length) document.getElementById('overdueList').innerHTML = overdue.map(t=>renderCard(t,true)).join('');
 
-  // Focus list
+  // Focus
   const fl = document.getElementById('focusList');
-  if (focus.length) {
-    fl.innerHTML = focus.map(t => renderTaskCard(t)).join('');
-  } else {
-    fl.innerHTML = `<div class="empty-state" style="padding:32px 0">
-      <div class="empty-icon">✦</div>
-      <div class="empty-title">All clear</div>
-      <div class="empty-sub">No tasks for today. Capture something or enjoy the space.</div>
-    </div>`;
-  }
+  fl.innerHTML = focus.length ? focus.map(t=>renderCard(t)).join('') :
+    '<div class="empty-state" style="padding:32px 0"><div class="empty-icon">✦</div><div class="empty-title">All clear</div><div class="empty-sub">No tasks for today.</div></div>';
 
   // Inbox alert
-  const alert = document.getElementById('inboxAlert');
+  const ia = document.getElementById('inboxAlert');
   if (inbox.length) {
-    alert.style.display = 'flex';
-    document.getElementById('inboxAlertText').textContent =
-      `${inbox.length} item${inbox.length > 1 ? 's' : ''} in inbox need processing`;
+    ia.style.display = 'flex';
+    document.getElementById('inboxAlertText').textContent = `${inbox.length} item${inbox.length>1?'s':''} in inbox need processing`;
   } else {
-    alert.style.display = 'none';
+    ia.style.display = 'none';
   }
 }
 
-function renderTaskCard(task, overdue = false) {
-  const iq      = task.importance_speed || '';
-  const cats    = (task._categories || []).map(c =>
-    `<span class="tag tag-cat">${escHtml(c.name)}</span>`).join('');
-  const dueTag  = task.due_date
-    ? `<span class="tag ${overdue ? 'tag-overdue' : 'tag-due'}">${overdue ? '⚠ ' : '📅 '}${task.due_date}</span>`
-    : '';
-  const typeTag = task.type === 'recurring' ? '<span class="tag tag-recur">🔄 Recurring</span>'
-                : task.type === 'idea'      ? '<span class="tag tag-idea">💡 Idea</span>'
-                : task.type === 'review'    ? '<span class="tag tag-review">📋 Review</span>'
-                : '';
-  const estTag  = task.estimated_mins
-    ? `<span class="tag tag-cat">⏱ ${task.estimated_mins}m</span>` : '';
-  const iqTag   = iq ? `<span class="tag tag-iq-${iqKey(iq)}">${IQ_LABELS[iq]}</span>` : '';
-
+function renderCard(task, overdue=false) {
+  const iq = task.importance_speed || '';
+  const iqMap = { important_urgent:'iu', important_not_urgent:'inu', not_important_urgent:'niu', not_important_not_urgent:'ninu' };
+  const iqLabel = { important_urgent:'🔴 Imp+Urgent', important_not_urgent:'🟢 Imp+Not Urgent', not_important_urgent:'🟡 Not Imp+Urgent', not_important_not_urgent:'🔵 Not Imp+Not Urgent' };
+  const cats = (task._categories||[]).map(c=>`<span class="tag tag-cat">${escHtml(c.name)}</span>`).join('');
+  const dueTag = task.due_date ? `<span class="tag ${overdue?'tag-overdue':'tag-due'}">${overdue?'⚠ ':'📅 '}${task.due_date}</span>` : '';
+  const typeTag = task.type==='recurring'?'<span class="tag tag-recur">🔄</span>':task.type==='idea'?'<span class="tag tag-idea">💡 Idea</span>':'';
+  const estTag = task.estimated_mins ? `<span class="tag tag-cat">⏱ ${task.estimated_mins}m</span>` : '';
+  const iqTag  = iq ? `<span class="tag tag-${iqMap[iq]}">${iqLabel[iq]}</span>` : '';
   return `<div class="task-card" data-id="${task.id}" data-iq="${iq}">
-    <button class="task-check ${task.status === 'done' ? 'done' : ''}"
-            onclick="completeTask('${task.id}')"></button>
+    <button class="task-check" onclick="completeTask('${task.id}')"></button>
     <div class="task-body">
       <div class="task-name">${escHtml(task.name)}</div>
-      ${task.notes ? `<div class="task-notes">${escHtml(task.notes.slice(0,100))}${task.notes.length > 100 ? '…' : ''}</div>` : ''}
-      <div class="task-meta">
-        ${typeTag}${iqTag}${cats}${dueTag}${estTag}
-      </div>
+      ${task.notes?`<div class="task-notes">${escHtml(task.notes.slice(0,100))}${task.notes.length>100?'…':''}</div>`:''}
+      <div class="task-meta">${typeTag}${iqTag}${cats}${dueTag}${estTag}</div>
     </div>
     <div class="task-actions">
-      <button class="btn-icon" style="font-size:12px" title="Reschedule"
-              onclick="openReschedule('${task.id}')">↻</button>
-      <button class="btn-icon" style="font-size:12px" title="Edit"
-              onclick="openEdit('${task.id}')">✎</button>
+      <button class="btn-icon" style="font-size:12px" title="Reschedule" onclick="openReschedule('${task.id}')">↻</button>
+      <button class="btn-icon" style="font-size:12px" title="Edit" onclick="openEdit('${task.id}')">✎</button>
     </div>
   </div>`;
 }
 
-function iqKey(iq) {
-  return { important_urgent:'iu', important_not_urgent:'inu',
-           not_important_urgent:'niu', not_important_not_urgent:'ninu' }[iq] || '';
-}
-
 // ── COMPLETE TASK ─────────────────────────────────────────
-
 let pendingAdhocId = null;
 
 async function completeTask(id) {
-  const task = state.tasks.find(t => t.id === id);
+  const task = state.tasks.find(t=>t.id===id);
   if (!task) return;
-
-  // Recurring — handle counter and next instance
-  if (task.type === 'recurring' && task.recurrence_id) {
-    if (task.recur_pattern === 'x_per_day') {
-      const newCount = (task.current_count || 0) + 1;
-      const target   = task.target_count || 1;
+  if (task.type==='recurring' && task.recurrence_id) {
+    if (task.recur_pattern==='x_per_day') {
+      const newCount = (task.current_count||0)+1;
+      const target   = task.target_count||1;
       if (newCount < target) {
-        await supa(`tasks?id=eq.${id}`, { method:'PATCH', body:JSON.stringify({ current_count: newCount }) });
+        await supa(`tasks?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({current_count:newCount})});
         task.current_count = newCount;
-        toast(`${newCount}/${target} done today`, 'success');
-        renderFocus();
-        return;
+        toast(`${newCount}/${target} done today`,'success');
+        renderFocus(); return;
       }
     }
-    if (task.recur_pattern === 'adhoc') {
+    if (task.recur_pattern==='adhoc') {
       pendingAdhocId = id;
       document.getElementById('adhocDate').value = '';
       document.getElementById('adhocModal').classList.add('open');
       return;
     }
-    await finishRecurring(id, null);
-    return;
+    await finishRecurring(id, null); return;
   }
-
-  // Regular task
-  await supa(`tasks?id=eq.${id}`, {
-    method: 'PATCH',
-    body: JSON.stringify({ status:'done', completed_at: new Date().toISOString() })
-  });
-  await logEvent('task', id, 'task_completed', { name: task.name });
-  toast('Done ✓', 'success');
-  await loadTasks();
-  renderFocus();
+  await supa(`tasks?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({status:'done',completed_at:new Date().toISOString()})});
+  toast('Done ✓','success');
+  await loadTasks(); renderFocus();
 }
 
 async function finishRecurring(id, adhocDate) {
-  const task = state.tasks.find(t => t.id === id);
+  const task = state.tasks.find(t=>t.id===id);
   if (!task) return;
   const today = todayStr();
-
-  await supa(`tasks?id=eq.${id}`, {
-    method: 'PATCH',
-    body: JSON.stringify({ status:'done', completed_at: new Date().toISOString(), last_occurrence: today })
-  });
-
-  // Fetch template
+  await supa(`tasks?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({status:'done',completed_at:new Date().toISOString(),last_occurrence:today})});
   const res = await supa(`recurrences?id=eq.${task.recurrence_id}&select=*`);
   const templates = await res.json();
-  if (!templates?.length) { toast('Done ✓', 'success'); await loadTasks(); renderFocus(); return; }
+  if (!Array.isArray(templates)||!templates.length) { toast('Done ✓','success'); await loadTasks(); renderFocus(); return; }
   const tmpl = templates[0];
-
   const nextDate = adhocDate || calcNextDate(tmpl);
   if (nextDate) {
-    // Create next instance
-    const newTask = {
-      workspace_id: state.workspaceId,
-      recurrence_id: tmpl.id,
-      name: tmpl.name, notes: tmpl.notes, type:'recurring', status:'next',
-      importance_speed: tmpl.importance_speed, context: tmpl.context,
-      estimated_mins: tmpl.estimated_mins, due_date: nextDate,
-      current_count: 0, target_count: tmpl.recur_times_per_day,
-      reschedule_count: 0, reschedule_reasons: [], ai_suggestions: {},
-      recur_pattern: tmpl.recur_pattern,
-    };
-    const nr = await supa('tasks', { method:'POST', body: JSON.stringify(newTask) });
+    const nr = await supa('tasks',{method:'POST',body:JSON.stringify({
+      workspace_id:state.workspaceId, recurrence_id:tmpl.id, name:tmpl.name, notes:tmpl.notes,
+      type:'recurring', status:'next', importance_speed:tmpl.importance_speed, context:tmpl.context,
+      estimated_mins:tmpl.estimated_mins, due_date:nextDate, current_count:0, target_count:tmpl.recur_times_per_day,
+      recur_pattern:tmpl.recur_pattern, reschedule_count:0, reschedule_reasons:[], ai_suggestions:{},
+    })});
     if (nr.ok) {
-      const newTaskData = await nr.json();
-      const newId = newTaskData[0]?.id;
-      // Copy categories
+      const nd = await nr.json();
+      const newId = nd[0]?.id;
       if (newId) {
         const rcRes = await supa(`recurrence_categories?recurrence_id=eq.${tmpl.id}&select=category_id`);
-        const rcs   = await rcRes.json() || [];
-        if (rcs.length) {
-          await supa('task_categories', {
-            method:'POST', prefer:'return=minimal',
-            body: JSON.stringify(rcs.map(r => ({ task_id: newId, category_id: r.category_id })))
-          });
+        const rcs   = await rcRes.json();
+        if (Array.isArray(rcs)&&rcs.length) {
+          await supa('task_categories',{method:'POST',prefer:'return=minimal',body:JSON.stringify(rcs.map(r=>({task_id:newId,category_id:r.category_id})))});
         }
       }
     }
-    // Update template
-    await supa(`recurrences?id=eq.${tmpl.id}`, {
-      method:'PATCH',
-      body: JSON.stringify({ last_occurrence: today, next_occurrence: nextDate, last_generated_at: new Date().toISOString() })
-    });
-    toast(`Done ✓ — next due ${nextDate}`, 'success');
-  } else {
-    toast('Done ✓', 'success');
-  }
-  await loadTasks();
-  renderFocus();
+    await supa(`recurrences?id=eq.${tmpl.id}`,{method:'PATCH',body:JSON.stringify({last_occurrence:today,next_occurrence:nextDate,last_generated_at:new Date().toISOString()})});
+    toast(`Done ✓ — next due ${nextDate}`,'success');
+  } else toast('Done ✓','success');
+  await loadTasks(); renderFocus();
 }
 
 async function confirmAdhoc() {
   const date = document.getElementById('adhocDate').value;
-  if (!date) { toast('Please select a date', 'error'); return; }
-  closeModal('adhocModal');
-  await finishRecurring(pendingAdhocId, date);
-  pendingAdhocId = null;
+  if (!date) { toast('Please select a date','error'); return; }
+  closeModal('adhocModal'); await finishRecurring(pendingAdhocId,date); pendingAdhocId=null;
 }
 function skipAdhoc() {
   closeModal('adhocModal');
-  if (pendingAdhocId) {
-    supa(`tasks?id=eq.${pendingAdhocId}`, { method:'PATCH', body: JSON.stringify({ status:'done', completed_at: new Date().toISOString() }) })
-      .then(() => loadTasks().then(() => renderFocus()));
-  }
-  pendingAdhocId = null;
-  toast('Task completed', 'success');
+  if (pendingAdhocId) supa(`tasks?id=eq.${pendingAdhocId}`,{method:'PATCH',body:JSON.stringify({status:'done',completed_at:new Date().toISOString()})}).then(()=>loadTasks().then(()=>renderFocus()));
+  pendingAdhocId=null; toast('Task completed','success');
 }
 
 function calcNextDate(tmpl) {
-  const today = new Date();
-  const pad   = n => n.toString().padStart(2,'0');
-  const fmt   = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-  const addD  = (d,n) => { const r = new Date(d); r.setDate(r.getDate()+n); return r; };
-  const addM  = (d,n) => { const r = new Date(d); r.setMonth(r.getMonth()+n); return r; };
-  switch(tmpl.recur_pattern) {
-    case 'daily': case 'x_per_day': return fmt(addD(today,1));
-    case 'x_per_week': {
-      const days = tmpl.recur_days_of_week||[1];
-      let n = addD(today,1);
-      while(!days.includes(n.getDay())) n = addD(n,1);
-      return fmt(n);
-    }
-    case 'weekly':
-      if (tmpl.recur_mode==='fixed'&&tmpl.recur_anchor_date) {
-        const a=new Date(tmpl.recur_anchor_date); let n=addD(today,1);
-        while(n.getDay()!==a.getDay()) n=addD(n,1); return fmt(n);
-      }
-      return fmt(addD(today,7));
-    case 'fortnightly':    return fmt(addD(today,14));
-    case 'every_x_weeks':  return fmt(addD(today,(tmpl.recur_interval_value||2)*7));
-    case 'monthly':
-      if (tmpl.recur_mode==='fixed'&&tmpl.recur_anchor_date) {
-        const a=new Date(tmpl.recur_anchor_date); const n=addM(today,1); n.setDate(a.getDate()); return fmt(n);
-      }
-      return fmt(addM(today,1));
-    case 'every_x_months': return fmt(addM(today,tmpl.recur_interval_value||2));
-    case 'quarterly':      return fmt(addM(today,3));
-    case 'every_6_months': return fmt(addM(today,6));
-    case 'yearly':
-      if (tmpl.recur_mode==='fixed'&&tmpl.recur_anchor_date) {
-        const a=new Date(tmpl.recur_anchor_date); const n=addM(today,12);
-        n.setMonth(a.getMonth()); n.setDate(a.getDate()); return fmt(n);
-      }
-      return fmt(addM(today,12));
-    case 'random': {
-      const min=tmpl.recur_random_min_days||7, max=tmpl.recur_random_max_days||21;
-      return fmt(addD(today, min+Math.floor(Math.random()*(max-min+1))));
-    }
-    default: return fmt(addD(today,7));
+  const t=new Date(), pad=n=>n.toString().padStart(2,'0');
+  const fmt=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const addD=(d,n)=>{const r=new Date(d);r.setDate(r.getDate()+n);return r;};
+  const addM=(d,n)=>{const r=new Date(d);r.setMonth(r.getMonth()+n);return r;};
+  switch(tmpl.recur_pattern){
+    case 'daily':case 'x_per_day':return fmt(addD(t,1));
+    case 'x_per_week':{const days=tmpl.recur_days_of_week||[1];let n=addD(t,1);while(!days.includes(n.getDay()))n=addD(n,1);return fmt(n);}
+    case 'weekly':if(tmpl.recur_anchor_date){const a=new Date(tmpl.recur_anchor_date);let n=addD(t,1);while(n.getDay()!==a.getDay())n=addD(n,1);return fmt(n);}return fmt(addD(t,7));
+    case 'fortnightly':return fmt(addD(t,14));
+    case 'every_x_weeks':return fmt(addD(t,(tmpl.recur_interval_value||2)*7));
+    case 'monthly':if(tmpl.recur_anchor_date){const a=new Date(tmpl.recur_anchor_date);const n=addM(t,1);n.setDate(a.getDate());return fmt(n);}return fmt(addM(t,1));
+    case 'every_x_months':return fmt(addM(t,tmpl.recur_interval_value||2));
+    case 'quarterly':return fmt(addM(t,3));
+    case 'every_6_months':return fmt(addM(t,6));
+    case 'yearly':if(tmpl.recur_anchor_date){const a=new Date(tmpl.recur_anchor_date);const n=addM(t,12);n.setMonth(a.getMonth());n.setDate(a.getDate());return fmt(n);}return fmt(addM(t,12));
+    case 'random':{const min=tmpl.recur_random_min_days||7,max=tmpl.recur_random_max_days||21;return fmt(addD(t,min+Math.floor(Math.random()*(max-min+1))));}
+    default:return fmt(addD(t,7));
   }
-}
-
-// ── LOAD TASKS ────────────────────────────────────────────
-
-async function loadTasks() {
-  try {
-    const res = await supa(
-      'tasks?select=id,name,notes,type,status,importance_speed,context,due_date,estimated_mins,reschedule_count,reschedule_reasons,recurrence_id,recur_pattern,current_count,target_count,project_id,created_at&order=created_at.desc'
-    );
-    const data = await res.json();
-
-    if (!Array.isArray(data)) {
-      console.error('loadTasks bad response:', data);
-      state.tasks = [];
-      toast('Could not load tasks: ' + (data.message || 'unknown error'), 'error');
-      return;
-    }
-    state.tasks = data;
-
-    // Filter out done and cancelled for display
-    // (keep in state.tasks but mark — renderFocus filters by status)
-
-    // Load categories for each task
-    if (state.tasks.length) {
-      const ids = state.tasks.map(t => t.id).join(',');
-      const cr  = await supa(`task_categories?task_id=in.(${ids})&select=task_id,category_id`);
-      const tcs = await cr.json();
-      const tcsArr = Array.isArray(tcs) ? tcs : [];
-      state.tasks.forEach(t => {
-        const catIds = tcsArr.filter(tc => tc.task_id === t.id).map(tc => tc.category_id);
-        t._categories = state.categories.filter(c => catIds.includes(c.id));
-      });
-    }
-
-    console.log(`loadTasks: ${state.tasks.length} tasks loaded`);
-  } catch(e) {
-    console.error('loadTasks exception:', e);
-    state.tasks = [];
-    toast('Could not load tasks', 'error');
-  }
-}
-
-// ── CAPTURE ───────────────────────────────────────────────
-
-let editingTaskId    = null;
-let catPickerSel     = [];
-let recurOn          = false;
-let selectedDays     = [];
-
-function openCapture(prefillName) {
-  editingTaskId = null;
-  resetCaptureForm();
-  document.getElementById('captureTitle').textContent = 'Capture Task';
-  if (prefillName) document.getElementById('cName').value = prefillName;
-  document.getElementById('cDue').value = todayStr();
-  populateProjectSelect();
-  renderInlineCatPicker();
-  document.getElementById('captureModal').classList.add('open');
-  setTimeout(() => document.getElementById('cName').focus(), 200);
-}
-
-function openEdit(id) {
-  const task = state.tasks.find(t => t.id === id);
-  if (!task) return;
-  editingTaskId = id;
-  resetCaptureForm();
-  document.getElementById('captureTitle').textContent = 'Edit Task';
-  document.getElementById('cName').value      = task.name;
-  document.getElementById('cType').value      = task.type === 'idea' ? 'idea' : 'task';
-  document.getElementById('cIQ').value        = task.importance_speed || '';
-  document.getElementById('cContext').value   = task.context || '';
-  document.getElementById('cDue').value       = task.due_date || '';
-  document.getElementById('cEstimated').value = task.estimated_mins || '';
-  document.getElementById('cNotes').value     = task.notes || '';
-  document.getElementById('cProject').value   = task.project_id || '';
-  onTypeChange();
-  // Set categories
-  const catIds = (task._categories || []).map(c => c.id);
-  setCatSelection(catIds);
-  populateProjectSelect(task.project_id);
-  document.getElementById('captureModal').classList.add('open');
-}
-
-function resetCaptureForm() {
-  ['cName','cNotes','cDue','cEstimated'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('cType').value    = 'task';
-  document.getElementById('cIQ').value      = '';
-  document.getElementById('cContext').value = '';
-  document.getElementById('cProject').value = '';
-  catPickerSel = [];
-  document.getElementById('cCatIds').value = '';
-  resetRecur();
-  onTypeChange();
-  document.getElementById('verbWarn').classList.remove('show');
-}
-
-function onNameInput() {
-  const name      = document.getElementById('cName').value.trim();
-  const type      = document.getElementById('cType').value;
-  if (type === 'idea') return;
-  const firstWord = name.split(' ')[0].toLowerCase().replace(/[^a-z]/g,'');
-  const showWarn  = name.length > 4 && !ACTION_VERBS.includes(firstWord);
-  document.getElementById('verbWarn').classList.toggle('show', showWarn);
-}
-
-function onTypeChange() {
-  const isIdea = document.getElementById('cType').value === 'idea';
-  document.getElementById('verbWarn').classList.remove('show');
-  document.getElementById('ideaHint').style.display  = isIdea ? 'block' : 'none';
-  document.getElementById('recurWrap').style.display = isIdea ? 'none'  : 'block';
-}
-
-function populateProjectSelect(selected) {
-  const sel = document.getElementById('cProject');
-  sel.innerHTML = '<option value="">— no project —</option>' +
-    state.projects.map(p => `<option value="${p.id}"${p.id===selected?' selected':''}>${escHtml(p.name)}</option>`).join('');
-}
-
-async function saveTask() {
-  const name  = document.getElementById('cName').value.trim();
-  const type  = document.getElementById('cType').value;
-  if (!name) { toast('Task name is required', 'error'); return; }
-
-  if (type !== 'idea') {
-    const firstWord = name.split(' ')[0].toLowerCase().replace(/[^a-z]/g,'');
-    if (!ACTION_VERBS.includes(firstWord)) {
-      if (!confirm("This task doesn't start with a clear action verb. Save anyway?")) return;
-    }
-  }
-
-  const due   = document.getElementById('cDue').value;
-  const today = todayStr();
-  const isRecurring = recurOn && type !== 'idea';
-  let recurrenceId = null;
-
-  // Verify workspace_id is available
-  if (!state.workspaceId) {
-    toast('Workspace not loaded — please refresh the page', 'error');
-    console.error('workspaceId is null — state:', state);
-    return;
-  }
-
-  const taskPayload = {
-    workspace_id:     state.workspaceId,
-    name,
-    notes:            document.getElementById('cNotes').value.trim() || null,
-    type:             isRecurring ? 'recurring' : type,
-    status:           due && due <= today ? 'next' : 'inbox',
-    importance_speed: document.getElementById('cIQ').value      || null,
-    context:          document.getElementById('cContext').value  || null,
-    due_date:         due || null,
-    estimated_mins:   parseInt(document.getElementById('cEstimated').value) || null,
-    project_id:       document.getElementById('cProject').value  || null,
-    reschedule_count: 0,
-    reschedule_reasons: [],
-    ai_suggestions:   {},
-  };
-
-  // Create recurrence template if recurring
-  if (isRecurring && !editingTaskId) {
-    const pattern = document.getElementById('rPattern').value;
-    if (pattern === 'x_per_week' && selectedDays.length === 0) {
-      toast('Please select at least one day of the week', 'error'); return;
-    }
-    const recurPayload = {
-      workspace_id:         state.workspaceId,
-      project_id:           taskPayload.project_id,
-      name,
-      notes:                taskPayload.notes,
-      importance_speed:     taskPayload.importance_speed,
-      context:              taskPayload.context,
-      estimated_mins:       taskPayload.estimated_mins,
-      recur_mode:           document.getElementById('rMode').value,
-      recur_pattern:        pattern,
-      recur_interval_value: ['every_x_weeks','every_x_months'].includes(pattern) ? parseInt(document.getElementById('rIntervalVal').value) : null,
-      recur_days_of_week:   pattern === 'x_per_week' ? selectedDays : null,
-      recur_times_per_day:  pattern === 'x_per_day'  ? parseInt(document.getElementById('rTimesPerDay').value) : null,
-      counter_reset_mode:   pattern === 'x_per_day'  ? document.getElementById('rResetMode').value : null,
-      recur_random_min_days: pattern === 'random' ? parseInt(document.getElementById('rRandMin').value) : null,
-      recur_random_max_days: pattern === 'random' ? parseInt(document.getElementById('rRandMax').value) : null,
-      recur_anchor_date:    ['monthly','yearly','weekly'].includes(pattern) ? (document.getElementById('rAnchorDate').value || null) : null,
-      next_occurrence:      document.getElementById('rFirstDue').value || due || null,
-      is_active:            true,
-    };
-    const rr = await supa('recurrences', { method:'POST', body: JSON.stringify(recurPayload) });
-    if (!rr.ok) { const e = await rr.json(); toast('Error creating recurrence: '+(e.message||'unknown'),'error'); return; }
-    const rData = await rr.json();
-    recurrenceId = rData[0]?.id;
-    taskPayload.recurrence_id  = recurrenceId;
-    taskPayload.recur_pattern  = recurPayload.recur_pattern;
-    taskPayload.target_count   = recurPayload.recur_times_per_day;
-    taskPayload.current_count  = 0;
-    taskPayload.due_date       = recurPayload.next_occurrence || due || null;
-  }
-
-  let res;
-  if (editingTaskId) {
-    res = await supa(`tasks?id=eq.${editingTaskId}`, { method:'PATCH', body: JSON.stringify(taskPayload) });
-  } else {
-    res = await supa('tasks', { method:'POST', body: JSON.stringify(taskPayload) });
-  }
-
-  if (!res.ok) {
-    const err = await res.json();
-    console.error('saveTask error:', err);
-    if (recurrenceId) await supa(`recurrences?id=eq.${recurrenceId}`, { method:'DELETE' });
-    toast('Error saving task: '+(err.message||err.details||'unknown'), 'error');
-    return;
-  }
-
-  const saved   = await res.json();
-  console.log('Task saved:', saved);
-  const savedId = editingTaskId || saved[0]?.id;
-
-  if (!savedId) {
-    toast('Task save returned no ID — check console', 'error');
-    console.error('No savedId from:', saved);
-    return;
-  }
-
-  // Save task categories
-  if (catPickerSel.length) {
-    if (editingTaskId) await supa(`task_categories?task_id=eq.${editingTaskId}`, { method:'DELETE', prefer:'return=minimal' });
-    const tcRes = await supa('task_categories', {
-      method:'POST', prefer:'return=minimal',
-      body: JSON.stringify(catPickerSel.map(cid => ({ task_id: savedId, category_id: cid })))
-    });
-    if (!tcRes.ok) console.warn('task_categories save failed:', await tcRes.json());
-  }
-
-  // Save recurrence categories
-  if (recurrenceId && catPickerSel.length) {
-    await supa('recurrence_categories', {
-      method:'POST', prefer:'return=minimal',
-      body: JSON.stringify(catPickerSel.map(cid => ({ recurrence_id: recurrenceId, category_id: cid })))
-    });
-  }
-
-  await logEvent('task', savedId, editingTaskId ? 'task_status_changed' : 'task_created', { name });
-  toast(editingTaskId ? 'Task updated ✓' : 'Task captured ✓', 'success');
-  closeModal('captureModal');
-  await loadTasks();
-  renderFocus();
-}
-
-// Quick capture from the bar
-function quickCapture() {
-  const val = document.getElementById('quickInput').value.trim();
-  document.getElementById('quickInput').value = '';
-  if (!val) return;
-  openCapture(val);
 }
 
 // ── RESCHEDULE ────────────────────────────────────────────
-
 let reschedulingId = null;
-
 function openReschedule(id) {
-  const task = state.tasks.find(t => t.id === id);
-  if (!task) return;
+  const task = state.tasks.find(t=>t.id===id); if(!task)return;
   reschedulingId = id;
-  const count = task.reschedule_count || 0;
-  document.getElementById('rescheduleWarn').textContent = count === 0
-    ? 'Rescheduling requires a reason. This helps track procrastination patterns.'
-    : `This task has been rescheduled ${count} time${count>1?'s':''} already. A reason is required.`;
-  document.getElementById('rNewDate').value = task.due_date || todayStr();
+  const count = task.reschedule_count||0;
+  document.getElementById('rescheduleWarn').textContent = count===0 ? 'Rescheduling requires a reason.' : `Rescheduled ${count} time${count>1?'s':''} already.`;
+  document.getElementById('rNewDate').value = task.due_date||todayStr();
   document.getElementById('rReason').value  = '';
   document.getElementById('rOtherGroup').style.display = 'none';
   document.getElementById('rescheduleModal').classList.add('open');
 }
-
-document.addEventListener('change', e => {
-  if (e.target.id === 'rReason') {
-    document.getElementById('rOtherGroup').style.display =
-      e.target.value === 'other' ? 'flex' : 'none';
-  }
+document.addEventListener('change',e=>{
+  if(e.target.id==='rReason') document.getElementById('rOtherGroup').style.display=e.target.value==='other'?'flex':'none';
 });
-
 async function confirmReschedule() {
-  const id      = reschedulingId;
-  const task    = state.tasks.find(t => t.id === id);
-  const newDate = document.getElementById('rNewDate').value;
-  const reason  = document.getElementById('rReason').value;
-  const other   = document.getElementById('rOtherReason').value.trim();
-  if (!newDate) { toast('Please select a new date', 'error'); return; }
-  if (!reason)  { toast('Please select a reason', 'error'); return; }
-  if (reason === 'other' && !other) { toast('Please describe the reason', 'error'); return; }
-  const finalReason = reason === 'other' ? other : reason;
-  const newCount    = (task.reschedule_count || 0) + 1;
-  await supa(`tasks?id=eq.${id}`, {
-    method:'PATCH',
-    body: JSON.stringify({
-      due_date: newDate,
-      reschedule_count: newCount,
-      reschedule_reasons: [...(task.reschedule_reasons||[]), finalReason],
-    })
-  });
-  await logEvent('task', id, 'task_rescheduled', { reason: finalReason, new_date: newDate, count: newCount });
-  toast('Task rescheduled', 'success');
-  closeModal('rescheduleModal');
-  await loadTasks();
-  renderFocus();
+  const id=reschedulingId, task=state.tasks.find(t=>t.id===id);
+  const newDate=document.getElementById('rNewDate').value;
+  const reason=document.getElementById('rReason').value;
+  const other=document.getElementById('rOtherReason').value.trim();
+  if(!newDate){toast('Please select a new date','error');return;}
+  if(!reason){toast('Please select a reason','error');return;}
+  if(reason==='other'&&!other){toast('Please describe the reason','error');return;}
+  const finalReason=reason==='other'?other:reason;
+  const newCount=(task.reschedule_count||0)+1;
+  await supa(`tasks?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({due_date:newDate,reschedule_count:newCount,reschedule_reasons:[...(task.reschedule_reasons||[]),finalReason]})});
+  toast('Task rescheduled','success'); closeModal('rescheduleModal'); await loadTasks(); renderFocus();
 }
 
-// ── CATEGORY PICKER ───────────────────────────────────────
+// ── CAPTURE ───────────────────────────────────────────────
+let editingTaskId = null;
+let catPickerSel  = [];
+let recurOn       = false;
+let selectedDays  = [];
+
+const ACTION_VERBS = ['call','email','write','review','research','schedule','draft','send','book','fix','read','decide','check','update','prepare','create','finish','contact','follow','complete','submit','plan','buy','order','discuss','confirm','ask','find','make','set','get','do','meet','test','clean','organize','print','download','upload','reply','forward','file','sign','pay','cancel','register','attend','watch','listen','learn','explore','analyze','compare','document','record','build','design','define','outline','collect','gather','sort'];
 
 function renderInlineCatPicker() {
   const container = document.getElementById('inlineCatPicker');
   if (!container) return;
-
+  if (!state.categories.length) {
+    container.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:4px">No categories loaded</div>';
+    return;
+  }
   // Group by domain
   const grouped = {};
   state.categories.forEach(c => {
-    const domain = state.domains.find(d => d.id === c.domain_id);
-    const key    = domain ? domain.id : 'none';
-    if (!grouped[key]) grouped[key] = { domain, cats: [] };
-    grouped[key].cats.push(c);
+    if (!grouped[c.domain_id]) grouped[c.domain_id] = [];
+    grouped[c.domain_id].push(c);
   });
-
-  if (!Object.keys(grouped).length) {
-    container.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:4px">No categories found</div>';
-    return;
-  }
-
-  container.innerHTML = Object.values(grouped).map(({ domain, cats }) => {
-    const domainLabel = domain
-      ? `<div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;padding:4px 2px 6px;margin-top:4px">${domain.icon||''} ${domain.name}</div>`
-      : '';
-    const catButtons = cats.map(c => {
+  container.innerHTML = Object.entries(grouped).map(([domainId, cats]) => {
+    const domain = state.domains.find(d => d.id === domainId);
+    const label  = domain ? `<div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;padding:6px 2px 4px;margin-top:2px">${domain.icon||''} ${domain.name}</div>` : '';
+    const btns   = cats.map(c => {
       const sel = catPickerSel.includes(c.id);
-      return `<button type="button"
-        style="background:${sel ? 'var(--accent)' : 'var(--surface3)'};color:${sel ? '#0a0a0b' : 'var(--text2)'};border:1px solid ${sel ? 'var(--accent)' : 'var(--border)'};border-radius:var(--r-sm);padding:5px 10px;font-size:12px;cursor:pointer;transition:all .15s;font-family:'Instrument Sans',sans-serif;margin:2px;"
-        onclick="toggleInlineCat('${c.id}')">${escHtml(c.name)}</button>`;
+      return `<button type="button" onclick="toggleInlineCat('${c.id}')" style="background:${sel?'var(--accent)':'var(--surface3)'};color:${sel?'#0a0a0b':'var(--text2)'};border:1px solid ${sel?'var(--accent)':'var(--border)'};border-radius:var(--r-sm);padding:4px 10px;font-size:12px;cursor:pointer;transition:all .15s;font-family:'Instrument Sans',sans-serif;margin:2px">${escHtml(c.name)}</button>`;
     }).join('');
-    return domainLabel + `<div style="display:flex;flex-wrap:wrap;gap:2px">${catButtons}</div>`;
+    return label + `<div style="display:flex;flex-wrap:wrap">${btns}</div>`;
   }).join('');
 }
 
 function toggleInlineCat(id) {
-  if (catPickerSel.includes(id)) {
-    catPickerSel = catPickerSel.filter(x => x !== id);
-  } else {
-    catPickerSel.push(id);
-  }
+  if (catPickerSel.includes(id)) catPickerSel = catPickerSel.filter(x=>x!==id);
+  else catPickerSel.push(id);
   document.getElementById('cCatIds').value = catPickerSel.join(',');
   renderInlineCatPicker();
 }
@@ -1807,76 +854,350 @@ function setCatSelection(ids) {
   renderInlineCatPicker();
 }
 
-// Keep these for backward compatibility
-function openCatPicker() { renderInlineCatPicker(); }
-function confirmCatPicker() { closeModal('catPickerModal'); }
-function removeCat(id, e) { if(e) e.stopPropagation(); toggleInlineCat(id); }
+function openCapture(prefill) {
+  editingTaskId = null; catPickerSel = []; recurOn = false; selectedDays = [];
+  document.getElementById('captureTitle').textContent = 'Capture Task';
+  document.getElementById('cName').value      = prefill||'';
+  document.getElementById('cType').value      = 'task';
+  document.getElementById('cIQ').value        = '';
+  document.getElementById('cContext').value   = '';
+  document.getElementById('cDue').value       = todayStr();
+  document.getElementById('cEstimated').value = '';
+  document.getElementById('cNotes').value     = '';
+  document.getElementById('cProject').value   = '';
+  document.getElementById('cCatIds').value    = '';
+  document.getElementById('verbWarn').classList.remove('show');
+  document.getElementById('ideaHint').style.display   = 'none';
+  document.getElementById('recurWrap').style.display  = 'block';
+  document.getElementById('recurTrack').classList.remove('on');
+  document.getElementById('recurFields').style.display = 'none';
+  document.querySelectorAll('.day-btn').forEach(b=>b.classList.remove('on'));
+  populateProjectSelect();
+  renderInlineCatPicker();
+  document.getElementById('captureModal').classList.add('open');
+  setTimeout(()=>document.getElementById('cName').focus(),200);
+}
+
+function openEdit(id) {
+  const task = state.tasks.find(t=>t.id===id); if(!task)return;
+  editingTaskId = id;
+  recurOn = false; selectedDays = [];
+  document.getElementById('captureTitle').textContent = 'Edit Task';
+  document.getElementById('cName').value      = task.name;
+  document.getElementById('cType').value      = task.type==='idea'?'idea':'task';
+  document.getElementById('cIQ').value        = task.importance_speed||'';
+  document.getElementById('cContext').value   = task.context||'';
+  document.getElementById('cDue').value       = task.due_date||'';
+  document.getElementById('cEstimated').value = task.estimated_mins||'';
+  document.getElementById('cNotes').value     = task.notes||'';
+  document.getElementById('verbWarn').classList.remove('show');
+  onTypeChange();
+  populateProjectSelect(task.project_id);
+  document.getElementById('cProject').value = task.project_id||'';
+  setCatSelection((task._categories||[]).map(c=>c.id));
+  document.getElementById('captureModal').classList.add('open');
+}
+
+function quickCapture() {
+  const val = document.getElementById('quickInput').value.trim();
+  document.getElementById('quickInput').value = '';
+  openCapture(val);
+}
+
+function onNameInput() {
+  const name = document.getElementById('cName').value.trim();
+  if (document.getElementById('cType').value==='idea') return;
+  const first = name.split(' ')[0].toLowerCase().replace(/[^a-z]/g,'');
+  document.getElementById('verbWarn').classList.toggle('show', name.length>4 && !ACTION_VERBS.includes(first));
+}
+
+function onTypeChange() {
+  const isIdea = document.getElementById('cType').value==='idea';
+  document.getElementById('verbWarn').classList.remove('show');
+  document.getElementById('ideaHint').style.display  = isIdea?'block':'none';
+  document.getElementById('recurWrap').style.display = isIdea?'none':'block';
+}
+
+function populateProjectSelect(selected) {
+  const sel = document.getElementById('cProject');
+  sel.innerHTML = '<option value="">— no project —</option>' +
+    state.projects.map(p=>`<option value="${p.id}"${p.id===selected?' selected':''}>${escHtml(p.name)}</option>`).join('');
+}
+
+async function saveTask() {
+  const name = document.getElementById('cName').value.trim();
+  const type = document.getElementById('cType').value;
+  if (!name) { toast('Task name is required','error'); return; }
+  if (!state.workspaceId) { toast('Workspace not loaded — refresh the page','error'); return; }
+
+  if (type !== 'idea') {
+    const first = name.split(' ')[0].toLowerCase().replace(/[^a-z]/g,'');
+    if (!ACTION_VERBS.includes(first)) {
+      if (!confirm("This task doesn't start with an action verb. Save anyway?")) return;
+    }
+  }
+
+  const due = document.getElementById('cDue').value;
+  const isRecurring = recurOn && type !== 'idea';
+  let recurrenceId = null;
+
+  const payload = {
+    workspace_id:     state.workspaceId,
+    name,
+    notes:            document.getElementById('cNotes').value.trim()||null,
+    type:             isRecurring?'recurring':type,
+    status:           due&&due<=todayStr()?'next':'inbox',
+    importance_speed: document.getElementById('cIQ').value||null,
+    context:          document.getElementById('cContext').value||null,
+    due_date:         due||null,
+    estimated_mins:   parseInt(document.getElementById('cEstimated').value)||null,
+    project_id:       document.getElementById('cProject').value||null,
+    reschedule_count: 0,
+    reschedule_reasons: [],
+    ai_suggestions:   {},
+  };
+
+  if (isRecurring && !editingTaskId) {
+    const pattern = document.getElementById('rPattern').value;
+    if (pattern==='x_per_week' && selectedDays.length===0) { toast('Please select days of the week','error'); return; }
+    const rp = {
+      workspace_id:state.workspaceId, project_id:payload.project_id,
+      name, notes:payload.notes, importance_speed:payload.importance_speed, context:payload.context, estimated_mins:payload.estimated_mins,
+      recur_mode:document.getElementById('rMode').value, recur_pattern:pattern,
+      recur_interval_value:['every_x_weeks','every_x_months'].includes(pattern)?parseInt(document.getElementById('rIntervalVal').value):null,
+      recur_days_of_week:pattern==='x_per_week'?selectedDays:null,
+      recur_times_per_day:pattern==='x_per_day'?parseInt(document.getElementById('rTimesPerDay').value):null,
+      counter_reset_mode:pattern==='x_per_day'?document.getElementById('rResetMode').value:null,
+      recur_random_min_days:pattern==='random'?parseInt(document.getElementById('rRandMin').value):null,
+      recur_random_max_days:pattern==='random'?parseInt(document.getElementById('rRandMax').value):null,
+      recur_anchor_date:['monthly','yearly','weekly'].includes(pattern)?(document.getElementById('rAnchorDate').value||null):null,
+      next_occurrence:document.getElementById('rFirstDue').value||due||null,
+      is_active:true,
+    };
+    const rr = await supa('recurrences',{method:'POST',body:JSON.stringify(rp)});
+    if (!rr.ok) { const e=await rr.json(); toast('Error creating recurrence: '+(e.message||'unknown'),'error'); return; }
+    const rd = await rr.json();
+    recurrenceId = rd[0]?.id;
+    payload.recurrence_id = recurrenceId;
+    payload.recur_pattern = pattern;
+    payload.target_count  = rp.recur_times_per_day;
+    payload.current_count = 0;
+    payload.due_date      = rp.next_occurrence||due||null;
+  }
+
+  let res;
+  if (editingTaskId) res = await supa(`tasks?id=eq.${editingTaskId}`,{method:'PATCH',body:JSON.stringify(payload)});
+  else               res = await supa('tasks',{method:'POST',body:JSON.stringify(payload)});
+
+  if (!res.ok) {
+    const err = await res.json();
+    console.error('saveTask error:',err);
+    if (recurrenceId) await supa(`recurrences?id=eq.${recurrenceId}`,{method:'DELETE'});
+    toast('Error: '+(err.message||err.details||'unknown'),'error');
+    return;
+  }
+
+  const saved   = await res.json();
+  const savedId = editingTaskId || saved[0]?.id;
+
+  if (savedId && catPickerSel.length) {
+    if (editingTaskId) await supa(`task_categories?task_id=eq.${editingTaskId}`,{method:'DELETE',prefer:'return=minimal'});
+    await supa('task_categories',{method:'POST',prefer:'return=minimal',body:JSON.stringify(catPickerSel.map(cid=>({task_id:savedId,category_id:cid})))});
+  }
+
+  if (recurrenceId && catPickerSel.length) {
+    await supa('recurrence_categories',{method:'POST',prefer:'return=minimal',body:JSON.stringify(catPickerSel.map(cid=>({recurrence_id:recurrenceId,category_id:cid})))});
+  }
+
+  toast(editingTaskId?'Task updated ✓':'Task captured ✓','success');
+  closeModal('captureModal');
+  await loadTasks(); renderFocus();
+}
 
 // ── RECURRING TOGGLE ──────────────────────────────────────
-
 function toggleRecur() {
   recurOn = !recurOn;
-  const track = document.getElementById('recurTrack');
-  track.classList.toggle('on', recurOn);
-  document.getElementById('recurFields').style.display = recurOn ? 'flex' : 'none';
-  if (recurOn) {
-    const today = todayStr();
-    document.getElementById('rFirstDue').value = today;
-    onPatternChange();
-  }
+  document.getElementById('recurTrack').classList.toggle('on',recurOn);
+  document.getElementById('recurFields').style.display = recurOn?'flex':'none';
+  if (recurOn) { document.getElementById('rFirstDue').value=todayStr(); onPatternChange(); }
 }
-
-function resetRecur() {
-  recurOn = false;
-  selectedDays = [];
-  const track = document.getElementById('recurTrack');
-  if (track) track.classList.remove('on');
-  const fields = document.getElementById('recurFields');
-  if (fields) fields.style.display = 'none';
-  document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('on'));
-}
-
 function onPatternChange() {
   const p = document.getElementById('rPattern').value;
-  document.getElementById('rXPerDayFields').style.display  = p === 'x_per_day'    ? 'flex' : 'none';
-  document.getElementById('rDaysFields').style.display     = p === 'x_per_week'   ? 'flex' : 'none';
-  document.getElementById('rIntervalFields').style.display = ['every_x_weeks','every_x_months'].includes(p) ? 'block' : 'none';
-  document.getElementById('rRandomFields').style.display   = p === 'random'       ? 'flex' : 'none';
-  document.getElementById('rAnchorFields').style.display   = ['monthly','yearly','weekly'].includes(p) ? 'block' : 'none';
-  const il = document.getElementById('rIntervalLabel');
-  if (il) il.textContent = p === 'every_x_weeks' ? 'Every X weeks' : 'Every X months';
-  const al = document.getElementById('rAnchorLabel');
-  if (al) al.textContent = p === 'monthly' ? 'Anchor date (day of month)' : p === 'yearly' ? 'Anchor date (month + day)' : 'Anchor date (sets day of week)';
+  document.getElementById('rXPerDayFields').style.display  = p==='x_per_day'?'flex':'none';
+  document.getElementById('rDaysFields').style.display     = p==='x_per_week'?'flex':'none';
+  document.getElementById('rIntervalFields').style.display = ['every_x_weeks','every_x_months'].includes(p)?'block':'none';
+  document.getElementById('rRandomFields').style.display   = p==='random'?'flex':'none';
+  document.getElementById('rAnchorFields').style.display   = ['monthly','yearly','weekly'].includes(p)?'block':'none';
+  const il=document.getElementById('rIntervalLabel'); if(il) il.textContent=p==='every_x_weeks'?'Every X weeks':'Every X months';
+  const al=document.getElementById('rAnchorLabel'); if(al) al.textContent=p==='monthly'?'Anchor date (day of month)':p==='yearly'?'Anchor date (month+day)':'Anchor date';
 }
-
 function toggleDay(day) {
-  if (selectedDays.includes(day)) selectedDays = selectedDays.filter(d => d !== day);
-  else selectedDays.push(day);
-  document.querySelectorAll('.day-btn').forEach(b => {
-    b.classList.toggle('on', selectedDays.includes(parseInt(b.dataset.d)));
-  });
+  if(selectedDays.includes(day)) selectedDays=selectedDays.filter(d=>d!==day); else selectedDays.push(day);
+  document.querySelectorAll('.day-btn').forEach(b=>b.classList.toggle('on',selectedDays.includes(parseInt(b.dataset.d))));
 }
 
-// ── ANALYTICS ─────────────────────────────────────────────
-
-async function logEvent(entityType, entityId, eventType, metadata = {}) {
-  if (!state.workspaceId || !entityId) return;
+// ── AUTH ──────────────────────────────────────────────────
+let authTab = 'login';
+function setAuthTab(tab) {
+  authTab = tab;
+  document.querySelectorAll('.auth-tab').forEach((b,i)=>b.classList.toggle('active',(i===0&&tab==='login')||(i===1&&tab==='signup')));
+  document.getElementById('authBtn').textContent = tab==='login'?'Sign In':'Create Account';
+  document.getElementById('authError').classList.remove('show');
+}
+async function handleAuth() {
+  const email=document.getElementById('authEmail').value.trim();
+  const pwd=document.getElementById('authPassword').value;
+  const btn=document.getElementById('authBtn');
+  document.getElementById('authError').classList.remove('show');
+  if(!email||!pwd){showAuthError('Email and password required.');return;}
+  if(!SUPABASE_URL||!SUPABASE_KEY){showAuthError('Supabase not configured — click setup button.');return;}
+  btn.disabled=true; btn.textContent='...';
   try {
-    await supa('analytics_events', {
-      method:'POST', prefer:'return=minimal',
-      body: JSON.stringify({ workspace_id: state.workspaceId, entity_type: entityType, entity_id: entityId, event_type: eventType, metadata })
-    });
-  } catch(e) { console.warn('logEvent failed:', e); }
+    const endpoint=authTab==='login'?'token?grant_type=password':'signup';
+    const res=await supaAuth(endpoint,{email,password:pwd});
+    const data=await res.json();
+    if(authTab==='signup'){
+      if(data.error){showAuthError(data.error_description||data.message||'Sign up failed.');return;}
+      if(!data.access_token){showAuthError('Account created! Check your email for a confirmation link, or disable email confirmation in Supabase Auth settings.');return;}
+    } else {
+      if(data.error||!data.access_token){showAuthError(data.error_description||data.message||'Sign in failed.');return;}
+    }
+    localStorage.setItem('clarity_email',email); setSession(data); await bootApp();
+  } catch(e){showAuthError('Network error — check your Supabase URL.');}
+  finally{btn.disabled=false;btn.textContent=authTab==='login'?'Sign In':'Create Account';}
+}
+function showAuthError(msg){const el=document.getElementById('authError');el.textContent=msg;el.classList.add('show');}
+async function signOut(){setSession(null);location.reload();}
+
+// ── FIRST TIME CONFIG ─────────────────────────────────────
+function openFirstTimeConfig(){
+  document.getElementById('ftUrl').value='';
+  document.getElementById('ftKey').value='';
+  document.getElementById('ftError').classList.remove('show');
+  document.getElementById('firstTimeModal').classList.add('open');
+  setTimeout(()=>document.getElementById('ftUrl').focus(),200);
+}
+async function saveFirstTimeConfig(){
+  const url=document.getElementById('ftUrl').value.trim();
+  const key=document.getElementById('ftKey').value.trim();
+  const errEl=document.getElementById('ftError');
+  const btn=document.getElementById('ftSaveBtn');
+  errEl.classList.remove('show');
+  if(!url||!key){errEl.textContent='Both fields required.';errEl.classList.add('show');return;}
+  try{new URL(url);}catch{errEl.textContent='Invalid URL.';errEl.classList.add('show');return;}
+  btn.disabled=true;btn.textContent='Testing...';
+  try{
+    const res=await fetch(`${url}/rest/v1/workspaces?select=id&limit=1`,{headers:{'apikey':key,'Authorization':`Bearer ${key}`}});
+    if(res.status!==200&&res.status!==401){errEl.textContent=`Connection failed (${res.status}).`;errEl.classList.add('show');return;}
+  }catch(e){errEl.textContent='Could not reach Supabase.';errEl.classList.add('show');return;}
+  finally{btn.disabled=false;btn.textContent='Save & Connect';}
+  SUPABASE_URL=url;SUPABASE_KEY=key;
+  localStorage.setItem('clarity_url',url);localStorage.setItem('clarity_key',key);
+  document.getElementById('authConfigBtn').style.display='none';
+  closeModal('firstTimeModal');
+  toast('Supabase connected ✓ — now sign in','success');
+}
+
+// ── SETTINGS ──────────────────────────────────────────────
+let adminUnlockExpiry=null,adminCountdownTimer=null;
+function openSettings(){
+  const email=localStorage.getItem('clarity_email')||getSession()?.user?.email||'—';
+  document.getElementById('settingsEmail').textContent=email;
+  document.getElementById('settingsAvatar').textContent=email.charAt(0).toUpperCase();
+  document.getElementById('settingsWsName').value=state.workspaceName||'Personal';
+  document.getElementById('settingsWsId').textContent=state.workspaceId||'—';
+  document.getElementById('pwdError').classList.remove('show');
+  if(adminUnlockExpiry&&Date.now()<adminUnlockExpiry)showAdminUnlocked();else showAdminLocked();
+  document.getElementById('settingsModal').classList.add('open');
+}
+function showAdminLocked(){
+  document.getElementById('adminLocked').style.display='block';
+  document.getElementById('adminUnlocked').style.display='none';
+  document.getElementById('adminStatus').textContent='Locked';
+  document.getElementById('adminStatus').style.color='var(--text3)';
+  if(adminCountdownTimer){clearInterval(adminCountdownTimer);adminCountdownTimer=null;}
+}
+function showAdminUnlocked(){
+  document.getElementById('adminLocked').style.display='none';
+  document.getElementById('adminUnlocked').style.display='flex';
+  document.getElementById('adminStatus').textContent='Unlocked';
+  document.getElementById('adminStatus').style.color='var(--accent)';
+  document.getElementById('adminUrl').value=SUPABASE_URL||'';
+  document.getElementById('adminKey').value=SUPABASE_KEY||'';
+  document.getElementById('adminAI').value=AI_KEY||'';
+  if(adminCountdownTimer)clearInterval(adminCountdownTimer);
+  adminCountdownTimer=setInterval(()=>{
+    const r=adminUnlockExpiry-Date.now();if(r<=0){lockAdmin();return;}
+    const m=Math.floor(r/60000),s=Math.floor((r%60000)/1000);
+    const el=document.getElementById('adminCountdown');if(el)el.textContent=`${m}:${s.toString().padStart(2,'0')}`;
+  },1000);
+}
+async function unlockAdmin(){
+  const email=document.getElementById('adminEmail').value.trim();
+  const pwd=document.getElementById('adminPwd').value;
+  const errEl=document.getElementById('adminError');errEl.classList.remove('show');
+  if(!email||!pwd){errEl.textContent='Email and password required.';errEl.classList.add('show');return;}
+  try{
+    const res=await supaAuth('token?grant_type=password',{email,password:pwd});
+    const data=await res.json();
+    if(data.error||!data.access_token){errEl.textContent=data.error_description||'Invalid credentials.';errEl.classList.add('show');return;}
+    adminUnlockExpiry=Date.now()+60*60*1000;
+    localStorage.setItem('clarity_email',email);
+    showAdminUnlocked();toast('Admin panel unlocked for 1 hour','success');
+  }catch(e){errEl.textContent='Network error.';errEl.classList.add('show');}
+}
+function lockAdmin(){adminUnlockExpiry=null;if(adminCountdownTimer){clearInterval(adminCountdownTimer);adminCountdownTimer=null;}showAdminLocked();}
+function saveAdminSettings(){
+  const url=document.getElementById('adminUrl').value.trim();
+  const key=document.getElementById('adminKey').value.trim();
+  const ai=document.getElementById('adminAI').value.trim();
+  if(url){SUPABASE_URL=url;localStorage.setItem('clarity_url',url);}
+  if(key){SUPABASE_KEY=key;localStorage.setItem('clarity_key',key);}
+  if(ai){AI_KEY=ai;localStorage.setItem('clarity_ai',ai);}
+  toast('Settings saved — reloading...','success');
+  setTimeout(()=>location.reload(),1200);
+}
+async function saveWorkspaceName(){
+  const name=document.getElementById('settingsWsName').value.trim();
+  if(!name||!state.workspaceId)return;
+  const res=await supa(`workspaces?id=eq.${state.workspaceId}`,{method:'PATCH',body:JSON.stringify({name})});
+  if(res.ok){state.workspaceName=name;toast('Workspace name updated','success');}
+  else toast('Could not update','error');
+}
+async function changePassword(){
+  const np=document.getElementById('settingsNewPwd').value;
+  const cp=document.getElementById('settingsConfirmPwd').value;
+  const errEl=document.getElementById('pwdError');errEl.classList.remove('show');
+  if(!np||!cp){errEl.textContent='Both fields required.';errEl.classList.add('show');return;}
+  if(np!==cp){errEl.textContent='Passwords do not match.';errEl.classList.add('show');return;}
+  if(np.length<8){errEl.textContent='Minimum 8 characters.';errEl.classList.add('show');return;}
+  const session=getSession();
+  const res=await fetch(`${SUPABASE_URL}/auth/v1/user`,{method:'PUT',headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${session?.access_token}`,'Content-Type':'application/json'},body:JSON.stringify({password:np})});
+  if(res.ok){document.getElementById('settingsNewPwd').value='';document.getElementById('settingsConfirmPwd').value='';toast('Password updated','success');}
+  else{const e=await res.json();errEl.textContent=e.message||'Could not update.';errEl.classList.add('show');}
+}
+
+// ── VIEW SWITCHING ────────────────────────────────────────
+function switchView(view){
+  document.querySelectorAll('.app-view').forEach(v=>v.style.display='none');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  const el=document.getElementById('view'+view.charAt(0).toUpperCase()+view.slice(1));
+  if(el)el.style.display='flex';
+  const btn=document.querySelector(`[data-view="${view}"]`);
+  if(btn)btn.classList.add('active');
 }
 
 // ── UTILS ─────────────────────────────────────────────────
-
-function todayStr() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function toast(msg,type=''){
+  const wrap=document.getElementById('toastWrap');
+  const el=document.createElement('div');el.className=`toast${type?' '+type:''}`;el.textContent=msg;
+  wrap.appendChild(el);setTimeout(()=>el.remove(),3200);
 }
+function escHtml(str){return(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function todayStr(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');}));
 
-// ── START ──────────────────────────────────────────────────
 init();
 </script>
 </body>
