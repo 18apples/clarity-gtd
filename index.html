@@ -289,7 +289,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
   <main class="app-view" id="viewIdeas"     style="display:none"><div class="empty-state"><div class="empty-icon">💡</div><div class="empty-title">Ideas</div><div class="empty-sub">Coming in Phase 4.</div></div></main>
 
   <!-- CALENDAR VIEW -->
-  <main id="viewCalendar" style="display:none;flex-direction:column;gap:16px;padding:20px;max-width:960px;width:100%;margin:0 auto">
+  <main class="app-view" id="viewCalendar" style="display:none;max-width:960px">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;max-width:900px;width:100%;margin:0 auto">
       <div style="font-family:'Instrument Serif',serif;font-size:24px;letter-spacing:-.5px" id="calTitle">Calendar</div>
       <div style="display:flex;gap:8px;align-items:center">
@@ -1461,20 +1461,12 @@ async function changePassword(){
 
 // ── VIEW SWITCHING ────────────────────────────────────────
 function switchView(view){
-  // Hide all views including calendar
   document.querySelectorAll('.app-view').forEach(v=>v.style.display='none');
-  const calEl = document.getElementById('viewCalendar');
-  if(calEl) calEl.style.display='none';
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-
-  if(view==='calendar') {
-    if(calEl) calEl.style.display='flex';
-  } else {
-    const el=document.getElementById('view'+view.charAt(0).toUpperCase()+view.slice(1));
-    if(el)el.style.display='flex';
-  }
+  const el=document.getElementById('view'+view.charAt(0).toUpperCase()+view.slice(1));
+  if(el) el.style.display='flex';
   const btn=document.querySelector(`[data-view="${view}"]`);
-  if(btn)btn.classList.add('active');
+  if(btn) btn.classList.add('active');
   if(view==='calendar') renderCalendar();
 }
 
