@@ -1556,7 +1556,9 @@ function renderCard(task, overdue=false) {
   const iqMap = { important_urgent:'iu', important_not_urgent:'inu', not_important_urgent:'niu', not_important_not_urgent:'ninu' };
   const iqLabel = { important_urgent:'🔴 Imp+Urgent', important_not_urgent:'🟢 Imp+Not Urgent', not_important_urgent:'🟡 Not Imp+Urgent', not_important_not_urgent:'🔵 Not Imp+Not Urgent' };
   const cats = (task._categories||[]).map(c=>`<span class="tag tag-cat">${escHtml(c.name)}</span>`).join('');
-  const dueTag = task.due_date ? `<span class="tag ${overdue?'tag-overdue':'tag-due'}">${overdue?'⚠ ':'📅 '}${task.due_date}</span>` : '';
+  const taskBlackout = task.due_date ? isBlackoutDate(task.due_date) : null;
+  const taskBlackoutBadge = taskBlackout ? '<span class="tag" style="background:#f0a85515;color:var(--orange);border:1px solid #f0a85530">⛔ ' + escHtml(taskBlackout.label) + '</span>' : '';
+  const dueTag = task.due_date ? '<span class="tag ' + (overdue?'tag-overdue':'tag-due') + '">' + (overdue?'⚠ ':'📅 ') + task.due_date + '</span>' + taskBlackoutBadge : '';
   const xCount  = task.type==='recurring' && task.recur_pattern==='x_per_day' && task.target_count
     ? `<span class="tag tag-recur">🔄 ${task.current_count||0}/${task.target_count}</span>`
     : task.type==='recurring' ? '<span class="tag tag-recur">🔄</span>' : '';
@@ -2150,8 +2152,9 @@ function renderPipelineCard(task, extraActions='') {
   const iqLabel = {important_urgent:'🔴 Imp+Urgent',important_not_urgent:'🟢 Imp+Not Urgent',not_important_urgent:'🟡 Not Imp+Urgent',not_important_not_urgent:'🔵 Not Imp+Not Urgent'};
   const cats = (task._categories||[]).map(c=>`<span class="tag tag-cat">${escHtml(c.name)}</span>`).join('');
   const today = todayStr();
-  const blackout = task.due_date ? isBlackoutDate(task.due_date) : null;
-  const dueTag = task.due_date ? `<span class="tag ${task.due_date<today?'tag-overdue':'tag-due'}">${task.due_date<today?'⚠ ':'📅 '}${task.due_date}</span>${blackout?`<span class="tag" style="background:#f0a85515;color:var(--orange);border:1px solid #f0a85530">⛔ ${escHtml(blackout.label)}</span>`:''}` : '';
+  const blackout   = task.due_date ? isBlackoutDate(task.due_date) : null;
+  const blackoutBadge = blackout ? '<span class="tag" style="background:#f0a85515;color:var(--orange);border:1px solid #f0a85530">⛔ ' + escHtml(blackout.label) + '</span>' : '';
+  const dueTag = task.due_date ? '<span class="tag ' + (task.due_date<today?'tag-overdue':'tag-due') + '">' + (task.due_date<today?'⚠ ':'📅 ') + task.due_date + '</span>' + blackoutBadge : '';
   const revisitTag = task.revisit_date ? `<span class="tag tag-cat">🔁 Revisit ${task.revisit_date}</span>` : '';
   const xCount  = task.type==='recurring' && task.recur_pattern==='x_per_day' && task.target_count
     ? `<span class="tag tag-recur">🔄 ${task.current_count||0}/${task.target_count}</span>`
@@ -2210,7 +2213,6 @@ function openEditTask(id) {
 
 // Also update renderCard to use openEditTask
 // Override openEdit globally
-function openEdit(id) { openEditTask(id); }
 
 
 // ── INBOX SEARCH + FILTER ─────────────────────────────────────────
