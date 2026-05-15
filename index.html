@@ -431,6 +431,55 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
           <button class="filter-chip" data-iq="not_important_not_urgent" onclick="toggleInboxIQ('not_important_not_urgent')">🔵 Not Imp+Not Urgent</button>
         </div>
       </div>
+
+      <!-- Context filter -->
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px">Context</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap" id="inboxContextFilters"></div>
+      </div>
+
+      <!-- Task type filter -->
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px">Task Type</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          <button class="filter-chip active" data-tasktype="all"       onclick="setInboxTaskType('all')">All</button>
+          <button class="filter-chip"        data-tasktype="recurring" onclick="setInboxTaskType('recurring')">🔄 Recurring</button>
+          <button class="filter-chip"        data-tasktype="regular"   onclick="setInboxTaskType('regular')">Regular</button>
+        </div>
+      </div>
+
+      <!-- Estimated time filter -->
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px">Estimated Time (mins)</div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:12px;color:var(--text2)">≥</span>
+            <input type="number" id="inboxEstMin" placeholder="e.g. 15" min="0"
+              style="width:80px;padding:6px 8px;font-size:12px"
+              oninput="renderInbox()">
+            <span style="font-size:12px;color:var(--text3)">mins</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:12px;color:var(--text2)">≤</span>
+            <input type="number" id="inboxEstMax" placeholder="e.g. 60" min="0"
+              style="width:80px;padding:6px 8px;font-size:12px"
+              oninput="renderInbox()">
+            <span style="font-size:12px;color:var(--text3)">mins</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Missing fields filter -->
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px">Missing Fields</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          <button class="filter-chip" data-missing="category"    onclick="toggleInboxMissing('category')">Missing Category</button>
+          <button class="filter-chip" data-missing="importance"  onclick="toggleInboxMissing('importance')">Missing Importance</button>
+          <button class="filter-chip" data-missing="estimated"   onclick="toggleInboxMissing('estimated')">Missing Est. Time</button>
+          <button class="filter-chip" data-missing="due_date"    onclick="toggleInboxMissing('due_date')">Missing Due Date</button>
+          <button class="filter-chip" data-missing="context"     onclick="toggleInboxMissing('context')">Missing Context</button>
+        </div>
+      </div>
     </div>
 
     <div id="inboxList" style="display:flex;flex-direction:column;gap:8px"></div>
@@ -588,14 +637,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
       </div>
       <div class="form-group">
         <label class="form-label">Context</label>
-        <select id="cContext">
-          <option value="">— optional —</option>
-          <option value="@phone">📞 @phone</option>
-          <option value="@computer">💻 @computer</option>
-          <option value="@errands">🚗 @errands</option>
-          <option value="@home">🏠 @home</option>
-          <option value="@anywhere">🌐 @anywhere</option>
-        </select>
+        <select id="cContext"></select>
       </div>
     </div>
     <div class="form-row">
@@ -789,6 +831,15 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
         </div>
       </div>
     </div>
+    <!-- CONTEXTS -->
+    <div class="settings-block">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div class="settings-block-title">Contexts</div>
+        <button class="btn btn-sm btn-secondary" onclick="openAddContext()">+ Add</button>
+      </div>
+      <div id="settingsContextList" style="display:flex;flex-direction:column;gap:6px"></div>
+    </div>
+
     <button class="btn btn-ghost" onclick="signOut()">↪ Sign Out</button>
   </div>
 </div>
@@ -1085,6 +1136,29 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
   </div>
 </div>
 
+<!-- CONTEXT MODAL -->
+<div class="modal-overlay" id="contextModal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('contextModal')">✕</button>
+    <div class="modal-title" id="contextModalTitle">Add Context</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Name (include @)</label>
+        <input type="text" id="ctxName" placeholder="e.g. @home">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Icon (emoji)</label>
+        <input type="text" id="ctxIcon" placeholder="🏠" maxlength="4">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-sm btn-secondary" onclick="closeModal('contextModal')">Cancel</button>
+      <button class="btn btn-sm" onclick="saveContext()">Save</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toastWrap"></div>
 
 <script>
@@ -1149,7 +1223,7 @@ async function maybeRefreshSession() {
 // ── STATE ─────────────────────────────────────────────────
 const state = {
   workspaceId: null, workspaceName: null,
-  domains: [], categories: [], projects: [], tasks: [],
+  domains: [], categories: [], projects: [], tasks: [], contexts: [],
 };
 
 // ── INIT ──────────────────────────────────────────────────
@@ -1181,19 +1255,22 @@ function showApp() {
 // ── LOAD DATA ─────────────────────────────────────────────
 async function loadCoreData() {
   try {
-    const [r1,r2,r3,r4] = await Promise.all([
+    const [r1,r2,r3,r4,r5] = await Promise.all([
       supa('workspaces?select=id,name&limit=1'),
       supa('domains?select=id,name,icon,sort_order&order=sort_order'),
       supa('categories?select=id,name,domain_id,review_interval_days,is_paused,sort_order&order=sort_order'),
       supa('projects?select=id,name,status&status=eq.active&order=created_at.desc'),
+      supa('contexts?select=id,name,icon,sort_order,is_active&order=sort_order'),
     ]);
     const ws = await r1.json();
     const d  = await r2.json();
     const c  = await r3.json();
     const p  = await r4.json();
-    state.domains    = Array.isArray(d) ? d : [];
-    state.categories = Array.isArray(c) ? c : [];
-    state.projects   = Array.isArray(p) ? p : [];
+    const cx = await r5.json();
+    state.domains    = Array.isArray(d)  ? d  : [];
+    state.categories = Array.isArray(c)  ? c  : [];
+    state.projects   = Array.isArray(p)  ? p  : [];
+    state.contexts   = Array.isArray(cx) ? cx : [];
     if (Array.isArray(ws) && ws.length) {
       state.workspaceId   = ws[0].id;
       state.workspaceName = ws[0].name;
@@ -1478,6 +1555,7 @@ function openCapture(prefill) {
   document.getElementById('recurFields').style.display = 'none';
   document.querySelectorAll('.day-btn').forEach(b=>b.classList.remove('on'));
   populateProjectSelect();
+  populateContextSelect();
   renderInlineCatPicker();
   document.getElementById('captureModal').classList.add('open');
   setTimeout(()=>document.getElementById('cName').focus(),200);
@@ -1527,6 +1605,14 @@ function populateProjectSelect(selected) {
   const sel = document.getElementById('cProject');
   sel.innerHTML = '<option value="">— no project —</option>' +
     state.projects.map(p=>`<option value="${p.id}"${p.id===selected?' selected':''}>${escHtml(p.name)}</option>`).join('');
+}
+
+function populateContextSelect(selected) {
+  const sel = document.getElementById('cContext');
+  if (!sel) return;
+  const active = state.contexts.filter(c=>c.is_active);
+  sel.innerHTML = '<option value="">— optional —</option>' +
+    active.map(c=>`<option value="${c.name}"${c.name===selected?' selected':''}>${c.icon||''} ${escHtml(c.name)}</option>`).join('');
 }
 
 async function saveTask() {
@@ -1645,6 +1731,76 @@ function toggleDay(day) {
 
 
 
+
+// ── CONTEXT MANAGEMENT (Settings) ────────────────────────────────
+
+let editingContextId = null;
+
+function renderSettingsContexts() {
+  const list = document.getElementById('settingsContextList');
+  if (!list) return;
+  if (!state.contexts.length) {
+    list.innerHTML = '<div style="font-size:12px;color:var(--text3)">No contexts yet</div>';
+    return;
+  }
+  list.innerHTML = state.contexts.map(c => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface3);border:1px solid var(--border);border-radius:var(--r-sm)">
+      <span style="font-size:16px">${c.icon||'•'}</span>
+      <span style="flex:1;font-size:13px;${c.is_active?'':'color:var(--text3);text-decoration:line-through'}">${escHtml(c.name)}</span>
+      <button class="btn-icon" style="width:26px;height:26px;font-size:11px" onclick="toggleContextActive('${c.id}',${c.is_active})">${c.is_active?'⏸':'▶'}</button>
+      <button class="btn-icon" style="width:26px;height:26px;font-size:11px" onclick="openEditContext('${c.id}')">✎</button>
+    </div>`
+  ).join('');
+}
+
+function openAddContext() {
+  editingContextId = null;
+  document.getElementById('contextModalTitle').textContent = 'Add Context';
+  document.getElementById('ctxName').value = '';
+  document.getElementById('ctxIcon').value = '';
+  document.getElementById('contextModal').classList.add('open');
+  setTimeout(()=>document.getElementById('ctxName').focus(),200);
+}
+
+function openEditContext(id) {
+  const c = state.contexts.find(x=>x.id===id); if(!c) return;
+  editingContextId = id;
+  document.getElementById('contextModalTitle').textContent = 'Edit Context';
+  document.getElementById('ctxName').value = c.name;
+  document.getElementById('ctxIcon').value = c.icon||'';
+  document.getElementById('contextModal').classList.add('open');
+}
+
+async function saveContext() {
+  const name = document.getElementById('ctxName').value.trim();
+  if (!name) { toast('Context name required','error'); return; }
+  const payload = {
+    workspace_id: state.workspaceId,
+    name,
+    icon: document.getElementById('ctxIcon').value.trim()||null,
+    sort_order: editingContextId ? undefined : state.contexts.length+1,
+    is_active: true,
+  };
+  let res;
+  if (editingContextId) res = await supa(`contexts?id=eq.${editingContextId}`,{method:'PATCH',body:JSON.stringify(payload)});
+  else res = await supa('contexts',{method:'POST',body:JSON.stringify(payload)});
+  if (res.ok) {
+    toast(editingContextId?'Context updated':'Context added','success');
+    closeModal('contextModal');
+    await loadCoreData();
+    renderSettingsContexts();
+    populateContextSelect();
+  } else { const e=await res.json(); toast('Error: '+(e.message||'unknown'),'error'); }
+}
+
+async function toggleContextActive(id, currentlyActive) {
+  await supa(`contexts?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({is_active:!currentlyActive})});
+  await loadCoreData();
+  renderSettingsContexts();
+  populateContextSelect();
+  toast(currentlyActive?'Context hidden':'Context shown','success');
+}
+
 // ── PIPELINE VIEWS (23-29) ────────────────────────────────────────
 
 // ── SHARED TASK CARD WITH STATUS ACTIONS ─────────────────────────
@@ -1697,6 +1853,7 @@ function openEditTask(id) {
     document.getElementById('cType').value      = task.type==='idea'?'idea':'task';
     document.getElementById('cIQ').value        = task.importance_speed||'';
     document.getElementById('cContext').value   = task.context||'';
+    populateContextSelect(task.context||'');
     document.getElementById('cDue').value       = task.due_date||'';
     document.getElementById('cEstimated').value = task.estimated_mins||'';
     document.getElementById('cNotes').value     = task.notes||'';
@@ -1717,20 +1874,31 @@ function openEdit(id) { openEditTask(id); }
 
 // Persistent filter state
 const inboxFilters = {
-  search:     '',
-  domainIds:  [],   // selected domain ids
-  catIds:     [],   // selected category ids
-  iqValues:   [],   // selected importance_speed values
+  search:      '',
+  domainIds:   [],
+  catIds:      [],
+  iqValues:    [],
+  contextVals: [],
+  taskType:    'all',   // 'all' | 'recurring' | 'regular'
+  estMin:      null,
+  estMax:      null,
+  missing:     [],      // 'category' | 'importance' | 'estimated' | 'due_date' | 'context'
 };
 
 function initInboxFilters() {
-  // Render domain filter chips
   const df = document.getElementById('inboxDomainFilters');
   if (!df) return;
   df.innerHTML = state.domains.map(d =>
     `<button class="filter-chip${inboxFilters.domainIds.includes(d.id)?' active':''}" data-domain="${d.id}" onclick="toggleInboxDomain('${d.id}')">${d.icon||''} ${escHtml(d.name)}</button>`
   ).join('');
   renderInboxCatFilters();
+  // Render context chips
+  const cf = document.getElementById('inboxContextFilters');
+  if (cf) {
+    cf.innerHTML = state.contexts.filter(c=>c.is_active).map(c =>
+      `<button class="filter-chip${inboxFilters.contextVals.includes(c.name)?' active':''}" data-ctx="${c.name}" onclick="toggleInboxContext('${c.name}')">${c.icon||''} ${escHtml(c.name)}</button>`
+    ).join('') || '<span style="font-size:12px;color:var(--text3)">No contexts configured</span>';
+  }
 }
 
 function renderInboxCatFilters() {
@@ -1777,6 +1945,27 @@ function toggleInboxCat(id) {
   updateInboxClearBtn();
 }
 
+
+function toggleInboxContext(name) {
+  if (inboxFilters.contextVals.includes(name)) inboxFilters.contextVals = inboxFilters.contextVals.filter(x=>x!==name);
+  else inboxFilters.contextVals.push(name);
+  document.querySelectorAll('[data-ctx]').forEach(b=>b.classList.toggle('active',inboxFilters.contextVals.includes(b.dataset.ctx)));
+  renderInbox(); updateInboxClearBtn();
+}
+
+function setInboxTaskType(type) {
+  inboxFilters.taskType = type;
+  document.querySelectorAll('[data-tasktype]').forEach(b=>b.classList.toggle('active',b.dataset.tasktype===type));
+  renderInbox(); updateInboxClearBtn();
+}
+
+function toggleInboxMissing(field) {
+  if (inboxFilters.missing.includes(field)) inboxFilters.missing = inboxFilters.missing.filter(x=>x!==field);
+  else inboxFilters.missing.push(field);
+  document.querySelectorAll('[data-missing]').forEach(b=>b.classList.toggle('active',inboxFilters.missing.includes(b.dataset.missing)));
+  renderInbox(); updateInboxClearBtn();
+}
+
 function toggleInboxIQ(iq) {
   if (inboxFilters.iqValues.includes(iq)) inboxFilters.iqValues = inboxFilters.iqValues.filter(x=>x!==iq);
   else inboxFilters.iqValues.push(iq);
@@ -1788,19 +1977,31 @@ function toggleInboxIQ(iq) {
 }
 
 function updateInboxClearBtn() {
-  const hasFilter = inboxFilters.domainIds.length || inboxFilters.catIds.length || inboxFilters.iqValues.length || inboxFilters.search;
+  const hasFilter = inboxFilters.domainIds.length || inboxFilters.catIds.length ||
+    inboxFilters.iqValues.length || inboxFilters.search || inboxFilters.contextVals.length ||
+    inboxFilters.taskType !== 'all' || inboxFilters.estMin || inboxFilters.estMax || inboxFilters.missing.length;
   const btn = document.getElementById('inboxClearBtn');
   if (btn) btn.style.display = hasFilter ? 'block' : 'none';
 }
 
 function clearInboxFilters() {
-  inboxFilters.search    = '';
-  inboxFilters.domainIds = [];
-  inboxFilters.catIds    = [];
-  inboxFilters.iqValues  = [];
+  inboxFilters.search      = '';
+  inboxFilters.domainIds   = [];
+  inboxFilters.catIds      = [];
+  inboxFilters.iqValues    = [];
+  inboxFilters.contextVals = [];
+  inboxFilters.taskType    = 'all';
+  inboxFilters.estMin      = null;
+  inboxFilters.estMax      = null;
+  inboxFilters.missing     = [];
   const searchEl = document.getElementById('inboxSearch');
   if (searchEl) searchEl.value = '';
-  document.querySelectorAll('[data-domain],[data-cat],[data-iq]').forEach(b=>b.classList.remove('active'));
+  const estMin = document.getElementById('inboxEstMin');
+  const estMax = document.getElementById('inboxEstMax');
+  if (estMin) estMin.value = '';
+  if (estMax) estMax.value = '';
+  document.querySelectorAll('[data-domain],[data-cat],[data-iq],[data-ctx],[data-missing]').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('[data-tasktype]').forEach(b=>b.classList.toggle('active',b.dataset.tasktype==='all'));
   renderInboxCatFilters();
   renderInbox();
   updateInboxClearBtn();
@@ -1861,7 +2062,31 @@ function renderInbox() {
     tasks = tasks.filter(t => inboxFilters.iqValues.includes(t.importance_speed));
   }
 
-  const hasFilter = inboxFilters.domainIds.length || inboxFilters.catIds.length || inboxFilters.iqValues.length || inboxFilters.search;
+  // Apply context filter
+  if (inboxFilters.contextVals.length) {
+    tasks = tasks.filter(t => inboxFilters.contextVals.includes(t.context));
+  }
+
+  // Apply task type filter
+  if (inboxFilters.taskType === 'recurring') tasks = tasks.filter(t => t.type === 'recurring');
+  if (inboxFilters.taskType === 'regular')   tasks = tasks.filter(t => t.type !== 'recurring');
+
+  // Apply estimated time filter
+  const estMin = parseInt(document.getElementById('inboxEstMin')?.value);
+  const estMax = parseInt(document.getElementById('inboxEstMax')?.value);
+  if (!isNaN(estMin)) tasks = tasks.filter(t => t.estimated_mins && t.estimated_mins >= estMin);
+  if (!isNaN(estMax)) tasks = tasks.filter(t => t.estimated_mins && t.estimated_mins <= estMax);
+
+  // Apply missing fields filter
+  if (inboxFilters.missing.includes('category'))   tasks = tasks.filter(t => !(t._categories||[]).length);
+  if (inboxFilters.missing.includes('importance')) tasks = tasks.filter(t => !t.importance_speed);
+  if (inboxFilters.missing.includes('estimated'))  tasks = tasks.filter(t => !t.estimated_mins);
+  if (inboxFilters.missing.includes('due_date'))   tasks = tasks.filter(t => !t.due_date);
+  if (inboxFilters.missing.includes('context'))    tasks = tasks.filter(t => !t.context);
+
+  const hasFilter = inboxFilters.domainIds.length || inboxFilters.catIds.length ||
+    inboxFilters.iqValues.length || inboxFilters.search || inboxFilters.contextVals.length ||
+    inboxFilters.taskType !== 'all' || !isNaN(estMin) || !isNaN(estMax) || inboxFilters.missing.length;
   document.getElementById('inboxCount').textContent = hasFilter
     ? `${tasks.length} of ${total} items`
     : `${total} items`;
@@ -2838,6 +3063,7 @@ function openSettings(){
   document.getElementById('settingsWsId').textContent=state.workspaceId||'—';
   document.getElementById('pwdError').classList.remove('show');
   if(adminUnlockExpiry&&Date.now()<adminUnlockExpiry)showAdminUnlocked();else showAdminLocked();
+  renderSettingsContexts();
   document.getElementById('settingsModal').classList.add('open');
 }
 function showAdminLocked(){
