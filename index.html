@@ -259,6 +259,13 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
 
 ::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+@media(max-width:768px){
+  .task-actions{opacity:1 !important}
+  .cat-row-actions{opacity:1 !important}
+  .btn-icon{min-width:36px;min-height:36px}
+}
+::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 </style>
 </head>
@@ -671,7 +678,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
     </div>
     <div class="form-group">
       <label class="form-label">Categories <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">(tap to select)</span></label>
-      <div id="inlineCatPicker" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px;max-height:220px;overflow-y:auto"></div>
+      <div id="inlineCatPicker" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px;max-height:220px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain"></div>
       <input type="hidden" id="cCatIds" value="">
     </div>
     <div class="form-row">
@@ -783,10 +790,14 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
     <div id="subtasksSection" style="display:none;flex-direction:column;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:14px">
       <div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:var(--text3)">Subtasks</div>
       <div id="subtaskList" style="display:flex;flex-direction:column;gap:6px"></div>
-      <div style="display:flex;gap:8px">
-        <input type="text" id="subtaskInput" placeholder="Add a subtask..." style="flex:1"
-               onkeydown="if(event.key==='Enter'){event.preventDefault();addSubtask();}">
-        <button class="btn btn-sm btn-secondary" onclick="addSubtask()" style="flex-shrink:0">+ Add</button>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="text" id="subtaskInput" placeholder="Add a subtask..." style="flex:1;min-width:0"
+               onkeydown="if(event.key==='Enter'){event.preventDefault();addSubtask();}"
+               autocomplete="off" autocorrect="off" autocapitalize="sentences">
+        <button class="btn btn-sm btn-secondary" type="button"
+                ontouchend="event.preventDefault();addSubtask();"
+                onclick="addSubtask()"
+                style="flex-shrink:0;min-width:64px;min-height:44px;touch-action:manipulation">+ Add</button>
       </div>
     </div>
 
@@ -981,7 +992,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
     </div>
     <div class="form-group">
       <label class="form-label">Categories <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">(tap to select)</span></label>
-      <div id="pmCatPicker" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px;max-height:180px;overflow-y:auto"></div>
+      <div id="pmCatPicker" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px;max-height:180px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain"></div>
       <input type="hidden" id="pmCatIds" value="">
     </div>
     <div class="form-row">
@@ -1817,6 +1828,10 @@ function openCapture(prefill) {
   document.getElementById('recurTrack').classList.remove('on');
   document.getElementById('recurFields').style.display = 'none';
   document.querySelectorAll('.day-btn').forEach(b=>b.classList.remove('on'));
+  // Restore due date group visibility
+  const dueDateGroupCap = document.getElementById('cDue')?.closest('.form-group');
+  if (dueDateGroupCap) dueDateGroupCap.style.display = 'flex';
+  document.querySelectorAll('.day-btn').forEach(b=>b.classList.remove('on'));
   populateProjectSelect();
   populateContextSelect();
   renderInlineCatPicker();
@@ -1832,6 +1847,17 @@ function openEdit(id) {
   const task = state.tasks.find(t=>t.id===id); if(!task)return;
   editingTaskId = id;
   recurOn = false; selectedDays = [];
+  // Fully reset recurring toggle state
+  document.getElementById('recurTrack').classList.remove('on');
+  document.getElementById('recurFields').style.display = 'none';
+  document.querySelectorAll('.day-btn').forEach(b=>b.classList.remove('on'));
+  // Restore due date group visibility
+  const dueDateGroupCap = document.getElementById('cDue')?.closest('.form-group');
+  if (dueDateGroupCap) dueDateGroupCap.style.display = 'flex';
+  document.querySelectorAll('.day-btn').forEach(b=>b.classList.remove('on'));
+  // Restore due date group visibility
+  const dueDateGroup = document.getElementById('cDue')?.closest('.form-group');
+  if (dueDateGroup) dueDateGroup.style.display = 'flex';
   document.getElementById('captureTitle').textContent = 'Edit Task';
   document.getElementById('cName').value      = task.name;
   document.getElementById('cType').value      = task.type==='idea'?'idea':'task';
@@ -1985,7 +2011,15 @@ function toggleRecur() {
   recurOn = !recurOn;
   document.getElementById('recurTrack').classList.toggle('on',recurOn);
   document.getElementById('recurFields').style.display = recurOn?'flex':'none';
-  if (recurOn) { document.getElementById('rFirstDue').value=todayStr(); onPatternChange(); }
+  // Hide the top-level due date when recurring is on — First Due Date drives it
+  const dueDateGroup = document.getElementById('cDue')?.closest('.form-group');
+  if (dueDateGroup) dueDateGroup.style.display = recurOn ? 'none' : 'flex';
+  if (recurOn) {
+    // Sync first due date from existing due date
+    const existing = document.getElementById('cDue').value;
+    document.getElementById('rFirstDue').value = existing || todayStr();
+    onPatternChange();
+  }
 }
 function onPatternChange() {
   const p = document.getElementById('rPattern').value;
@@ -3176,7 +3210,7 @@ async function saveCategory() {
     is_paused:isPaused,
     paused_until:isPaused?(document.getElementById('cmPausedUntil').value||null):null,
     pause_reason:isPaused?(document.getElementById('cmPauseReason').value.trim()||null):null,
-    sort_order: editingCategoryId ? undefined : state.categories.filter(c=>c.domain_id===domainId).length+1,
+    sort_order: editingCategoryId ? (state.categories.find(c=>c.id===editingCategoryId)?.sort_order||0) : state.categories.filter(c=>c.domain_id===domainId).length+1,
   };
   let res;
   if (editingCategoryId) res = await supa(`categories?id=eq.${editingCategoryId}`, {method:'PATCH', body:JSON.stringify(payload)});
@@ -3486,21 +3520,24 @@ function renderCalMonth() {
   document.getElementById('calGrid').innerHTML = `<div class="cal-month-grid" style="margin-top:16px">
     ${DOWS.map(d=>`<div class="cal-month-dow">${d}</div>`).join('')}
     ${cells.map(d => {
-      const dStr = d2s(d);
-      const isToday = dStr === ts;
+      const dStr      = d2s(d);
+      const isToday   = dStr === ts;
       const otherMonth = d.getMonth() !== month;
-      const tasks = calTasksForDate(dStr);
-      const shown = tasks.slice(0, 3);
-      const extra = tasks.length - 3;
-      return `<div class="cal-month-cell${isToday?' today':''}${otherMonth?' other-month':''}${isBlackout2?' cal-blackout':''}" title="${isBlackout2&&bkPeriod2?'⛔ '+bkPeriod2.label:''}">
-        <div class="cal-month-num">${d.getDate()}</div>
-        ${shown.map(t => {
-          const cls = chipClass(t, ts);
-          const icon = t.type==='recurring'?'🔄 ':t.type==='idea'?'💡 ':'';
-          return `<div class="cal-month-chip ${cls}" title="${escHtml(t.name)}" onclick="openEdit('${t.id}')">${icon}${escHtml(t.name)}</div>`;
-        }).join('')}
-        ${extra > 0 ? `<div class="cal-more">+${extra} more</div>` : ''}
-      </div>`;
+      const tasks     = calTasksForDate(dStr);
+      const shown     = tasks.slice(0, 3);
+      const extra     = tasks.length - 3;
+      const bkMonth   = isBlackoutDate(dStr);
+      const cellClass = ['cal-month-cell', isToday?'today':'', otherMonth?'other-month':'', bkMonth?'cal-blackout':''].filter(Boolean).join(' ');
+      const cellTitle = bkMonth ? '⛔ ' + bkMonth.label : '';
+      return '<div class="' + cellClass + '" title="' + cellTitle + '">'
+        + '<div class="cal-month-num">' + d.getDate() + '</div>'
+        + shown.map(t => {
+            const cls  = chipClass(t, ts);
+            const icon = t.type==='recurring'?'🔄 ':t.type==='idea'?'💡 ':'';
+            return '<div class="cal-month-chip ' + cls + '" title="' + escHtml(t.name) + '" onclick="openEdit('' + t.id + '')">' + icon + escHtml(t.name) + '</div>';
+          }).join('')
+        + (extra > 0 ? '<div class="cal-more">+' + extra + ' more</div>' : '')
+        + '</div>';
     }).join('')}
   </div>`;
 }
