@@ -451,6 +451,9 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
       <input id="inboxSearch" placeholder="Search inbox..." style="background:none;border:none;flex:1;font-size:13px;padding:8px 0;color:var(--text);font-family:'Instrument Sans',sans-serif" oninput="renderInbox()">
       <span style="color:var(--text3);font-size:15px;padding:8px">🔍</span>
     </div>
+    <div id="inboxBanner" style="display:none;background:#60a8f015;border:1px solid #60a8f030;border-radius:var(--r-sm);padding:10px 14px;font-size:12px;color:var(--blue);font-family:'JetBrains Mono',monospace">
+      📍 Showing all tasks for selected domain/category — not just inbox items
+    </div>
 
     <!-- FILTERS -->
     <div style="display:flex;flex-direction:column;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:14px">
@@ -2247,30 +2250,10 @@ function pipelineEmpty(icon, title, sub) {
 // ── 23. EDIT TASK ─────────────────────────────────────────────────
 
 function openEditTask(id) {
-  const task = state.tasks.find(t=>t.id===id);
-  if (!task) return;
-  // Reuse capture form
-  openCapture();
-  setTimeout(() => {
-    document.getElementById('captureTitle').textContent = 'Edit Task';
-    document.getElementById('cName').value      = task.name;
-    document.getElementById('cType').value      = task.type==='idea'?'idea':'task';
-    document.getElementById('cIQ').value        = task.importance_speed||'';
-    document.getElementById('cContext').value   = task.context||'';
-    populateContextSelect(task.context||'');
-    document.getElementById('cDue').value       = task.due_date||'';
-    document.getElementById('cEstimated').value = task.estimated_mins||'';
-    document.getElementById('cNotes').value     = task.notes||'';
-    document.getElementById('cProject').value   = task.project_id||'';
-    onTypeChange();
-    setCatSelection((task._categories||[]).map(c=>c.id));
-    populateProjectSelect(task.project_id);
-    editingTaskId = id;
-  }, 50);
+  // Delegate to openEdit which correctly handles subtasks,
+  // cancel button, and all form fields
+  openEdit(id);
 }
-
-// Also update renderCard to use openEditTask
-// Override openEdit globally
 
 
 // ── INBOX SEARCH + FILTER ─────────────────────────────────────────
@@ -2282,10 +2265,11 @@ const inboxFilters = {
   catIds:      [],
   iqValues:    [],
   contextVals: [],
-  taskType:    'all',   // 'all' | 'recurring' | 'regular'
+  taskType:    'all',
   estMin:      null,
   estMax:      null,
-  missing:     [],      // 'category' | 'importance' | 'estimated' | 'due_date' | 'context'
+  missing:     [],
+  showAll:     false,   // true when navigating from Life Areas — shows all statuses
 };
 
 function initInboxFilters() {
@@ -2302,6 +2286,19 @@ function initInboxFilters() {
       `<button class="filter-chip${inboxFilters.contextVals.includes(c.name)?' active':''}" data-ctx="${c.name}" onclick="toggleInboxContext('${c.name}')">${c.icon||''} ${escHtml(c.name)}</button>`
     ).join('') || '<span style="font-size:12px;color:var(--text3)">No contexts configured</span>';
   }
+  // Sync importance filter chip states
+  document.querySelectorAll('[data-iq]').forEach(b =>
+    b.classList.toggle('active', inboxFilters.iqValues.includes(b.dataset.iq))
+  );
+  // Sync task type chip states
+  document.querySelectorAll('[data-tasktype]').forEach(b =>
+    b.classList.toggle('active', b.dataset.tasktype === inboxFilters.taskType)
+  );
+  // Sync missing filter chip states
+  document.querySelectorAll('[data-missing]').forEach(b =>
+    b.classList.toggle('active', inboxFilters.missing.includes(b.dataset.missing))
+  );
+  updateInboxClearBtn();
 }
 
 function renderInboxCatFilters() {
@@ -2397,6 +2394,7 @@ function clearInboxFilters() {
   inboxFilters.estMin      = null;
   inboxFilters.estMax      = null;
   inboxFilters.missing     = [];
+  inboxFilters.showAll     = false;
   const searchEl = document.getElementById('inboxSearch');
   if (searchEl) searchEl.value = '';
   const estMin = document.getElementById('inboxEstMin');
@@ -2413,11 +2411,12 @@ function clearInboxFilters() {
 // Navigate to inbox pre-filtered by domain
 function goToInboxFiltered(type, id) {
   clearInboxFilters();
+  // Set showAll flag so we show all statuses not just inbox
+  inboxFilters.showAll = true;
   if (type === 'domain') {
     inboxFilters.domainIds = [id];
   } else if (type === 'category') {
     inboxFilters.catIds = [id];
-    // Also select the parent domain
     const cat = state.categories.find(c=>c.id===id);
     if (cat) inboxFilters.domainIds = [cat.domain_id];
   }
@@ -2436,7 +2435,11 @@ function renderInbox() {
   // Init filter UI if needed
   initInboxFilters();
 
-  let tasks = state.tasks.filter(t => t.status==='inbox' && t.type!=='idea');
+  // When coming from Life Areas, show all non-done tasks regardless of status
+  // When in normal inbox mode, show only inbox status tasks
+  let tasks = inboxFilters.showAll
+    ? state.tasks.filter(t => t.status !== 'done' && t.status !== 'cancelled')
+    : state.tasks.filter(t => t.status === 'inbox' && t.type !== 'idea');
   const total = tasks.length;
 
   // Apply search
@@ -2493,6 +2496,9 @@ function renderInbox() {
   document.getElementById('inboxCount').textContent = hasFilter
     ? `${tasks.length} of ${total} items`
     : `${total} items`;
+  // Show banner when viewing from Life Areas
+  const banner = document.getElementById('inboxBanner');
+  if (banner) banner.style.display = inboxFilters.showAll ? 'block' : 'none';
 
   updateInboxClearBtn();
 
