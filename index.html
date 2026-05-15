@@ -775,8 +775,23 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
       <label class="form-label">Notes (optional)</label>
       <textarea id="cNotes" placeholder="Context, links, details..."></textarea>
     </div>
+
+    <!-- SUBTASKS -->
+    <div id="subtasksSection" style="display:none;flex-direction:column;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:14px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:var(--text3)">Subtasks</div>
+      <div id="subtaskList" style="display:flex;flex-direction:column;gap:6px"></div>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="subtaskInput" placeholder="Add a subtask..." style="flex:1"
+               onkeydown="if(event.key==='Enter'){event.preventDefault();addSubtask();}">
+        <button class="btn btn-sm btn-secondary" onclick="addSubtask()" style="flex-shrink:0">+ Add</button>
+      </div>
+    </div>
+
     <div class="modal-actions">
       <button class="btn btn-sm btn-secondary" onclick="closeModal('captureModal')">Cancel</button>
+      <div id="cancelTaskBtnWrap" style="display:none">
+        <button class="btn btn-sm" style="background:#f0606020;color:var(--red);border:1px solid #f0606040" onclick="cancelFromEditForm()">Cancel Task</button>
+      </div>
       <button class="btn btn-sm" onclick="saveTask()">Save</button>
     </div>
   </div>
@@ -1408,6 +1423,25 @@ async function loadTasks() {
         t._categories = state.categories.filter(c=>catIds.includes(c.id));
       });
     }
+    // Load subtask progress for all tasks
+    if (state.tasks.length) {
+      const tids = state.tasks.map(t=>t.id).join(',');
+      const sr   = await supa(`subtasks?task_id=in.(${tids})&select=task_id,is_done`);
+      const subs = await sr.json();
+      if (Array.isArray(subs)) {
+        state.tasks.forEach(t => {
+          const taskSubs = subs.filter(s=>s.task_id===t.id);
+          if (taskSubs.length) {
+            t._subtaskProgress = {
+              total: taskSubs.length,
+              done:  taskSubs.filter(s=>s.is_done).length
+            };
+          } else {
+            t._subtaskProgress = null;
+          }
+        });
+      }
+    }
     console.log(`loadTasks: ${state.tasks.length} tasks`);
   } catch(e) {
     console.error('loadTasks:', e);
@@ -1566,11 +1600,12 @@ function renderCard(task, overdue=false) {
   const estTag = task.estimated_mins ? `<span class="tag tag-cat">⏱ ${task.estimated_mins}m</span>` : '';
   const iqTag  = iq ? `<span class="tag tag-${iqMap[iq]}">${iqLabel[iq]}</span>` : '';
   return `<div class="task-card" data-id="${task.id}" data-iq="${iq}">
-    <button class="task-check" onclick="completeTask('${task.id}')"></button>
+    <button class="task-check" onclick="${(task._subtaskProgress&&task._subtaskProgress.done<task._subtaskProgress.total)?'showSubtaskBlock(''+task.id+'')':'completeTask(''+task.id+'')'}"
+      title="${(task._subtaskProgress&&task._subtaskProgress.done<task._subtaskProgress.total)?'Complete all subtasks first':''}"></button>
     <div class="task-body">
       <div class="task-name">${escHtml(task.name)}</div>
       ${task.notes?`<div class="task-notes">${escHtml(task.notes.slice(0,100))}${task.notes.length>100?'…':''}</div>`:''}
-      <div class="task-meta">${typeTag}${iqTag}${cats}${dueTag}${estTag}</div>
+      <div class="task-meta">${typeTag}${iqTag}${cats}${dueTag}${estTag}${subtaskBadge}</div>
     </div>
     <div class="task-actions">
       <button class="btn-icon" style="font-size:12px" title="Reschedule" onclick="openReschedule('${task.id}')">↻</button>
@@ -1777,6 +1812,10 @@ function openCapture(prefill) {
   populateProjectSelect();
   populateContextSelect();
   renderInlineCatPicker();
+  // Hide subtasks and cancel button for new task capture
+  document.getElementById('subtasksSection').style.display = 'none';
+  document.getElementById('cancelTaskBtnWrap').style.display = 'none';
+  currentSubtasks = [];
   document.getElementById('captureModal').classList.add('open');
   setTimeout(()=>document.getElementById('cName').focus(),200);
 }
@@ -1798,6 +1837,11 @@ function openEdit(id) {
   populateProjectSelect(task.project_id);
   document.getElementById('cProject').value = task.project_id||'';
   setCatSelection((task._categories||[]).map(c=>c.id));
+  populateContextSelect(task.context||'');
+  // Show subtasks section and cancel button for existing tasks
+  document.getElementById('subtasksSection').style.display = 'flex';
+  document.getElementById('cancelTaskBtnWrap').style.display = 'block';
+  loadSubtasks(id);
   document.getElementById('captureModal').classList.add('open');
 }
 
@@ -1919,6 +1963,9 @@ async function saveTask() {
   if (recurrenceId && catPickerSel.length) {
     await supa('recurrence_categories',{method:'POST',prefer:'return=minimal',body:JSON.stringify(catPickerSel.map(cid=>({recurrence_id:recurrenceId,category_id:cid})))});
   }
+
+  // Save subtasks if editing
+  if (savedId && editingTaskId) await saveSubtasks(savedId);
 
   toast(editingTaskId?'Task updated ✓':'Task captured ✓','success');
   closeModal('captureModal');
@@ -2167,7 +2214,8 @@ function renderPipelineCard(task, extraActions='') {
   const projTag = proj ? `<span class="tag tag-cat">📁 ${escHtml(proj.name)}</span>` : '';
 
   return `<div class="task-card" data-id="${task.id}" data-iq="${iq}">
-    <button class="task-check" onclick="completeTask('${task.id}')"></button>
+    <button class="task-check" onclick="${(task._subtaskProgress&&task._subtaskProgress.done<task._subtaskProgress.total)?'showSubtaskBlock(''+task.id+'')':'completeTask(''+task.id+'')'}"
+      title="${(task._subtaskProgress&&task._subtaskProgress.done<task._subtaskProgress.total)?'Complete all subtasks first':''}"></button>
     <div class="task-body">
       <div class="task-name">${escHtml(task.name)}</div>
       ${task.notes?`<div class="task-notes">${escHtml(task.notes.slice(0,100))}${task.notes.length>100?'…':''}</div>`:''}
@@ -3180,6 +3228,106 @@ async function confirmDeleteArea() {
   await loadDomains(); await loadTasks(); renderAreas();
 }
 
+
+// ── SUBTASKS ──────────────────────────────────────────────────────
+
+let currentSubtasks = []; // {id, name, is_done, isNew, toDelete}
+
+async function loadSubtasks(taskId) {
+  if (!taskId) { currentSubtasks = []; renderSubtaskList(); return; }
+  try {
+    const res  = await supa(`subtasks?task_id=eq.${taskId}&select=id,name,is_done,sort_order&order=sort_order`);
+    const data = await res.json();
+    currentSubtasks = Array.isArray(data) ? data.map(s => ({...s, isNew:false, toDelete:false})) : [];
+  } catch(e) {
+    currentSubtasks = [];
+  }
+  renderSubtaskList();
+}
+
+function renderSubtaskList() {
+  const list = document.getElementById('subtaskList');
+  if (!list) return;
+  const visible = currentSubtasks.filter(s => !s.toDelete);
+  list.innerHTML = visible.length ? visible.map((s, i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">
+      <input type="checkbox" ${s.is_done?'checked':''} onchange="toggleSubtask('${s.id||'new_'+i}')"
+        style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent)">
+      <span style="flex:1;font-size:13px;${s.is_done?'text-decoration:line-through;color:var(--text3)':''}">${escHtml(s.name)}</span>
+      <button class="btn-icon" style="width:22px;height:22px;font-size:10px;color:var(--red)"
+        onclick="removeSubtask('${s.id||'new_'+i}')">✕</button>
+    </div>`).join('') : '<div style="font-size:12px;color:var(--text3);padding:4px 0">No subtasks yet</div>';
+}
+
+function addSubtask() {
+  const input = document.getElementById('subtaskInput');
+  const name  = input?.value.trim();
+  if (!name) return;
+  currentSubtasks.push({
+    id: null, name, is_done: false,
+    sort_order: currentSubtasks.length,
+    isNew: true, toDelete: false
+  });
+  input.value = '';
+  renderSubtaskList();
+  input.focus();
+}
+
+function toggleSubtask(idOrKey) {
+  const s = currentSubtasks.find(x => (x.id||'new_'+currentSubtasks.indexOf(x)) === idOrKey || String(x.id) === idOrKey);
+  if (s) { s.is_done = !s.is_done; renderSubtaskList(); }
+}
+
+function removeSubtask(idOrKey) {
+  const idx = currentSubtasks.findIndex(x => (x.id && x.id === idOrKey) || ('new_'+currentSubtasks.indexOf(x)) === idOrKey);
+  if (idx === -1) return;
+  if (currentSubtasks[idx].isNew) currentSubtasks.splice(idx, 1);
+  else currentSubtasks[idx].toDelete = true;
+  renderSubtaskList();
+}
+
+async function saveSubtasks(taskId) {
+  // Delete removed subtasks
+  const toDelete = currentSubtasks.filter(s => s.toDelete && s.id);
+  for (const s of toDelete) {
+    await supa(`subtasks?id=eq.${s.id}`, {method:'DELETE', prefer:'return=minimal'});
+  }
+  // Update existing
+  const toUpdate = currentSubtasks.filter(s => !s.isNew && !s.toDelete && s.id);
+  for (const s of toUpdate) {
+    await supa(`subtasks?id=eq.${s.id}`, {method:'PATCH', prefer:'return=minimal',
+      body: JSON.stringify({is_done: s.is_done, name: s.name})});
+  }
+  // Insert new
+  const toInsert = currentSubtasks.filter(s => s.isNew && !s.toDelete);
+  if (toInsert.length) {
+    await supa('subtasks', {method:'POST', prefer:'return=minimal',
+      body: JSON.stringify(toInsert.map((s, i) => ({
+        task_id: taskId, name: s.name, is_done: s.is_done,
+        sort_order: (toUpdate.length + i)
+      })))});
+  }
+}
+
+function getSubtaskProgress(taskId) {
+  // Returns {total, done} from loaded tasks - called for card rendering
+  // We store subtask counts on tasks after loading
+  const task = state.tasks.find(t => t.id === taskId);
+  return task?._subtaskProgress || null;
+}
+
+function showSubtaskBlock(id) {
+  toast('Complete all subtasks first', 'error');
+  openEdit(id);
+}
+
+function cancelFromEditForm() {
+  const id = editingTaskId;
+  if (!id) return;
+  closeModal('captureModal');
+  openCancel(id);
+}
+
 // ── CANCEL TASK ───────────────────────────────────────────
 
 let cancellingId = null;
@@ -3235,8 +3383,10 @@ let calOffset = 0;
 
 function setCalMode(mode) {
   calMode = mode; calOffset = 0;
-  document.getElementById('calWeekBtn').style.cssText  = mode==='week'  ? 'background:var(--accent);color:#0a0a0b;border:none;padding:5px 12px;border-radius:4px;font-family:JetBrains Mono,monospace;font-size:11px;font-weight:600;cursor:pointer' : 'background:none;color:var(--text2);border:none;padding:5px 12px;border-radius:4px;font-family:JetBrains Mono,monospace;font-size:11px;font-weight:500;cursor:pointer';
-  document.getElementById('calMonthBtn').style.cssText = mode==='month' ? 'background:var(--accent);color:#0a0a0b;border:none;padding:5px 12px;border-radius:4px;font-family:JetBrains Mono,monospace;font-size:11px;font-weight:600;cursor:pointer' : 'background:none;color:var(--text2);border:none;padding:5px 12px;border-radius:4px;font-family:JetBrains Mono,monospace;font-size:11px;font-weight:500;cursor:pointer';
+  const wb = document.getElementById('calWeekBtn');
+  const mb = document.getElementById('calMonthBtn');
+  if (wb) { wb.style.background = mode==='week' ? 'var(--accent)' : 'none'; wb.style.color = mode==='week' ? '#0a0a0b' : 'var(--text2)'; wb.style.fontWeight = mode==='week' ? '600' : '500'; }
+  if (mb) { mb.style.background = mode==='month' ? 'var(--accent)' : 'none'; mb.style.color = mode==='month' ? '#0a0a0b' : 'var(--text2)'; mb.style.fontWeight = mode==='month' ? '600' : '500'; }
   renderCalendar();
 }
 
