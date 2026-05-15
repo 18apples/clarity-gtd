@@ -386,12 +386,90 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
     </div>
     <div id="areasList" style="display:flex;flex-direction:column;gap:12px"></div>
   </main>
-  <main class="app-view" id="viewInbox"     style="display:none"><div class="empty-state"><div class="empty-icon">📥</div><div class="empty-title">Inbox</div><div class="empty-sub">Coming in Phase 4.</div></div></main>
-  <main class="app-view" id="viewNext"      style="display:none"><div class="empty-state"><div class="empty-icon">⚡</div><div class="empty-title">Next Actions</div><div class="empty-sub">Coming in Phase 4.</div></div></main>
-  <main class="app-view" id="viewWaiting"   style="display:none"><div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-title">Waiting For</div><div class="empty-sub">Coming in Phase 4.</div></div></main>
-  <main class="app-view" id="viewSomeday"   style="display:none"><div class="empty-state"><div class="empty-icon">🌙</div><div class="empty-title">Someday</div><div class="empty-sub">Coming in Phase 4.</div></div></main>
-  <main class="app-view" id="viewReference" style="display:none"><div class="empty-state"><div class="empty-icon">📚</div><div class="empty-title">Reference</div><div class="empty-sub">Coming in Phase 4.</div></div></main>
-  <main class="app-view" id="viewIdeas"     style="display:none"><div class="empty-state"><div class="empty-icon">💡</div><div class="empty-title">Ideas</div><div class="empty-sub">Coming in Phase 4.</div></div></main>
+  <!-- INBOX VIEW -->
+  <main class="app-view" id="viewInbox" style="display:none">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Process these</div>
+        <div style="font-family:'Instrument Serif',serif;font-size:28px;letter-spacing:-.8px;line-height:1">Inbox</div>
+      </div>
+      <span id="inboxCount" class="tag tag-cat" style="font-size:12px"></span>
+    </div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.6">
+      Process each item — decide what it is and where it belongs. Everything here needs a decision.
+    </div>
+    <div id="inboxList" style="display:flex;flex-direction:column;gap:8px"></div>
+  </main>
+  <!-- NEXT ACTIONS VIEW -->
+  <main class="app-view" id="viewNext" style="display:none">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Ready to act on</div>
+        <div style="font-family:'Instrument Serif',serif;font-size:28px;letter-spacing:-.8px;line-height:1">Next Actions</div>
+      </div>
+      <span id="nextCount" class="tag tag-cat" style="font-size:12px"></span>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap" id="nextContextFilters">
+      <button class="filter-chip active" data-ctx="all"       onclick="setNextFilter('all')">All</button>
+      <button class="filter-chip"        data-ctx="@phone"    onclick="setNextFilter('@phone')">📞 Phone</button>
+      <button class="filter-chip"        data-ctx="@computer" onclick="setNextFilter('@computer')">💻 Computer</button>
+      <button class="filter-chip"        data-ctx="@errands"  onclick="setNextFilter('@errands')">🚗 Errands</button>
+      <button class="filter-chip"        data-ctx="@home"     onclick="setNextFilter('@home')">🏠 Home</button>
+      <button class="filter-chip"        data-ctx="@anywhere" onclick="setNextFilter('@anywhere')">🌐 Anywhere</button>
+    </div>
+    <div id="nextList" style="display:flex;flex-direction:column;gap:8px"></div>
+  </main>
+  <!-- WAITING VIEW -->
+  <main class="app-view" id="viewWaiting" style="display:none">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Blocked on others</div>
+        <div style="font-family:'Instrument Serif',serif;font-size:28px;letter-spacing:-.8px;line-height:1">Waiting For</div>
+      </div>
+      <span id="waitingCount" class="tag tag-cat" style="font-size:12px"></span>
+    </div>
+    <div id="waitingList" style="display:flex;flex-direction:column;gap:8px"></div>
+  </main>
+  <!-- SOMEDAY VIEW -->
+  <main class="app-view" id="viewSomeday" style="display:none">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Parked deliberately</div>
+        <div style="font-family:'Instrument Serif',serif;font-size:28px;letter-spacing:-.8px;line-height:1">Someday</div>
+      </div>
+      <span id="somedayCount" class="tag tag-cat" style="font-size:12px"></span>
+    </div>
+    <div id="somedayList" style="display:flex;flex-direction:column;gap:8px"></div>
+  </main>
+  <!-- REFERENCE VIEW -->
+  <main class="app-view" id="viewReference" style="display:none">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Not actionable</div>
+        <div style="font-family:'Instrument Serif',serif;font-size:28px;letter-spacing:-.8px;line-height:1">Reference</div>
+      </div>
+      <span id="referenceCount" class="tag tag-cat" style="font-size:12px"></span>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:4px 4px 4px 14px;display:flex;align-items:center;gap:8px">
+      <input id="refSearch" placeholder="Search reference items..." style="background:none;border:none;flex:1;font-size:13px;padding:8px 0;color:var(--text);font-family:'Instrument Sans',sans-serif" oninput="renderReference()">
+      <span style="color:var(--text3);font-size:16px;padding:8px">🔍</span>
+    </div>
+    <div id="referenceList" style="display:flex;flex-direction:column;gap:8px"></div>
+  </main>
+  <!-- IDEAS VIEW -->
+  <main class="app-view" id="viewIdeas" style="display:none">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Captured thoughts</div>
+        <div style="font-family:'Instrument Serif',serif;font-size:28px;letter-spacing:-.8px;line-height:1">Ideas</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span id="ideasCount" class="tag tag-cat" style="font-size:12px"></span>
+        <button class="btn btn-sm btn-secondary" onclick="openCapture()">+ Capture Idea</button>
+      </div>
+    </div>
+    <div id="ideasList" style="display:flex;flex-direction:column;gap:8px"></div>
+  </main>
 
   <!-- CALENDAR VIEW -->
   <main class="app-view" id="viewCalendar" style="display:none;max-width:1100px;width:100%">
@@ -895,6 +973,83 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
   </div>
 </div>
 
+
+<!-- PROCESS TASK MODAL (Inbox) -->
+<div class="modal-overlay" id="processModal">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('processModal')">✕</button>
+    <div class="modal-title">Process Task</div>
+    <div id="processTaskName" style="font-size:14px;font-weight:500;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);line-height:1.4"></div>
+    <div class="form-group">
+      <label class="form-label">What is this?</label>
+      <select id="processStatus">
+        <option value="next">Next Action — I will do this</option>
+        <option value="waiting">Waiting For — blocked on someone/something</option>
+        <option value="someday">Someday — maybe later</option>
+        <option value="reference">Reference — not actionable, keep for info</option>
+        <option value="cancelled">Cancel — not doing this</option>
+      </select>
+    </div>
+    <div class="form-group" id="processCancelReasonGroup" style="display:none">
+      <label class="form-label">Reason for cancelling</label>
+      <select id="processCancelReason">
+        <option value="">— select reason —</option>
+        <option value="no_longer_relevant">No longer relevant</option>
+        <option value="duplicate">Duplicate</option>
+        <option value="decided_against">Decided against it</option>
+        <option value="circumstances_changed">Circumstances changed</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="form-group" id="processDueDateGroup">
+      <label class="form-label">Due Date (optional)</label>
+      <input type="date" id="processDueDate">
+    </div>
+    <div class="form-group" id="processRevisitGroup" style="display:none">
+      <label class="form-label">Revisit Date (optional — resurfaces to inbox on this date)</label>
+      <input type="date" id="processRevisitDate">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-sm btn-secondary" onclick="closeModal('processModal')">Cancel</button>
+      <button class="btn btn-sm" onclick="confirmProcess()">Process</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROMOTE IDEA MODAL -->
+<div class="modal-overlay" id="promoteModal">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('promoteModal')">✕</button>
+    <div class="modal-title">Promote Idea</div>
+    <div id="promoteIdeaName" style="font-size:14px;font-weight:500;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);line-height:1.4"></div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.6">This idea is ready to become something. What should it be?</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button class="btn btn-secondary" onclick="promoteToTask()">⚡ Promote to Task — single actionable step</button>
+      <button class="btn btn-secondary" onclick="promoteToProject()">📁 Promote to Project — multiple steps needed</button>
+    </div>
+  </div>
+</div>
+
+<!-- SET REVISIT DATE MODAL -->
+<div class="modal-overlay" id="revisitModal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('revisitModal')">✕</button>
+    <div class="modal-title">Set Revisit Date</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.5">This task will resurface in your inbox on this date.</div>
+    <div class="form-group">
+      <label class="form-label">Revisit Date</label>
+      <input type="date" id="revisitDate">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-sm btn-secondary" onclick="closeModal('revisitModal')">Cancel</button>
+      <button class="btn btn-sm" onclick="confirmRevisit()">Set Date</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toastWrap"></div>
 
 <script>
@@ -1017,7 +1172,7 @@ async function loadCoreData() {
 
 async function loadTasks() {
   try {
-    const res = await supa('tasks?select=id,name,notes,type,status,importance_speed,context,due_date,estimated_mins,reschedule_count,reschedule_reasons,recurrence_id,recur_pattern,current_count,target_count,project_id,created_at&order=created_at.desc');
+    const res = await supa('tasks?select=id,name,notes,type,status,importance_speed,context,due_date,revisit_date,estimated_mins,reschedule_count,reschedule_reasons,recurrence_id,recur_pattern,current_count,target_count,project_id,created_at&order=created_at.desc');
     const data = await res.json();
     if (!Array.isArray(data)) {
       console.error('loadTasks error:', data);
@@ -1453,6 +1608,272 @@ function toggleDay(day) {
 
 
 
+
+
+// ── PIPELINE VIEWS (23-29) ────────────────────────────────────────
+
+// ── SHARED TASK CARD WITH STATUS ACTIONS ─────────────────────────
+
+function renderPipelineCard(task, extraActions='') {
+  const iq = task.importance_speed || '';
+  const iqMap = {important_urgent:'iu',important_not_urgent:'inu',not_important_urgent:'niu',not_important_not_urgent:'ninu'};
+  const iqLabel = {important_urgent:'🔴 Imp+Urgent',important_not_urgent:'🟢 Imp+Not Urgent',not_important_urgent:'🟡 Not Imp+Urgent',not_important_not_urgent:'🔵 Not Imp+Not Urgent'};
+  const cats = (task._categories||[]).map(c=>`<span class="tag tag-cat">${escHtml(c.name)}</span>`).join('');
+  const today = todayStr();
+  const dueTag = task.due_date ? `<span class="tag ${task.due_date<today?'tag-overdue':'tag-due'}">${task.due_date<today?'⚠ ':'📅 '}${task.due_date}</span>` : '';
+  const revisitTag = task.revisit_date ? `<span class="tag tag-cat">🔁 Revisit ${task.revisit_date}</span>` : '';
+  const typeTag = task.type==='recurring'?'<span class="tag tag-recur">🔄</span>':task.type==='idea'?'<span class="tag tag-idea">💡 Idea</span>':'';
+  const estTag = task.estimated_mins ? `<span class="tag tag-cat">⏱ ${task.estimated_mins}m</span>` : '';
+  const iqTag = iq ? `<span class="tag tag-${iqMap[iq]}">${iqLabel[iq]}</span>` : '';
+  const ctxTag = task.context ? `<span class="tag tag-cat">${task.context}</span>` : '';
+  const proj = state.projects.find(p=>p.id===task.project_id);
+  const projTag = proj ? `<span class="tag tag-cat">📁 ${escHtml(proj.name)}</span>` : '';
+
+  return `<div class="task-card" data-id="${task.id}" data-iq="${iq}">
+    <button class="task-check" onclick="completeTask('${task.id}')"></button>
+    <div class="task-body">
+      <div class="task-name">${escHtml(task.name)}</div>
+      ${task.notes?`<div class="task-notes">${escHtml(task.notes.slice(0,100))}${task.notes.length>100?'…':''}</div>`:''}
+      <div class="task-meta">${typeTag}${iqTag}${ctxTag}${cats}${projTag}${dueTag}${revisitTag}${estTag}</div>
+    </div>
+    <div class="task-actions">
+      ${extraActions}
+      <button class="btn-icon" style="font-size:12px" title="Reschedule" onclick="openReschedule('${task.id}')">↻</button>
+      <button class="btn-icon" style="font-size:12px" title="Edit" onclick="openEditTask('${task.id}')">✎</button>
+      <button class="btn-icon" style="font-size:12px;color:var(--red)" title="Cancel" onclick="openCancel('${task.id}')">✕</button>
+    </div>
+  </div>`;
+}
+
+function pipelineEmpty(icon, title, sub) {
+  return `<div class="empty-state"><div class="empty-icon">${icon}</div><div class="empty-title">${title}</div><div class="empty-sub">${sub}</div></div>`;
+}
+
+// ── 23. EDIT TASK ─────────────────────────────────────────────────
+
+function openEditTask(id) {
+  const task = state.tasks.find(t=>t.id===id);
+  if (!task) return;
+  // Reuse capture form
+  openCapture();
+  setTimeout(() => {
+    document.getElementById('captureTitle').textContent = 'Edit Task';
+    document.getElementById('cName').value      = task.name;
+    document.getElementById('cType').value      = task.type==='idea'?'idea':'task';
+    document.getElementById('cIQ').value        = task.importance_speed||'';
+    document.getElementById('cContext').value   = task.context||'';
+    document.getElementById('cDue').value       = task.due_date||'';
+    document.getElementById('cEstimated').value = task.estimated_mins||'';
+    document.getElementById('cNotes').value     = task.notes||'';
+    document.getElementById('cProject').value   = task.project_id||'';
+    onTypeChange();
+    setCatSelection((task._categories||[]).map(c=>c.id));
+    populateProjectSelect(task.project_id);
+    editingTaskId = id;
+  }, 50);
+}
+
+// Also update renderCard to use openEditTask
+// Override openEdit globally
+function openEdit(id) { openEditTask(id); }
+
+// ── 24. INBOX ─────────────────────────────────────────────────────
+
+let processingTaskId = null;
+
+function renderInbox() {
+  const tasks = state.tasks.filter(t=>t.status==='inbox'&&t.type!=='idea');
+  document.getElementById('inboxCount').textContent = `${tasks.length} items`;
+  const list = document.getElementById('inboxList');
+  if (!tasks.length) { list.innerHTML = pipelineEmpty('📥','Inbox zero!','Nothing to process. Great work.'); return; }
+  list.innerHTML = tasks.map(t => renderPipelineCard(t,
+    `<button class="btn-icon" style="font-size:12px;color:var(--accent)" title="Process" onclick="openProcess('${t.id}')">→</button>`
+  )).join('');
+}
+
+function openProcess(id) {
+  const task = state.tasks.find(t=>t.id===id);
+  if (!task) return;
+  processingTaskId = id;
+  document.getElementById('processTaskName').textContent = task.name;
+  document.getElementById('processStatus').value = 'next';
+  document.getElementById('processDueDate').value = task.due_date||'';
+  document.getElementById('processCancelReasonGroup').style.display = 'none';
+  document.getElementById('processDueDateGroup').style.display = 'flex';
+  document.getElementById('processRevisitGroup').style.display = 'none';
+  document.getElementById('processModal').classList.add('open');
+}
+
+document.addEventListener('change', e => {
+  if (e.target.id === 'processStatus') {
+    const v = e.target.value;
+    document.getElementById('processCancelReasonGroup').style.display = v==='cancelled'?'flex':'none';
+    document.getElementById('processDueDateGroup').style.display      = v==='next'||v==='waiting'?'flex':'none';
+    document.getElementById('processRevisitGroup').style.display      = v==='someday'?'flex':'none';
+  }
+});
+
+async function confirmProcess() {
+  const id     = processingTaskId;
+  const task   = state.tasks.find(t=>t.id===id);
+  const status = document.getElementById('processStatus').value;
+  if (status==='cancelled') {
+    const reason = document.getElementById('processCancelReason').value;
+    if (!reason) { toast('Please select a cancel reason','error'); return; }
+    await supa(`tasks?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({status:'cancelled',cancelled_at:new Date().toISOString(),cancellation_reason:reason})});
+  } else {
+    const patch = { status };
+    const due = document.getElementById('processDueDate').value;
+    const revisit = document.getElementById('processRevisitDate').value;
+    if (due) patch.due_date = due;
+    if (revisit) patch.revisit_date = revisit;
+    await supa(`tasks?id=eq.${id}`,{method:'PATCH',body:JSON.stringify(patch)});
+  }
+  toast('Task processed ✓','success');
+  closeModal('processModal');
+  await loadTasks();
+  renderInbox(); renderFocus(); renderNext(); renderWaiting(); renderSomeday();
+}
+
+// ── 25. NEXT ACTIONS ──────────────────────────────────────────────
+
+let nextContextFilter = 'all';
+
+function setNextFilter(ctx) {
+  nextContextFilter = ctx;
+  document.querySelectorAll('.filter-chip[data-ctx]').forEach(b=>b.classList.toggle('active',b.dataset.ctx===ctx));
+  renderNext();
+}
+
+function renderNext() {
+  let tasks = state.tasks.filter(t=>t.status==='next'&&t.type!=='idea');
+  if (nextContextFilter !== 'all') tasks = tasks.filter(t=>t.context===nextContextFilter);
+  document.getElementById('nextCount').textContent = `${tasks.length} actions`;
+  const list = document.getElementById('nextList');
+  if (!tasks.length) { list.innerHTML = pipelineEmpty('⚡','No next actions','Filter is active or nothing here yet.'); return; }
+  // Sort: overdue first, then by due date, then no date
+  const today = todayStr();
+  tasks.sort((a,b)=>{
+    if (a.due_date&&b.due_date) return a.due_date.localeCompare(b.due_date);
+    if (a.due_date) return -1;
+    if (b.due_date) return 1;
+    return 0;
+  });
+  list.innerHTML = tasks.map(t=>renderPipelineCard(t)).join('');
+}
+
+// ── 26. WAITING ───────────────────────────────────────────────────
+
+function renderWaiting() {
+  const tasks = state.tasks.filter(t=>t.status==='waiting');
+  document.getElementById('waitingCount').textContent = `${tasks.length} items`;
+  const list = document.getElementById('waitingList');
+  if (!tasks.length) { list.innerHTML = pipelineEmpty('⏳','Nothing waiting','Great — no dependencies blocking you.'); return; }
+  list.innerHTML = tasks.map(t => renderPipelineCard(t,
+    `<button class="btn-icon" style="font-size:11px;color:var(--accent)" title="Move to Next" onclick="moveToNext('${t.id}')">⚡</button>`
+  )).join('');
+}
+
+async function moveToNext(id) {
+  await supa(`tasks?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({status:'next'})});
+  toast('Moved to Next Actions','success');
+  await loadTasks(); renderWaiting(); renderNext();
+}
+
+// ── 27. SOMEDAY ───────────────────────────────────────────────────
+
+let revisitingTaskId = null;
+
+function renderSomeday() {
+  const tasks = state.tasks.filter(t=>t.status==='someday');
+  document.getElementById('somedayCount').textContent = `${tasks.length} items`;
+  const list = document.getElementById('somedayList');
+  if (!tasks.length) { list.innerHTML = pipelineEmpty('🌙','Nothing parked','Someday items live here.'); return; }
+  list.innerHTML = tasks.map(t => renderPipelineCard(t,
+    `<button class="btn-icon" style="font-size:11px;color:var(--accent)" title="Move to Next" onclick="moveToNext('${t.id}')">⚡</button>
+     <button class="btn-icon" style="font-size:11px" title="Set revisit date" onclick="openRevisit('${t.id}')">📅</button>`
+  )).join('');
+}
+
+function openRevisit(id) {
+  revisitingTaskId = id;
+  const task = state.tasks.find(t=>t.id===id);
+  document.getElementById('revisitDate').value = task?.revisit_date||'';
+  document.getElementById('revisitModal').classList.add('open');
+}
+
+async function confirmRevisit() {
+  const date = document.getElementById('revisitDate').value;
+  if (!date) { toast('Please select a date','error'); return; }
+  await supa(`tasks?id=eq.${revisitingTaskId}`,{method:'PATCH',body:JSON.stringify({revisit_date:date})});
+  toast('Revisit date set','success');
+  closeModal('revisitModal');
+  await loadTasks(); renderSomeday();
+}
+
+// ── 28. REFERENCE ─────────────────────────────────────────────────
+
+function renderReference() {
+  const q = (document.getElementById('refSearch')?.value||'').toLowerCase().trim();
+  let tasks = state.tasks.filter(t=>t.status==='reference');
+  if (q) tasks = tasks.filter(t=>t.name.toLowerCase().includes(q)||(t.notes||'').toLowerCase().includes(q));
+  document.getElementById('referenceCount').textContent = `${state.tasks.filter(t=>t.status==='reference').length} items`;
+  const list = document.getElementById('referenceList');
+  if (!tasks.length) {
+    list.innerHTML = q
+      ? pipelineEmpty('🔍','No results',`Nothing matching "${q}"`)
+      : pipelineEmpty('📚','No reference items','Items marked as reference appear here.');
+    return;
+  }
+  list.innerHTML = tasks.map(t=>renderPipelineCard(t)).join('');
+}
+
+// ── 29. IDEAS ─────────────────────────────────────────────────────
+
+let promotingTaskId = null;
+
+function renderIdeas() {
+  const tasks = state.tasks.filter(t=>t.type==='idea'&&t.status!=='done'&&t.status!=='cancelled');
+  document.getElementById('ideasCount').textContent = `${tasks.length} ideas`;
+  const list = document.getElementById('ideasList');
+  if (!tasks.length) { list.innerHTML = pipelineEmpty('💡','No ideas yet','Capture a thought without worrying about what to do with it.'); return; }
+  list.innerHTML = tasks.map(t => renderPipelineCard(t,
+    `<button class="btn-icon" style="font-size:11px;color:var(--accent)" title="Promote" onclick="openPromote('${t.id}')">↑</button>`
+  )).join('');
+}
+
+function openPromote(id) {
+  const task = state.tasks.find(t=>t.id===id);
+  if (!task) return;
+  promotingTaskId = id;
+  document.getElementById('promoteIdeaName').textContent = task.name;
+  document.getElementById('promoteModal').classList.add('open');
+}
+
+async function promoteToTask() {
+  await supa(`tasks?id=eq.${promotingTaskId}`,{method:'PATCH',body:JSON.stringify({type:'task',status:'next'})});
+  toast('Idea promoted to task ✓','success');
+  closeModal('promoteModal');
+  await loadTasks(); renderIdeas(); renderNext();
+}
+
+async function promoteToProject() {
+  const task = state.tasks.find(t=>t.id===promotingTaskId);
+  if (!task) return;
+  closeModal('promoteModal');
+  // Open project modal pre-filled with idea name
+  openAddProject();
+  setTimeout(()=>{
+    document.getElementById('pmName').value    = task.name;
+    document.getElementById('pmOutcome').value = task.notes||'';
+    // Pre-select same categories
+    pmCatSel = (task._categories||[]).map(c=>c.id);
+    renderPmCatPicker();
+  },100);
+  // Mark original idea as cancelled
+  await supa(`tasks?id=eq.${promotingTaskId}`,{method:'PATCH',body:JSON.stringify({status:'cancelled',cancellation_reason:'Promoted to project'})});
+  await loadTasks(); renderIdeas();
+}
 
 // ── PHASE 3: PROJECTS ─────────────────────────────────────────────
 
@@ -2308,6 +2729,12 @@ function switchView(view){
   if(view==='calendar')  renderCalendar();
   if(view==='projects')  renderProjects();
   if(view==='areas')     renderAreas();
+  if(view==='inbox')     renderInbox();
+  if(view==='next')      renderNext();
+  if(view==='waiting')   renderWaiting();
+  if(view==='someday')   renderSomeday();
+  if(view==='reference') renderReference();
+  if(view==='ideas')     renderIdeas();
 }
 
 // ── UTILS ─────────────────────────────────────────────────
