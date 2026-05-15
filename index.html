@@ -1328,7 +1328,6 @@ const state = {
 
 // ── INIT ──────────────────────────────────────────────────
 async function init() {
-  pruneOldCapacityKeys();
   const configured = !!(SUPABASE_URL && SUPABASE_KEY);
   document.getElementById('authConfigBtn').style.display = configured ? 'none' : 'block';
 
@@ -1342,6 +1341,7 @@ async function init() {
 }
 
 async function bootApp() {
+  pruneOldCapacityKeys();
   showApp();
   await loadCoreData();
   await Promise.all([loadTasks(), loadProjects()]);
@@ -1949,6 +1949,127 @@ function toggleDay(day) {
 
 
 
+
+
+// ── BLACKOUT PERIODS (#29) ────────────────────────────────────────
+
+let editingBlackoutId = null;
+
+function isBlackoutDate(dateStr) {
+  if (!dateStr || !state.blackouts.length) return null;
+  return state.blackouts.find(b => dateStr >= b.start_date && dateStr <= b.end_date) || null;
+}
+
+function getBlackoutDates() {
+  const dates = new Set();
+  state.blackouts.forEach(b => {
+    const cur = new Date(b.start_date + 'T00:00:00');
+    const end = new Date(b.end_date + 'T00:00:00');
+    while (cur <= end) {
+      dates.add(cur.toISOString().split('T')[0]);
+      cur.setDate(cur.getDate() + 1);
+    }
+  });
+  return dates;
+}
+
+function syncBlackoutEnd() {
+  const start = document.getElementById('bkStart').value;
+  const end   = document.getElementById('bkEnd').value;
+  if (start && (!end || end < start)) document.getElementById('bkEnd').value = start;
+}
+
+function openAddBlackout() {
+  editingBlackoutId = null;
+  document.getElementById('blackoutModalTitle').textContent = 'Add Blackout Period';
+  document.getElementById('bkLabel').value = '';
+  document.getElementById('bkStart').value = '';
+  document.getElementById('bkEnd').value   = '';
+  document.getElementById('blackoutModal').classList.add('open');
+  setTimeout(()=>document.getElementById('bkLabel').focus(), 200);
+}
+
+function openEditBlackout(id) {
+  const b = state.blackouts.find(x=>x.id===id); if(!b) return;
+  editingBlackoutId = id;
+  document.getElementById('blackoutModalTitle').textContent = 'Edit Blackout Period';
+  document.getElementById('bkLabel').value = b.label;
+  document.getElementById('bkStart').value = b.start_date;
+  document.getElementById('bkEnd').value   = b.end_date;
+  document.getElementById('blackoutModal').classList.add('open');
+}
+
+async function saveBlackout() {
+  const label = document.getElementById('bkLabel').value.trim();
+  const start = document.getElementById('bkStart').value;
+  const end   = document.getElementById('bkEnd').value;
+  if (!label) { toast('Please add a label','error'); return; }
+  if (!start) { toast('Please select a start date','error'); return; }
+  if (!end)   { toast('Please select an end date','error'); return; }
+  if (end < start) { toast('End date must be on or after start date','error'); return; }
+  const payload = { workspace_id:state.workspaceId, label, start_date:start, end_date:end };
+  let res;
+  if (editingBlackoutId) res = await supa(`blackout_periods?id=eq.${editingBlackoutId}`,{method:'PATCH',body:JSON.stringify(payload)});
+  else res = await supa('blackout_periods',{method:'POST',body:JSON.stringify(payload)});
+  if (res.ok) {
+    toast(editingBlackoutId?'Blackout updated':'Blackout added','success');
+    closeModal('blackoutModal');
+    await loadCoreData();
+    renderSettingsBlackouts();
+    renderFocus();
+    if (document.getElementById('viewCalendar').style.display!=='none') renderCalendar();
+  } else { const e=await res.json(); toast('Error: '+(e.message||'unknown'),'error'); }
+}
+
+async function deleteBlackout(id) {
+  if (!confirm('Delete this blackout period?')) return;
+  await supa(`blackout_periods?id=eq.${id}`,{method:'DELETE',prefer:'return=minimal'});
+  toast('Blackout deleted','success');
+  await loadCoreData();
+  renderSettingsBlackouts();
+  renderFocus();
+  if (document.getElementById('viewCalendar').style.display!=='none') renderCalendar();
+}
+
+function renderSettingsBlackouts() {
+  const list = document.getElementById('settingsBlackoutList');
+  if (!list) return;
+  if (!state.blackouts.length) {
+    list.innerHTML = '<div style="font-size:12px;color:var(--text3)">No blackout periods yet</div>';
+    return;
+  }
+  const today = todayStr();
+  list.innerHTML = state.blackouts.map(b => {
+    const isPast    = b.end_date < today;
+    const isCurrent = b.start_date <= today && b.end_date >= today;
+    const isSingle  = b.start_date === b.end_date;
+    const dateStr   = isSingle ? b.start_date : `${b.start_date} → ${b.end_date}`;
+    const badge     = isCurrent ? '<span class="tag tag-overdue" style="font-size:9px">Active</span>'
+                    : isPast    ? '<span class="tag tag-cat" style="font-size:9px">Past</span>'
+                    :             '<span class="tag tag-status-active" style="font-size:9px">Upcoming</span>';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface3);border:1px solid var(--border);border-radius:var(--r-sm)">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:500${isPast?';color:var(--text3)':''}">${escHtml(b.label)}</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);margin-top:2px;display:flex;gap:6px;align-items:center">${dateStr} ${badge}</div>
+      </div>
+      <button class="btn-icon" style="width:26px;height:26px;font-size:11px" onclick="openEditBlackout('${b.id}')">✎</button>
+      <button class="btn-icon" style="width:26px;height:26px;font-size:11px;color:var(--red)" onclick="deleteBlackout('${b.id}')">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function checkDueDateBlackout(dateStr, warningElId) {
+  const el = document.getElementById(warningElId);
+  if (!el) return;
+  if (!dateStr) { el.style.display='none'; return; }
+  const blackout = isBlackoutDate(dateStr);
+  if (blackout) {
+    el.style.display = 'block';
+    el.textContent   = `⚠ ${dateStr} falls in blackout period "${blackout.label}" (${blackout.start_date} → ${blackout.end_date})`;
+  } else {
+    el.style.display = 'none';
+  }
+}
 
 // ── CONTEXT MANAGEMENT (Settings) ────────────────────────────────
 
