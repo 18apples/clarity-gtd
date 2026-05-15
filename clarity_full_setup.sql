@@ -716,3 +716,49 @@ select
   (select count(*) from recurrences)   as recurrences,
   (select count(*) from analytics_events) as analytics_events,
   'Setup complete ✓' as status;
+
+
+
+-- ============================================================
+-- CLARITY GTD — ADD CONTEXTS TABLE
+-- Run in Supabase SQL Editor
+-- ============================================================
+
+-- Create table
+create table contexts (
+  id            uuid primary key default uuid_generate_v4(),
+  workspace_id  uuid not null references workspaces(id) on delete cascade,
+  name          text not null,
+  icon          text,
+  sort_order    integer not null default 0,
+  is_active     boolean not null default true,
+  created_at    timestamptz not null default now()
+);
+
+-- Index
+create index idx_contexts_workspace on contexts(workspace_id);
+
+-- RLS
+alter table contexts enable row level security;
+create policy "authenticated access" on contexts
+  for all to authenticated using (true);
+
+-- Grants
+grant select, insert, update, delete on public.contexts to authenticated;
+grant select, insert, update, delete on public.contexts to service_role;
+grant select on public.contexts to anon;
+
+-- Seed starting contexts
+do $$
+declare v_ws uuid;
+begin
+  select id into v_ws from workspaces limit 1;
+  insert into contexts (workspace_id, name, icon, sort_order) values
+    (v_ws, '@home',           '🏠', 1),
+    (v_ws, '@out-and-about',  '🏃', 2),
+    (v_ws, '@MuraliMama&Co',  '👨‍👩‍👧', 3),
+    (v_ws, '@laptop',         '💻', 4);
+end $$;
+
+-- Confirm
+select name, icon, is_active from contexts order by sort_order;
