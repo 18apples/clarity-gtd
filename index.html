@@ -1599,9 +1599,12 @@ function renderCard(task, overdue=false) {
   const typeTag = xCount || (task.type==='idea'?'<span class="tag tag-idea">💡 Idea</span>':'');
   const estTag = task.estimated_mins ? `<span class="tag tag-cat">⏱ ${task.estimated_mins}m</span>` : '';
   const iqTag  = iq ? `<span class="tag tag-${iqMap[iq]}">${iqLabel[iq]}</span>` : '';
+  const checkFn = (sp && sp.done < sp.total)
+    ? "showSubtaskBlock('" + task.id + "')"
+    : "completeTask('" + task.id + "')";
+  const checkTitle = (sp && sp.done < sp.total) ? 'Complete all subtasks first' : '';
   return `<div class="task-card" data-id="${task.id}" data-iq="${iq}">
-    <button class="task-check" onclick="${(task._subtaskProgress&&task._subtaskProgress.done<task._subtaskProgress.total)?'showSubtaskBlock(''+task.id+'')':'completeTask(''+task.id+'')'}"
-      title="${(task._subtaskProgress&&task._subtaskProgress.done<task._subtaskProgress.total)?'Complete all subtasks first':''}"></button>
+    <button class="task-check" onclick="${checkFn}" title="${checkTitle}"></button>
     <div class="task-body">
       <div class="task-name">${escHtml(task.name)}</div>
       ${task.notes?`<div class="task-notes">${escHtml(task.notes.slice(0,100))}${task.notes.length>100?'…':''}</div>`:''}
@@ -2213,9 +2216,12 @@ function renderPipelineCard(task, extraActions='') {
   const proj = state.projects.find(p=>p.id===task.project_id);
   const projTag = proj ? `<span class="tag tag-cat">📁 ${escHtml(proj.name)}</span>` : '';
 
+  const checkFn = (sp && sp.done < sp.total)
+    ? "showSubtaskBlock('" + task.id + "')"
+    : "completeTask('" + task.id + "')";
+  const checkTitle = (sp && sp.done < sp.total) ? 'Complete all subtasks first' : '';
   return `<div class="task-card" data-id="${task.id}" data-iq="${iq}">
-    <button class="task-check" onclick="${(task._subtaskProgress&&task._subtaskProgress.done<task._subtaskProgress.total)?'showSubtaskBlock(''+task.id+'')':'completeTask(''+task.id+'')'}"
-      title="${(task._subtaskProgress&&task._subtaskProgress.done<task._subtaskProgress.total)?'Complete all subtasks first':''}"></button>
+    <button class="task-check" onclick="${checkFn}" title="${checkTitle}"></button>
     <div class="task-body">
       <div class="task-name">${escHtml(task.name)}</div>
       ${task.notes?`<div class="task-notes">${escHtml(task.notes.slice(0,100))}${task.notes.length>100?'…':''}</div>`:''}
