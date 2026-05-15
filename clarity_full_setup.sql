@@ -649,8 +649,8 @@ begin
 
   -- Family & Relationships
   insert into categories (workspace_id, domain_id, name, sort_order) values
-    (v_ws, d_family, 'For Siddharth',      1),
-    (v_ws, d_family, 'For Vikram',          2),
+    (v_ws, d_family, 'For S',      1),
+    (v_ws, d_family, 'For V',          2),
     (v_ws, d_family, 'Gifts & Other Items', 3);
 
   -- Health & Fitness
