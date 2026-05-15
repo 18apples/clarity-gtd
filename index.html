@@ -1049,8 +1049,9 @@ function renderFocus() {
   if (!Array.isArray(state.tasks)) state.tasks = [];
   const today  = todayStr();
   const active = state.tasks.filter(t => t.status !== 'done' && t.status !== 'cancelled');
-  const overdue = active.filter(t => t.due_date && t.due_date < today && t.status !== 'someday' && t.status !== 'reference');
-  const focus   = active.filter(t => t.due_date === today || t.status === 'next');
+  // Only show tasks due today or overdue — no date = inbox only
+  const overdue = active.filter(t => t.due_date && t.due_date < today);
+  const focus   = active.filter(t => t.due_date === today);
   const inbox   = active.filter(t => t.status === 'inbox');
 
   // Overdue
@@ -1581,7 +1582,12 @@ function openCaptureForProject() {
   openCapture();
   setTimeout(()=>{
     const p = state.projects.find(x=>x.id===currentProjectId);
-    if (p) document.getElementById('cProject').value = p.id;
+    if (!p) return;
+    // Pre-select project
+    document.getElementById('cProject').value = p.id;
+    // Pre-select project categories
+    const catIds = (p._categories||[]).map(c=>c.id);
+    if (catIds.length) setCatSelection(catIds);
   }, 150);
 }
 
@@ -1813,8 +1819,17 @@ function renderAreas() {
 }
 
 function toggleDomain(id) {
-  document.getElementById('db-'+id).classList.toggle('open');
-  document.getElementById('dchev-'+id).classList.toggle('open');
+  const isOpen = document.getElementById('db-'+id).classList.contains('open');
+  // Close all domains first
+  state.domains.forEach(d => {
+    document.getElementById('db-'+d.id)?.classList.remove('open');
+    document.getElementById('dchev-'+d.id)?.classList.remove('open');
+  });
+  // If it was closed, open it; if it was open, leave it closed (toggle)
+  if (!isOpen) {
+    document.getElementById('db-'+id).classList.add('open');
+    document.getElementById('dchev-'+id).classList.add('open');
+  }
 }
 
 // ── DOMAIN CRUD ───────────────────────────────────────────────────
