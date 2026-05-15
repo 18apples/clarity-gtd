@@ -51,8 +51,9 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.6);cursor:p
 header{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:100;gap:12px;flex-shrink:0}
 .logo{font-family:'Instrument Serif',serif;font-size:20px;letter-spacing:-.5px;flex-shrink:0}
 .logo span{color:var(--accent);font-style:italic}
-.app-nav{display:flex;gap:2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:3px;overflow-x:auto;flex:1;max-width:560px}
-.app-nav::-webkit-scrollbar{display:none}
+.app-nav{display:flex;gap:2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:3px;overflow-x:auto;flex:1;max-width:560px;-webkit-overflow-scrolling:touch}
+.app-nav::-webkit-scrollbar{height:2px}
+.app-nav::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 .nav-btn{background:none;border:none;color:var(--text2);padding:5px 12px;border-radius:5px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;letter-spacing:.3px;transition:all .15s;white-space:nowrap}
 .nav-btn:hover{color:var(--text);background:var(--surface3)}
 .nav-btn.active{background:var(--accent);color:#0a0a0b;font-weight:600}
