@@ -1599,6 +1599,8 @@ function renderCard(task, overdue=false) {
   const typeTag = xCount || (task.type==='idea'?'<span class="tag tag-idea">💡 Idea</span>':'');
   const estTag = task.estimated_mins ? `<span class="tag tag-cat">⏱ ${task.estimated_mins}m</span>` : '';
   const iqTag  = iq ? `<span class="tag tag-${iqMap[iq]}">${iqLabel[iq]}</span>` : '';
+  const sp = task._subtaskProgress || null;
+  const subtaskBadge = sp ? '<span class="tag tag-cat" style="' + (sp.done===sp.total?'color:var(--accent)':'') + '">☑ ' + sp.done + '/' + sp.total + '</span>' : '';
   const checkFn = (sp && sp.done < sp.total)
     ? "showSubtaskBlock('" + task.id + "')"
     : "completeTask('" + task.id + "')";
@@ -2215,6 +2217,8 @@ function renderPipelineCard(task, extraActions='') {
   const ctxTag = task.context ? `<span class="tag tag-cat">${task.context}</span>` : '';
   const proj = state.projects.find(p=>p.id===task.project_id);
   const projTag = proj ? `<span class="tag tag-cat">📁 ${escHtml(proj.name)}</span>` : '';
+  const sp = task._subtaskProgress || null;
+  const subtaskBadge = sp ? '<span class="tag tag-cat" style="' + (sp.done===sp.total?'color:var(--accent)':'') + '">☑ ' + sp.done + '/' + sp.total + '</span>' : '';
 
   const checkFn = (sp && sp.done < sp.total)
     ? "showSubtaskBlock('" + task.id + "')"
@@ -2225,7 +2229,7 @@ function renderPipelineCard(task, extraActions='') {
     <div class="task-body">
       <div class="task-name">${escHtml(task.name)}</div>
       ${task.notes?`<div class="task-notes">${escHtml(task.notes.slice(0,100))}${task.notes.length>100?'…':''}</div>`:''}
-      <div class="task-meta">${typeTag}${iqTag}${ctxTag}${cats}${projTag}${dueTag}${revisitTag}${estTag}</div>
+      <div class="task-meta">${typeTag}${iqTag}${ctxTag}${cats}${projTag}${dueTag}${revisitTag}${estTag}${subtaskBadge}</div>
     </div>
     <div class="task-actions">
       ${extraActions}
