@@ -393,11 +393,46 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
         <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Process these</div>
         <div style="font-family:'Instrument Serif',serif;font-size:28px;letter-spacing:-.8px;line-height:1">Inbox</div>
       </div>
-      <span id="inboxCount" class="tag tag-cat" style="font-size:12px"></span>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span id="inboxCount" class="tag tag-cat" style="font-size:12px"></span>
+        <button class="btn btn-sm btn-ghost" id="inboxClearBtn" onclick="clearInboxFilters()" style="display:none">✕ Clear filters</button>
+      </div>
     </div>
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.6">
-      Process each item — decide what it is and where it belongs. Everything here needs a decision.
+
+    <!-- SEARCH BAR -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:4px 4px 4px 14px;display:flex;align-items:center;gap:8px;transition:border-color .15s" id="inboxSearchBar">
+      <input id="inboxSearch" placeholder="Search inbox..." style="background:none;border:none;flex:1;font-size:13px;padding:8px 0;color:var(--text);font-family:'Instrument Sans',sans-serif" oninput="renderInbox()">
+      <span style="color:var(--text3);font-size:15px;padding:8px">🔍</span>
     </div>
+
+    <!-- FILTERS -->
+    <div style="display:flex;flex-direction:column;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:14px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:2px">Filter by</div>
+
+      <!-- Domain filter -->
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px">Domain</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap" id="inboxDomainFilters"></div>
+      </div>
+
+      <!-- Category filter -->
+      <div id="inboxCatFilterGroup">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px">Category</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap" id="inboxCatFilters"></div>
+      </div>
+
+      <!-- Importance filter -->
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px">Importance</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          <button class="filter-chip" data-iq="important_urgent"         onclick="toggleInboxIQ('important_urgent')">🔴 Imp+Urgent</button>
+          <button class="filter-chip" data-iq="important_not_urgent"     onclick="toggleInboxIQ('important_not_urgent')">🟢 Imp+Not Urgent</button>
+          <button class="filter-chip" data-iq="not_important_urgent"     onclick="toggleInboxIQ('not_important_urgent')">🟡 Not Imp+Urgent</button>
+          <button class="filter-chip" data-iq="not_important_not_urgent" onclick="toggleInboxIQ('not_important_not_urgent')">🔵 Not Imp+Not Urgent</button>
+        </div>
+      </div>
+    </div>
+
     <div id="inboxList" style="display:flex;flex-direction:column;gap:8px"></div>
   </main>
   <!-- NEXT ACTIONS VIEW -->
@@ -1677,15 +1712,169 @@ function openEditTask(id) {
 // Override openEdit globally
 function openEdit(id) { openEditTask(id); }
 
+
+// ── INBOX SEARCH + FILTER ─────────────────────────────────────────
+
+// Persistent filter state
+const inboxFilters = {
+  search:     '',
+  domainIds:  [],   // selected domain ids
+  catIds:     [],   // selected category ids
+  iqValues:   [],   // selected importance_speed values
+};
+
+function initInboxFilters() {
+  // Render domain filter chips
+  const df = document.getElementById('inboxDomainFilters');
+  if (!df) return;
+  df.innerHTML = state.domains.map(d =>
+    `<button class="filter-chip${inboxFilters.domainIds.includes(d.id)?' active':''}" data-domain="${d.id}" onclick="toggleInboxDomain('${d.id}')">${d.icon||''} ${escHtml(d.name)}</button>`
+  ).join('');
+  renderInboxCatFilters();
+}
+
+function renderInboxCatFilters() {
+  const cf = document.getElementById('inboxCatFilters');
+  if (!cf) return;
+  // If domains selected, only show their categories; else show all
+  const cats = inboxFilters.domainIds.length
+    ? state.categories.filter(c => inboxFilters.domainIds.includes(c.domain_id))
+    : state.categories;
+  cf.innerHTML = cats.map(c =>
+    `<button class="filter-chip${inboxFilters.catIds.includes(c.id)?' active':''}" data-cat="${c.id}" onclick="toggleInboxCat('${c.id}')">${escHtml(c.name)}</button>`
+  ).join('');
+}
+
+function toggleInboxDomain(id) {
+  if (inboxFilters.domainIds.includes(id)) {
+    inboxFilters.domainIds = inboxFilters.domainIds.filter(x=>x!==id);
+    // Remove any category filters that no longer belong to selected domains
+    if (inboxFilters.domainIds.length) {
+      inboxFilters.catIds = inboxFilters.catIds.filter(cid => {
+        const cat = state.categories.find(c=>c.id===cid);
+        return cat && inboxFilters.domainIds.includes(cat.domain_id);
+      });
+    }
+  } else {
+    inboxFilters.domainIds.push(id);
+  }
+  // Update domain chip states
+  document.querySelectorAll('[data-domain]').forEach(b =>
+    b.classList.toggle('active', inboxFilters.domainIds.includes(b.dataset.domain))
+  );
+  renderInboxCatFilters();
+  renderInbox();
+  updateInboxClearBtn();
+}
+
+function toggleInboxCat(id) {
+  if (inboxFilters.catIds.includes(id)) inboxFilters.catIds = inboxFilters.catIds.filter(x=>x!==id);
+  else inboxFilters.catIds.push(id);
+  document.querySelectorAll('[data-cat]').forEach(b =>
+    b.classList.toggle('active', inboxFilters.catIds.includes(b.dataset.cat))
+  );
+  renderInbox();
+  updateInboxClearBtn();
+}
+
+function toggleInboxIQ(iq) {
+  if (inboxFilters.iqValues.includes(iq)) inboxFilters.iqValues = inboxFilters.iqValues.filter(x=>x!==iq);
+  else inboxFilters.iqValues.push(iq);
+  document.querySelectorAll('[data-iq]').forEach(b =>
+    b.classList.toggle('active', inboxFilters.iqValues.includes(b.dataset.iq))
+  );
+  renderInbox();
+  updateInboxClearBtn();
+}
+
+function updateInboxClearBtn() {
+  const hasFilter = inboxFilters.domainIds.length || inboxFilters.catIds.length || inboxFilters.iqValues.length || inboxFilters.search;
+  const btn = document.getElementById('inboxClearBtn');
+  if (btn) btn.style.display = hasFilter ? 'block' : 'none';
+}
+
+function clearInboxFilters() {
+  inboxFilters.search    = '';
+  inboxFilters.domainIds = [];
+  inboxFilters.catIds    = [];
+  inboxFilters.iqValues  = [];
+  const searchEl = document.getElementById('inboxSearch');
+  if (searchEl) searchEl.value = '';
+  document.querySelectorAll('[data-domain],[data-cat],[data-iq]').forEach(b=>b.classList.remove('active'));
+  renderInboxCatFilters();
+  renderInbox();
+  updateInboxClearBtn();
+}
+
+// Navigate to inbox pre-filtered by domain
+function goToInboxFiltered(type, id) {
+  clearInboxFilters();
+  if (type === 'domain') {
+    inboxFilters.domainIds = [id];
+  } else if (type === 'category') {
+    inboxFilters.catIds = [id];
+    // Also select the parent domain
+    const cat = state.categories.find(c=>c.id===id);
+    if (cat) inboxFilters.domainIds = [cat.domain_id];
+  }
+  switchView('inbox');
+}
+
 // ── 24. INBOX ─────────────────────────────────────────────────────
 
 let processingTaskId = null;
 
 function renderInbox() {
-  const tasks = state.tasks.filter(t=>t.status==='inbox'&&t.type!=='idea');
-  document.getElementById('inboxCount').textContent = `${tasks.length} items`;
+  // Sync search from input
+  const searchEl = document.getElementById('inboxSearch');
+  if (searchEl) inboxFilters.search = searchEl.value.toLowerCase().trim();
+
+  // Init filter UI if needed
+  initInboxFilters();
+
+  let tasks = state.tasks.filter(t => t.status==='inbox' && t.type!=='idea');
+  const total = tasks.length;
+
+  // Apply search
+  if (inboxFilters.search) {
+    tasks = tasks.filter(t =>
+      t.name.toLowerCase().includes(inboxFilters.search) ||
+      (t.notes||'').toLowerCase().includes(inboxFilters.search)
+    );
+  }
+
+  // Apply domain filter
+  if (inboxFilters.domainIds.length) {
+    const domainCatIds = state.categories
+      .filter(c => inboxFilters.domainIds.includes(c.domain_id))
+      .map(c => c.id);
+    tasks = tasks.filter(t => (t._categories||[]).some(c => domainCatIds.includes(c.id)));
+  }
+
+  // Apply category filter
+  if (inboxFilters.catIds.length) {
+    tasks = tasks.filter(t => (t._categories||[]).some(c => inboxFilters.catIds.includes(c.id)));
+  }
+
+  // Apply importance filter
+  if (inboxFilters.iqValues.length) {
+    tasks = tasks.filter(t => inboxFilters.iqValues.includes(t.importance_speed));
+  }
+
+  const hasFilter = inboxFilters.domainIds.length || inboxFilters.catIds.length || inboxFilters.iqValues.length || inboxFilters.search;
+  document.getElementById('inboxCount').textContent = hasFilter
+    ? `${tasks.length} of ${total} items`
+    : `${total} items`;
+
+  updateInboxClearBtn();
+
   const list = document.getElementById('inboxList');
-  if (!tasks.length) { list.innerHTML = pipelineEmpty('📥','Inbox zero!','Nothing to process. Great work.'); return; }
+  if (!tasks.length) {
+    list.innerHTML = hasFilter
+      ? pipelineEmpty('🔍','No matches','Try different filters or clear them.')
+      : pipelineEmpty('📥','Inbox zero!','Nothing to process. Great work.');
+    return;
+  }
   list.innerHTML = tasks.map(t => renderPipelineCard(t,
     `<button class="btn-icon" style="font-size:12px;color:var(--accent)" title="Process" onclick="openProcess('${t.id}')">→</button>`
   )).join('');
@@ -2212,7 +2401,7 @@ function renderAreas() {
           <div class="domain-name">${escHtml(d.name)}</div>
           <div class="domain-meta">
             <span class="tag tag-cat">${cats.length} categories</span>
-            <span class="tag tag-cat">${taskCount} tasks</span>
+            <span class="tag tag-cat" style="cursor:pointer;border-color:var(--border2)" onclick="event.stopPropagation();goToInboxFiltered('domain','${d.id}')" title="View in Inbox">${taskCount} tasks →</span>
           </div>
         </div>
         <span class="domain-chevron" id="dchev-${d.id}">▶</span>
@@ -2227,7 +2416,7 @@ function renderAreas() {
           const ct = state.tasks.filter(t=>t.status!=='done'&&t.status!=='cancelled'&&(t._categories||[]).some(x=>x.id===c.id)).length;
           return `<div class="cat-row">
             <div class="cat-row-name">${escHtml(c.name)}${c.is_paused?'<span class="tag tag-status-on_hold" style="margin-left:8px;font-size:9px">Paused</span>':''}</div>
-            <div class="cat-row-meta">${ct} tasks · every ${c.review_interval_days}d</div>
+            <div class="cat-row-meta"><span style="cursor:pointer" onclick="goToInboxFiltered('category','${c.id}')" title="View in Inbox">${ct} tasks →</span> · every ${c.review_interval_days}d</div>
             <div class="cat-row-actions">
               <button class="btn-icon" style="width:26px;height:26px;font-size:11px" onclick="openEditCategory('${c.id}')">✎</button>
               <button class="btn-icon" style="width:26px;height:26px;font-size:11px;color:var(--red)" onclick="openDeleteCategory('${c.id}')">✕</button>
@@ -2729,7 +2918,7 @@ function switchView(view){
   if(view==='calendar')  renderCalendar();
   if(view==='projects')  renderProjects();
   if(view==='areas')     renderAreas();
-  if(view==='inbox')     renderInbox();
+  if(view==='inbox')     { initInboxFilters(); renderInbox(); }
   if(view==='next')      renderNext();
   if(view==='waiting')   renderWaiting();
   if(view==='someday')   renderSomeday();
