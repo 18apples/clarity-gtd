@@ -316,6 +316,46 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
       </div>
       <button class="btn btn-sm btn-secondary" onclick="openCapture()">+ Capture</button>
     </div>
+    <!-- DAY CAPACITY PLANNER -->
+    <div id="capacityPlanner" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3)">Day Capacity</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;color:var(--text2)">Available today:</span>
+          <div style="display:flex;align-items:center;gap:4px">
+            <input type="number" id="capacityInput" min="1" max="1440"
+              style="width:56px;padding:4px 8px;font-size:13px;font-family:'JetBrains Mono',monospace;text-align:center"
+              onchange="onCapacityChange()" oninput="onCapacityChange()">
+            <span style="font-size:12px;color:var(--text2)">mins</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center">
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:500" id="capRequired">—</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px">mins required</span>
+        </div>
+        <div style="font-size:20px;color:var(--border2)">vs</div>
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:500" id="capAvailable">—</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px">mins available</span>
+        </div>
+        <div style="flex:1;min-width:120px">
+          <div id="capMessage" style="font-size:12px;color:var(--text2);line-height:1.4"></div>
+        </div>
+      </div>
+
+      <!-- Visual bar -->
+      <div style="background:var(--surface2);border-radius:20px;height:8px;overflow:hidden;width:100%">
+        <div id="capBar" style="height:100%;border-radius:20px;transition:width .4s ease,background .3s ease;width:0%"></div>
+      </div>
+
+      <!-- No estimates warning -->
+      <div id="capNoEstimates" style="display:none;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)"></div>
+    </div>
+
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:4px 4px 4px 16px;display:flex;align-items:center;gap:8px" id="captureBar">
       <input id="quickInput" placeholder="Quick capture — type and press Enter..." style="background:none;border:none;flex:1;font-size:14px;padding:8px 0;color:var(--text);font-family:'Instrument Sans',sans-serif" onkeydown="if(event.key==='Enter')quickCapture()">
       <button class="btn btn-sm" style="flex-shrink:0" onclick="quickCapture()">Capture</button>
@@ -840,6 +880,21 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
       <div id="settingsContextList" style="display:flex;flex-direction:column;gap:6px"></div>
     </div>
 
+    <!-- DEFAULT CAPACITY -->
+    <div class="settings-block">
+      <div class="settings-block-title">Default Daily Capacity</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <input type="number" id="settingsCapacity" min="1" max="1440"
+          style="width:80px;padding:8px 10px;font-size:13px;font-family:'JetBrains Mono',monospace;text-align:center"
+          placeholder="180">
+        <span style="font-size:13px;color:var(--text2)">minutes per day (default: 180)</span>
+      </div>
+      <div class="hint">This is your default. You can override it each day in the Focus view.</div>
+      <div style="display:flex;justify-content:flex-end">
+        <button class="btn btn-sm btn-secondary" onclick="saveDefaultCapacity()">Save Default</button>
+      </div>
+    </div>
+
     <button class="btn btn-ghost" onclick="signOut()">↪ Sign Out</button>
   </div>
 </div>
@@ -1228,6 +1283,7 @@ const state = {
 
 // ── INIT ──────────────────────────────────────────────────
 async function init() {
+  pruneOldCapacityKeys();
   const configured = !!(SUPABASE_URL && SUPABASE_KEY);
   document.getElementById('authConfigBtn').style.display = configured ? 'none' : 'block';
 
@@ -1312,6 +1368,109 @@ async function loadTasks() {
 }
 
 // ── RENDER FOCUS ──────────────────────────────────────────
+
+// ── DAY CAPACITY PLANNER (#25) ────────────────────────────────────
+
+const DEFAULT_CAPACITY_MINS = 180; // 3 hours
+
+function getCapacityKey() {
+  return 'clarity_capacity_' + todayStr();
+}
+
+function getTodayCapacity() {
+  const stored = localStorage.getItem(getCapacityKey());
+  if (stored) return parseInt(stored);
+  const defaultCap = localStorage.getItem('clarity_default_capacity');
+  return defaultCap ? parseInt(defaultCap) : DEFAULT_CAPACITY_MINS;
+}
+
+function onCapacityChange() {
+  const val = parseInt(document.getElementById('capacityInput').value);
+  if (!isNaN(val) && val > 0) {
+    localStorage.setItem(getCapacityKey(), val);
+    renderCapacityPlanner();
+  }
+}
+
+function renderCapacityPlanner() {
+  const today    = todayStr();
+  const capacity = getTodayCapacity();
+
+  // Set input value
+  const input = document.getElementById('capacityInput');
+  if (input) input.value = capacity;
+
+  // Get qualifying tasks: overdue or due today, with estimated_mins
+  const qualifying = (state.tasks || []).filter(t =>
+    t.status !== 'done' && t.status !== 'cancelled' &&
+    t.due_date && t.due_date <= today &&
+    t.estimated_mins
+  );
+
+  // Tasks without estimates (overdue or due today)
+  const noEstimate = (state.tasks || []).filter(t =>
+    t.status !== 'done' && t.status !== 'cancelled' &&
+    t.due_date && t.due_date <= today &&
+    !t.estimated_mins
+  );
+
+  const required = qualifying.reduce((sum, t) => sum + t.estimated_mins, 0);
+  const pct      = capacity > 0 ? Math.min((required / capacity) * 100, 100) : 0;
+  const over     = required > capacity;
+  const freeMins = over ? required - capacity : 0;
+
+  // Colour
+  const colour = pct >= 100 ? 'var(--red)' : pct >= 75 ? 'var(--orange)' : 'var(--accent)';
+
+  // Update DOM
+  const reqEl  = document.getElementById('capRequired');
+  const avEl   = document.getElementById('capAvailable');
+  const barEl  = document.getElementById('capBar');
+  const msgEl  = document.getElementById('capMessage');
+  const noEstEl= document.getElementById('capNoEstimates');
+
+  if (!reqEl) return;
+
+  reqEl.textContent  = required;
+  reqEl.style.color  = colour;
+  avEl.textContent   = capacity;
+  barEl.style.width  = pct + '%';
+  barEl.style.background = colour;
+
+  if (over) {
+    msgEl.innerHTML = `<span style="color:var(--red);font-weight:600">⚠ Over by ${freeMins} mins</span> — move ${freeMins} mins of tasks to another day`;
+    msgEl.style.color = 'var(--red)';
+  } else if (pct >= 75) {
+    msgEl.innerHTML = `<span style="color:var(--orange)">Almost full</span> — ${capacity - required} mins remaining`;
+  } else if (qualifying.length === 0) {
+    msgEl.innerHTML = `<span style="color:var(--text3)">No tasks with estimates for today</span>`;
+  } else {
+    msgEl.innerHTML = `<span style="color:var(--accent)">✓ On track</span> — ${capacity - required} mins to spare`;
+  }
+
+  if (noEstimate.length) {
+    noEstEl.style.display = 'block';
+    noEstEl.textContent   = `${noEstimate.length} task${noEstimate.length>1?'s':''} today have no time estimate — not counted above`;
+  } else {
+    noEstEl.style.display = 'none';
+  }
+}
+
+// Clean up old capacity keys (keep only last 7 days)
+function pruneOldCapacityKeys() {
+  const prefix = 'clarity_capacity_';
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 7);
+  Object.keys(localStorage).forEach(key => {
+    if (key.startsWith(prefix)) {
+      const dateStr = key.replace(prefix, '');
+      if (dateStr < cutoff.toISOString().split('T')[0]) {
+        localStorage.removeItem(key);
+      }
+    }
+  });
+}
+
 function renderFocus() {
   if (!Array.isArray(state.tasks)) state.tasks = [];
   const today  = todayStr();
@@ -1339,6 +1498,9 @@ function renderFocus() {
   } else {
     ia.style.display = 'none';
   }
+
+  // Capacity planner
+  renderCapacityPlanner();
 }
 
 function renderCard(task, overdue=false) {
@@ -3055,6 +3217,17 @@ async function saveFirstTimeConfig(){
 
 // ── SETTINGS ──────────────────────────────────────────────
 let adminUnlockExpiry=null,adminCountdownTimer=null;
+function saveDefaultCapacity() {
+  const val = parseInt(document.getElementById('settingsCapacity').value);
+  if (!isNaN(val) && val > 0) {
+    localStorage.setItem('clarity_default_capacity', val);
+    toast('Default capacity saved','success');
+    renderCapacityPlanner();
+  } else {
+    toast('Please enter a valid number','error');
+  }
+}
+
 function openSettings(){
   const email=localStorage.getItem('clarity_email')||getSession()?.user?.email||'—';
   document.getElementById('settingsEmail').textContent=email;
@@ -3064,6 +3237,8 @@ function openSettings(){
   document.getElementById('pwdError').classList.remove('show');
   if(adminUnlockExpiry&&Date.now()<adminUnlockExpiry)showAdminUnlocked();else showAdminLocked();
   renderSettingsContexts();
+  const defCap = localStorage.getItem('clarity_default_capacity') || DEFAULT_CAPACITY_MINS;
+  document.getElementById('settingsCapacity').value = defCap;
   document.getElementById('settingsModal').classList.add('open');
 }
 function showAdminLocked(){
