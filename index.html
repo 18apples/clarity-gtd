@@ -125,6 +125,13 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
 .day-btn.on{background:#a060f0;border-color:#a060f0;color:white}
 
 /* CALENDAR */
+/* BLACKOUT PERIODS */
+.cal-blackout { background:#f0a85510 !important; }
+.cal-day-col.cal-blackout .cal-day-header { color:var(--orange); }
+.cal-day-col.cal-blackout .cal-day-num    { color:var(--orange); }
+.cal-month-cell.cal-blackout              { background:#f0a85508 !important; }
+.cal-month-cell.cal-blackout .cal-month-num { color:var(--orange); }
+
 .cal-week-grid {
   display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:6px; width:100%;
 }
@@ -683,7 +690,8 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">Due Date</label>
-        <input type="date" id="cDue">
+        <input type="date" id="cDue" onchange="checkDueDateBlackout(this.value,'cDueBlackoutWarn')">
+        <div id="cDueBlackoutWarn" style="display:none;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--orange);margin-top:3px;line-height:1.5"></div>
       </div>
       <div class="form-group">
         <label class="form-label">Estimated Time (mins)</label>
@@ -878,6 +886,15 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
         <button class="btn btn-sm btn-secondary" onclick="openAddContext()">+ Add</button>
       </div>
       <div id="settingsContextList" style="display:flex;flex-direction:column;gap:6px"></div>
+    </div>
+
+    <!-- BLACKOUT PERIODS -->
+    <div class="settings-block">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div class="settings-block-title">Blackout Periods</div>
+        <button class="btn btn-sm btn-secondary" onclick="openAddBlackout()">+ Add</button>
+      </div>
+      <div id="settingsBlackoutList" style="display:flex;flex-direction:column;gap:6px"></div>
     </div>
 
     <!-- DEFAULT CAPACITY -->
@@ -1214,6 +1231,34 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
   </div>
 </div>
 
+<!-- BLACKOUT MODAL -->
+<div class="modal-overlay" id="blackoutModal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('blackoutModal')">✕</button>
+    <div class="modal-title" id="blackoutModalTitle">Add Blackout Period</div>
+    <div class="form-group">
+      <label class="form-label">Label</label>
+      <input type="text" id="bkLabel" placeholder="e.g. India trip, Medical leave...">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Start Date</label>
+        <input type="date" id="bkStart" onchange="syncBlackoutEnd()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">End Date</label>
+        <input type="date" id="bkEnd">
+      </div>
+    </div>
+    <div class="hint">For a single day blackout, set start and end to the same date.</div>
+    <div class="modal-actions">
+      <button class="btn btn-sm btn-secondary" onclick="closeModal('blackoutModal')">Cancel</button>
+      <button class="btn btn-sm" onclick="saveBlackout()">Save</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toastWrap"></div>
 
 <script>
@@ -1278,7 +1323,7 @@ async function maybeRefreshSession() {
 // ── STATE ─────────────────────────────────────────────────
 const state = {
   workspaceId: null, workspaceName: null,
-  domains: [], categories: [], projects: [], tasks: [], contexts: [],
+  domains: [], categories: [], projects: [], tasks: [], contexts: [], blackouts: [],
 };
 
 // ── INIT ──────────────────────────────────────────────────
@@ -1311,22 +1356,25 @@ function showApp() {
 // ── LOAD DATA ─────────────────────────────────────────────
 async function loadCoreData() {
   try {
-    const [r1,r2,r3,r4,r5] = await Promise.all([
+    const [r1,r2,r3,r4,r5,r6] = await Promise.all([
       supa('workspaces?select=id,name&limit=1'),
       supa('domains?select=id,name,icon,sort_order&order=sort_order'),
       supa('categories?select=id,name,domain_id,review_interval_days,is_paused,sort_order&order=sort_order'),
       supa('projects?select=id,name,status&status=eq.active&order=created_at.desc'),
       supa('contexts?select=id,name,icon,sort_order,is_active&order=sort_order'),
+      supa('blackout_periods?select=id,label,start_date,end_date&order=start_date'),
     ]);
     const ws = await r1.json();
     const d  = await r2.json();
     const c  = await r3.json();
     const p  = await r4.json();
     const cx = await r5.json();
+    const bk = await r6.json();
     state.domains    = Array.isArray(d)  ? d  : [];
     state.categories = Array.isArray(c)  ? c  : [];
     state.projects   = Array.isArray(p)  ? p  : [];
     state.contexts   = Array.isArray(cx) ? cx : [];
+    state.blackouts  = Array.isArray(bk) ? bk : [];
     if (Array.isArray(ws) && ws.length) {
       state.workspaceId   = ws[0].id;
       state.workspaceName = ws[0].name;
@@ -1509,7 +1557,10 @@ function renderCard(task, overdue=false) {
   const iqLabel = { important_urgent:'🔴 Imp+Urgent', important_not_urgent:'🟢 Imp+Not Urgent', not_important_urgent:'🟡 Not Imp+Urgent', not_important_not_urgent:'🔵 Not Imp+Not Urgent' };
   const cats = (task._categories||[]).map(c=>`<span class="tag tag-cat">${escHtml(c.name)}</span>`).join('');
   const dueTag = task.due_date ? `<span class="tag ${overdue?'tag-overdue':'tag-due'}">${overdue?'⚠ ':'📅 '}${task.due_date}</span>` : '';
-  const typeTag = task.type==='recurring'?'<span class="tag tag-recur">🔄</span>':task.type==='idea'?'<span class="tag tag-idea">💡 Idea</span>':'';
+  const xCount  = task.type==='recurring' && task.recur_pattern==='x_per_day' && task.target_count
+    ? `<span class="tag tag-recur">🔄 ${task.current_count||0}/${task.target_count}</span>`
+    : task.type==='recurring' ? '<span class="tag tag-recur">🔄</span>' : '';
+  const typeTag = xCount || (task.type==='idea'?'<span class="tag tag-idea">💡 Idea</span>':'');
   const estTag = task.estimated_mins ? `<span class="tag tag-cat">⏱ ${task.estimated_mins}m</span>` : '';
   const iqTag  = iq ? `<span class="tag tag-${iqMap[iq]}">${iqLabel[iq]}</span>` : '';
   return `<div class="task-card" data-id="${task.id}" data-iq="${iq}">
@@ -1568,10 +1619,15 @@ async function finishRecurring(id, adhocDate) {
   const tmpl = templates[0];
   const nextDate = adhocDate || calcNextDate(tmpl);
   if (nextDate) {
+    let adjustedTarget = tmpl.recur_times_per_day || 1;
+    if (tmpl.counter_reset_mode === 'carry_over' && task.target_count) {
+      const deficit = task.target_count - (task.current_count || 0);
+      if (deficit > 0) adjustedTarget = adjustedTarget + deficit;
+    }
     const nr = await supa('tasks',{method:'POST',body:JSON.stringify({
       workspace_id:state.workspaceId, recurrence_id:tmpl.id, name:tmpl.name, notes:tmpl.notes,
       type:'recurring', status:'next', importance_speed:tmpl.importance_speed, context:tmpl.context,
-      estimated_mins:tmpl.estimated_mins, due_date:nextDate, current_count:0, target_count:tmpl.recur_times_per_day,
+      estimated_mins:tmpl.estimated_mins, due_date:nextDate, current_count:0, target_count:adjustedTarget,
       recur_pattern:tmpl.recur_pattern, reschedule_count:0, reschedule_reasons:[], ai_suggestions:{},
     })});
     if (nr.ok) {
@@ -1973,9 +2029,13 @@ function renderPipelineCard(task, extraActions='') {
   const iqLabel = {important_urgent:'🔴 Imp+Urgent',important_not_urgent:'🟢 Imp+Not Urgent',not_important_urgent:'🟡 Not Imp+Urgent',not_important_not_urgent:'🔵 Not Imp+Not Urgent'};
   const cats = (task._categories||[]).map(c=>`<span class="tag tag-cat">${escHtml(c.name)}</span>`).join('');
   const today = todayStr();
-  const dueTag = task.due_date ? `<span class="tag ${task.due_date<today?'tag-overdue':'tag-due'}">${task.due_date<today?'⚠ ':'📅 '}${task.due_date}</span>` : '';
+  const blackout = task.due_date ? isBlackoutDate(task.due_date) : null;
+  const dueTag = task.due_date ? `<span class="tag ${task.due_date<today?'tag-overdue':'tag-due'}">${task.due_date<today?'⚠ ':'📅 '}${task.due_date}</span>${blackout?`<span class="tag" style="background:#f0a85515;color:var(--orange);border:1px solid #f0a85530">⛔ ${escHtml(blackout.label)}</span>`:''}` : '';
   const revisitTag = task.revisit_date ? `<span class="tag tag-cat">🔁 Revisit ${task.revisit_date}</span>` : '';
-  const typeTag = task.type==='recurring'?'<span class="tag tag-recur">🔄</span>':task.type==='idea'?'<span class="tag tag-idea">💡 Idea</span>':'';
+  const xCount  = task.type==='recurring' && task.recur_pattern==='x_per_day' && task.target_count
+    ? `<span class="tag tag-recur">🔄 ${task.current_count||0}/${task.target_count}</span>`
+    : task.type==='recurring' ? '<span class="tag tag-recur">🔄</span>' : '';
+  const typeTag = xCount || (task.type==='idea'?'<span class="tag tag-idea">💡 Idea</span>':'');
   const estTag = task.estimated_mins ? `<span class="tag tag-cat">⏱ ${task.estimated_mins}m</span>` : '';
   const iqTag = iq ? `<span class="tag tag-${iqMap[iq]}">${iqLabel[iq]}</span>` : '';
   const ctxTag = task.context ? `<span class="tag tag-cat">${task.context}</span>` : '';
@@ -3097,9 +3157,12 @@ function renderCalWeek() {
   document.getElementById('calGrid').innerHTML = `<div class="cal-week-grid" style="margin-top:16px">
     ${days.map((d,i) => {
       const dStr = d2s(d);
-      const isToday = dStr === ts;
-      const tasks = calTasksForDate(dStr);
-      return `<div class="cal-day-col${isToday?' today':''}">
+      const isToday   = dStr === ts;
+      const tasks     = calTasksForDate(dStr);
+      const bkDates   = getBlackoutDates();
+      const isBlackout = bkDates.has(dStr);
+      const blackoutPeriod = isBlackoutDate(dStr);
+      return `<div class="cal-day-col${isToday?' today':''}${isBlackout?' cal-blackout':''}" title="${isBlackout&&blackoutPeriod?'⛔ '+blackoutPeriod.label:''}">
         <div class="cal-day-header">${DAYS[i]}</div>
         <div class="cal-day-num">${d.getDate()}</div>
         ${tasks.length===0
@@ -3140,7 +3203,7 @@ function renderCalMonth() {
       const tasks = calTasksForDate(dStr);
       const shown = tasks.slice(0, 3);
       const extra = tasks.length - 3;
-      return `<div class="cal-month-cell${isToday?' today':''}${otherMonth?' other-month':''}">
+      return `<div class="cal-month-cell${isToday?' today':''}${otherMonth?' other-month':''}${isBlackout2?' cal-blackout':''}" title="${isBlackout2&&bkPeriod2?'⛔ '+bkPeriod2.label:''}">
         <div class="cal-month-num">${d.getDate()}</div>
         ${shown.map(t => {
           const cls = chipClass(t, ts);
@@ -3237,6 +3300,7 @@ function openSettings(){
   document.getElementById('pwdError').classList.remove('show');
   if(adminUnlockExpiry&&Date.now()<adminUnlockExpiry)showAdminUnlocked();else showAdminLocked();
   renderSettingsContexts();
+  renderSettingsBlackouts();
   const defCap = localStorage.getItem('clarity_default_capacity') || DEFAULT_CAPACITY_MINS;
   document.getElementById('settingsCapacity').value = defCap;
   document.getElementById('settingsModal').classList.add('open');
