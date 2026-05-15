@@ -762,3 +762,33 @@ end $$;
 
 -- Confirm
 select name, icon, is_active from contexts order by sort_order;
+
+
+-- ============================================================
+-- CLARITY GTD — ADD BLACKOUT PERIODS TABLE
+-- Run in Supabase SQL Editor
+-- ============================================================
+ 
+create table blackout_periods (
+  id            uuid primary key default uuid_generate_v4(),
+  workspace_id  uuid not null references workspaces(id) on delete cascade,
+  label         text not null,
+  start_date    date not null,
+  end_date      date not null,
+  created_at    timestamptz not null default now(),
+  constraint valid_date_range check (end_date >= start_date)
+);
+ 
+create index idx_blackouts_workspace on blackout_periods(workspace_id);
+create index idx_blackouts_dates     on blackout_periods(start_date, end_date);
+ 
+alter table blackout_periods enable row level security;
+create policy "authenticated access" on blackout_periods
+  for all to authenticated using (true);
+ 
+grant select, insert, update, delete on public.blackout_periods to authenticated;
+grant select, insert, update, delete on public.blackout_periods to service_role;
+grant select on public.blackout_periods to anon;
+ 
+-- Confirm
+select 'blackout_periods table created ✓' as status;
