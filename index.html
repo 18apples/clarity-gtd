@@ -126,19 +126,19 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
 
 /* CALENDAR */
 .cal-week-grid {
-  display:grid; grid-template-columns:repeat(7,1fr); gap:8px;
+  display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:6px; width:100%;
 }
 .cal-day-col {
-  display:flex; flex-direction:column; gap:6px; min-height:120px;
+  display:flex; flex-direction:column; gap:4px; min-height:120px; min-width:0; overflow:hidden;
 }
 .cal-day-header {
-  font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:500;
+  font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:500;
   letter-spacing:.5px; text-transform:uppercase; color:var(--text3);
   text-align:center; padding-bottom:4px;
   border-bottom:1px solid var(--border);
 }
 .cal-day-num {
-  font-family:'JetBrains Mono',monospace; font-size:18px; font-weight:400;
+  font-family:'JetBrains Mono',monospace; font-size:16px; font-weight:400;
   text-align:center; line-height:1; margin-bottom:4px; color:var(--text2);
 }
 .cal-day-col.today .cal-day-num {
@@ -148,11 +148,11 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
 }
 .cal-day-col.today .cal-day-header { color:var(--accent); }
 .cal-task-chip {
-  font-size:11px; padding:4px 8px; border-radius:4px;
+  font-size:11px; padding:4px 6px; border-radius:4px;
   background:var(--surface2); border:1px solid var(--border);
   color:var(--text); cursor:pointer; transition:all .15s;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  line-height:1.3;
+  line-height:1.3; width:100%; box-sizing:border-box; display:block;
 }
 .cal-task-chip:hover { border-color:var(--border2); background:var(--surface3); }
 .cal-task-chip.overdue { background:#f0606015; border-color:#f0606030; color:var(--red); }
@@ -162,13 +162,13 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
 
 /* MONTH GRID */
 .cal-month-grid {
-  display:grid; grid-template-columns:repeat(7,1fr); gap:1px;
+  display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:1px;
   background:var(--border); border:1px solid var(--border); border-radius:var(--r);
-  overflow:hidden;
+  overflow:hidden; width:100%;
 }
 .cal-month-cell {
-  background:var(--surface); padding:8px 6px; min-height:90px;
-  display:flex; flex-direction:column; gap:3px;
+  background:var(--surface); padding:6px 4px; min-height:80px;
+  display:flex; flex-direction:column; gap:2px; overflow:hidden; min-width:0;
 }
 .cal-month-cell.other-month { background:var(--bg); }
 .cal-month-cell.today { background:#b8f06008; }
@@ -180,13 +180,14 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
 .cal-month-dow {
   font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--text3);
   text-align:center; padding:6px 0; text-transform:uppercase; letter-spacing:.5px;
-  background:var(--surface2);
+  background:var(--surface2); min-width:0;
 }
 .cal-month-chip {
-  font-size:10px; padding:2px 5px; border-radius:3px;
+  font-size:10px; padding:2px 4px; border-radius:3px;
   background:var(--surface2); border:1px solid var(--border);
   color:var(--text2); cursor:pointer; transition:all .1s;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  width:100%; box-sizing:border-box; display:block;
 }
 .cal-month-chip:hover { background:var(--surface3); }
 .cal-month-chip.overdue { background:#f0606015; border-color:#f0606030; color:var(--red); }
@@ -194,6 +195,60 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
 .cal-month-chip.idea { background:#f0a85510; border-color:#f0a85530; color:var(--orange); }
 .cal-more { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--text3); padding:1px 4px; cursor:pointer; }
 .cal-more:hover { color:var(--text2); }
+
+
+/* FILTER CHIPS */
+.filter-chip{background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:5px 12px;border-radius:20px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;cursor:pointer;transition:all .15s}
+.filter-chip:hover{color:var(--text);border-color:var(--border2)}
+.filter-chip.active{background:var(--accent);color:#0a0a0b;border-color:var(--accent)}
+
+/* PROJECT CARDS */
+.proj-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
+.proj-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.proj-card[data-pri="high"]::before{background:var(--red)}
+.proj-card[data-pri="medium"]::before{background:var(--orange)}
+.proj-card[data-pri="low"]::before{background:var(--blue)}
+.proj-card:hover{border-color:var(--border2)}
+.proj-card.stalled{border-color:#f0606030}
+.proj-card-name{font-size:15px;font-weight:600;line-height:1.3}
+.proj-card-outcome{font-size:12px;color:var(--text2);margin-top:4px;line-height:1.4}
+.proj-card-meta{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.proj-card-next{margin-top:10px;padding:7px 10px;background:var(--surface2);border-radius:var(--r-sm);font-size:12px;color:var(--text2);border-left:2px solid var(--accent)}
+.proj-card-next.missing{border-left-color:var(--red);color:var(--red);background:#f0606008}
+
+/* STATUS TAGS */
+.tag-status-active{background:#b8f06015;color:var(--accent);border:1px solid #b8f06030}
+.tag-status-on_hold{background:#f0a85515;color:var(--orange);border:1px solid #f0a85530}
+.tag-status-complete{background:var(--surface3);color:var(--text3);border:1px solid var(--border)}
+.tag-status-cancelled{background:var(--surface3);color:var(--text3);border:1px solid var(--border)}
+.tag-pri-high{background:#f0606015;color:var(--red);border:1px solid #f0606030}
+.tag-pri-medium{background:#f0a85515;color:var(--orange);border:1px solid #f0a85530}
+.tag-pri-low{background:#60a8f015;color:var(--blue);border:1px solid #60a8f030}
+
+/* DOMAIN CARDS */
+.domain-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.domain-header{padding:14px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:background .1s}
+.domain-header:hover{background:var(--surface2)}
+.domain-icon{font-size:18px;width:28px;text-align:center;flex-shrink:0}
+.domain-name{font-size:14px;font-weight:600}
+.domain-meta{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;align-items:center}
+.domain-chevron{color:var(--text3);font-size:11px;transition:transform .2s;margin-left:auto;flex-shrink:0}
+.domain-chevron.open{transform:rotate(90deg)}
+.domain-body{border-top:1px solid var(--border);display:none}
+.domain-body.open{display:block}
+.domain-actions{padding:10px 14px;display:flex;gap:8px;background:var(--surface2);border-bottom:1px solid var(--border)}
+.cat-row{padding:10px 16px 10px 54px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);transition:background .1s}
+.cat-row:last-child{border-bottom:none}
+.cat-row:hover{background:var(--surface2)}
+.cat-row-name{flex:1;font-size:13px}
+.cat-row-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)}
+.cat-row-actions{display:flex;gap:4px;opacity:0;transition:opacity .15s}
+.cat-row:hover .cat-row-actions{opacity:1}
+
+/* PROJECT DETAIL */
+.pd-field{display:flex;flex-direction:column;gap:3px}
+.pd-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px}
+.pd-value{font-size:13px;color:var(--text)}
 
 ::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -280,8 +335,57 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
   </main>
 
   <!-- OTHER VIEWS -->
-  <main class="app-view" id="viewProjects"  style="display:none"><div class="empty-state"><div class="empty-icon">📁</div><div class="empty-title">Projects</div><div class="empty-sub">Coming in Phase 3.</div></div></main>
-  <main class="app-view" id="viewAreas"     style="display:none"><div class="empty-state"><div class="empty-icon">🌱</div><div class="empty-title">Life Areas</div><div class="empty-sub">Coming in Phase 3.</div></div></main>
+  <!-- PROJECTS VIEW -->
+  <main class="app-view" id="viewProjects" style="display:none">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">GTD Layer 3</div>
+        <div style="font-family:'Instrument Serif',serif;font-size:28px;letter-spacing:-.8px;line-height:1">Projects</div>
+      </div>
+      <button class="btn btn-sm btn-secondary" onclick="openAddProject()">+ New Project</button>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap" id="projectFilters">
+      <button class="filter-chip active" data-pf="active"     onclick="setProjectFilter('active')">Active</button>
+      <button class="filter-chip"        data-pf="on_hold"    onclick="setProjectFilter('on_hold')">On Hold</button>
+      <button class="filter-chip"        data-pf="complete"   onclick="setProjectFilter('complete')">Complete</button>
+      <button class="filter-chip"        data-pf="cancelled"  onclick="setProjectFilter('cancelled')">Cancelled</button>
+      <button class="filter-chip"        data-pf="all"        onclick="setProjectFilter('all')">All</button>
+    </div>
+    <div id="projectsList" style="display:flex;flex-direction:column;gap:10px"></div>
+  </main>
+
+  <!-- PROJECT DETAIL VIEW -->
+  <main class="app-view" id="viewProjectDetail" style="display:none">
+    <div>
+      <button class="btn btn-sm btn-ghost" onclick="switchView('projects')" style="margin-bottom:10px">← Back to Projects</button>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <div style="font-family:'Instrument Serif',serif;font-size:24px;letter-spacing:-.5px" id="pdName">Project</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-sm btn-secondary" onclick="openEditCurrentProject()">✎ Edit</button>
+          <button class="btn btn-sm btn-secondary" onclick="openCaptureForProject()">+ Add Task</button>
+        </div>
+      </div>
+    </div>
+    <div id="pdCard"></div>
+    <div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:8px">Tasks in this project</div>
+      <div id="pdTaskList" style="display:flex;flex-direction:column;gap:8px"></div>
+    </div>
+  </main>
+  <!-- LIFE AREAS VIEW -->
+  <main class="app-view" id="viewAreas" style="display:none">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Life Areas</div>
+        <div style="font-family:'Instrument Serif',serif;font-size:28px;letter-spacing:-.8px;line-height:1">Domains & Categories</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm btn-secondary" onclick="openAddDomain()">+ Domain</button>
+        <button class="btn btn-sm btn-secondary" onclick="openAddCategory(null)">+ Category</button>
+      </div>
+    </div>
+    <div id="areasList" style="display:flex;flex-direction:column;gap:12px"></div>
+  </main>
   <main class="app-view" id="viewInbox"     style="display:none"><div class="empty-state"><div class="empty-icon">📥</div><div class="empty-title">Inbox</div><div class="empty-sub">Coming in Phase 4.</div></div></main>
   <main class="app-view" id="viewNext"      style="display:none"><div class="empty-state"><div class="empty-icon">⚡</div><div class="empty-title">Next Actions</div><div class="empty-sub">Coming in Phase 4.</div></div></main>
   <main class="app-view" id="viewWaiting"   style="display:none"><div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-title">Waiting For</div><div class="empty-sub">Coming in Phase 4.</div></div></main>
@@ -290,7 +394,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
   <main class="app-view" id="viewIdeas"     style="display:none"><div class="empty-state"><div class="empty-icon">💡</div><div class="empty-title">Ideas</div><div class="empty-sub">Coming in Phase 4.</div></div></main>
 
   <!-- CALENDAR VIEW -->
-  <main class="app-view" id="viewCalendar" style="display:none;max-width:960px">
+  <main class="app-view" id="viewCalendar" style="display:none;max-width:1100px;width:100%">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;max-width:900px;width:100%;margin:0 auto">
       <div style="font-family:'Instrument Serif',serif;font-size:24px;letter-spacing:-.5px" id="calTitle">Calendar</div>
       <div style="display:flex;gap:8px;align-items:center">
@@ -606,6 +710,191 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
   </div>
 </div>
 
+
+<!-- PROJECT MODAL -->
+<div class="modal-overlay" id="projectModal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('projectModal')">✕</button>
+    <div class="modal-title" id="projectModalTitle">New Project</div>
+    <div class="form-group">
+      <label class="form-label">Project Name</label>
+      <input type="text" id="pmName" placeholder="e.g. Plan India Trip...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Outcome — what does done look like?</label>
+      <textarea id="pmOutcome" placeholder="Describe the successful outcome..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Categories <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">(tap to select)</span></label>
+      <div id="pmCatPicker" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px;max-height:180px;overflow-y:auto"></div>
+      <input type="hidden" id="pmCatIds" value="">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Priority</label>
+        <select id="pmPriority">
+          <option value="medium">🟡 Medium</option>
+          <option value="high">🔴 High</option>
+          <option value="low">🔵 Low</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Deadline (optional)</label>
+        <input type="date" id="pmDeadline">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select id="pmStatus" onchange="togglePmOnHold()">
+          <option value="active">Active</option>
+          <option value="on_hold">On Hold</option>
+          <option value="complete">Complete</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Review Every (days)</label>
+        <input type="number" id="pmReviewDays" value="30" min="1">
+      </div>
+    </div>
+    <div id="pmOnHoldFields" style="display:none;flex-direction:column;gap:12px">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">On Hold Until (optional)</label>
+          <input type="date" id="pmOnHoldUntil">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Reason</label>
+          <input type="text" id="pmOnHoldReason" placeholder="e.g. Waiting for budget...">
+        </div>
+      </div>
+    </div>
+    <div id="pmFirstActionGroup">
+      <div style="height:1px;background:var(--border);margin:4px 0"></div>
+      <div class="form-group">
+        <label class="form-label">First Next Action (required)</label>
+        <input type="text" id="pmFirstAction" placeholder="Start with an action verb...">
+        <div class="hint">This task will be added to your Next Actions and linked to this project.</div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-sm btn-secondary" onclick="closeModal('projectModal')">Cancel</button>
+      <button class="btn btn-sm" id="pmSaveBtn" onclick="saveProject()">Create Project</button>
+    </div>
+  </div>
+</div>
+
+<!-- ON HOLD MODAL -->
+<div class="modal-overlay" id="onHoldModal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('onHoldModal')">✕</button>
+    <div class="modal-title">Put Project On Hold</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.5">All open tasks in this project will be set to Waiting status.</div>
+    <div class="form-group">
+      <label class="form-label">Reason (required)</label>
+      <input type="text" id="ohReason" placeholder="e.g. Waiting for budget approval...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">On Hold Until (optional)</label>
+      <input type="date" id="ohUntil">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-sm btn-secondary" onclick="closeModal('onHoldModal')">Cancel</button>
+      <button class="btn btn-sm" onclick="confirmOnHold()">Put On Hold</button>
+    </div>
+  </div>
+</div>
+
+<!-- DOMAIN MODAL -->
+<div class="modal-overlay" id="domainModal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('domainModal')">✕</button>
+    <div class="modal-title" id="domainModalTitle">Add Domain</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Name</label>
+        <input type="text" id="dmName" placeholder="e.g. Side Business">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Icon (emoji)</label>
+        <input type="text" id="dmIcon" placeholder="e.g. 💡" maxlength="4">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-sm btn-secondary" onclick="closeModal('domainModal')">Cancel</button>
+      <button class="btn btn-sm" onclick="saveDomain()">Save Domain</button>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY MODAL -->
+<div class="modal-overlay" id="categoryModal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('categoryModal')">✕</button>
+    <div class="modal-title" id="categoryModalTitle">Add Category</div>
+    <div class="form-group">
+      <label class="form-label">Name</label>
+      <input type="text" id="cmName" placeholder="e.g. Side Projects">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Domain</label>
+      <select id="cmDomain"><option value="">— select domain —</option></select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Review Every (days)</label>
+        <input type="number" id="cmReviewDays" value="30" min="1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select id="cmPaused" onchange="toggleCmPause()">
+          <option value="false">Active</option>
+          <option value="true">Paused</option>
+        </select>
+      </div>
+    </div>
+    <div id="cmPauseFields" style="display:none;flex-direction:column;gap:12px">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Pause Until</label>
+          <input type="date" id="cmPausedUntil">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Reason</label>
+          <input type="text" id="cmPauseReason" placeholder="e.g. On vacation">
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-sm btn-secondary" onclick="closeModal('categoryModal')">Cancel</button>
+      <button class="btn btn-sm" onclick="saveCategory()">Save Category</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE DOMAIN/CATEGORY MODAL -->
+<div class="modal-overlay" id="deleteAreaModal">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('deleteAreaModal')">✕</button>
+    <div class="modal-title" id="daTitle">Delete Category</div>
+    <div id="daWarning" style="background:#f0606010;border:1px solid #f0606030;border-radius:var(--r-sm);padding:10px 12px;font-size:13px;color:var(--red);line-height:1.5"></div>
+    <div class="form-group" id="daMoveGroup" style="display:none">
+      <label class="form-label">Move tasks to</label>
+      <select id="daMoveTarget"></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-sm btn-secondary" onclick="closeModal('deleteAreaModal')">Cancel</button>
+      <button class="btn btn-sm" style="background:#f0606020;color:var(--red);border:1px solid #f0606040" onclick="confirmDeleteArea()">Delete</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toastWrap"></div>
 
 <script>
@@ -690,7 +979,7 @@ async function init() {
 async function bootApp() {
   showApp();
   await loadCoreData();
-  await loadTasks();
+  await Promise.all([loadTasks(), loadProjects()]);
   renderFocus();
 }
 
@@ -1163,6 +1452,539 @@ function toggleDay(day) {
 
 
 
+
+// ── PHASE 3: PROJECTS ─────────────────────────────────────────────
+
+let currentProjectFilter = 'active';
+let editingProjectId     = null;
+let currentProjectId     = null;
+let pmCatSel             = [];
+let onHoldProjectId      = null;
+
+async function loadProjects() {
+  try {
+    const res = await supa('projects?select=id,name,outcome,status,priority,deadline,review_interval_days,on_hold_until,on_hold_reason,created_at,completed_at&order=created_at.desc');
+    const data = await res.json();
+    if (!Array.isArray(data)) { state.projects = []; return; }
+    state.projects = data;
+    // Load project categories
+    if (state.projects.length) {
+      const ids = state.projects.map(p=>p.id).join(',');
+      const cr = await supa(`project_categories?project_id=in.(${ids})&select=project_id,category_id`);
+      const pcs = await cr.json();
+      const pcsArr = Array.isArray(pcs) ? pcs : [];
+      state.projects.forEach(p => {
+        const catIds = pcsArr.filter(pc=>pc.project_id===p.id).map(pc=>pc.category_id);
+        p._categories = state.categories.filter(c=>catIds.includes(c.id));
+      });
+    }
+    console.log(`loadProjects: ${state.projects.length} projects`);
+  } catch(e) { console.error('loadProjects:', e); state.projects = []; }
+}
+
+function setProjectFilter(f) {
+  currentProjectFilter = f;
+  document.querySelectorAll('.filter-chip[data-pf]').forEach(b=>b.classList.toggle('active', b.dataset.pf===f));
+  renderProjects();
+}
+
+function renderProjects() {
+  const container = document.getElementById('projectsList');
+  const filtered  = currentProjectFilter === 'all'
+    ? state.projects
+    : state.projects.filter(p => p.status === currentProjectFilter);
+
+  if (!filtered.length) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📁</div><div class="empty-title">No ${currentProjectFilter==='all'?'':currentProjectFilter} projects</div><div class="empty-sub">Projects need more than one action step. Create one to get started.</div></div>`;
+    return;
+  }
+  container.innerHTML = filtered.map(p => renderProjectCard(p)).join('');
+}
+
+function renderProjectCard(p) {
+  const tasks      = state.tasks.filter(t=>t.project_id===p.id&&t.status!=='done'&&t.status!=='cancelled');
+  const allTasks   = state.tasks.filter(t=>t.project_id===p.id);
+  const doneTasks  = allTasks.filter(t=>t.status==='done').length;
+  const nextAction = tasks.find(t=>t.status==='next')||tasks[0];
+  const isStalled  = p.status==='active'&&tasks.length===0&&allTasks.length>0;
+  const sLabels    = {active:'Active',on_hold:'⏸ On Hold',complete:'✓ Complete',cancelled:'✕ Cancelled'};
+  const pLabels    = {high:'🔴 High',medium:'🟡 Medium',low:'🔵 Low'};
+  const catTags    = (p._categories||[]).map(c=>`<span class="tag tag-cat">${escHtml(c.name)}</span>`).join('');
+  const overdue    = p.deadline && p.deadline < todayStr() && p.status==='active';
+
+  return `<div class="proj-card${isStalled?' stalled':''}" data-pri="${p.priority}" onclick="openProjectDetail('${p.id}')">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+      <div style="flex:1;min-width:0">
+        <div class="proj-card-name">${escHtml(p.name)}</div>
+        ${p.outcome?`<div class="proj-card-outcome">${escHtml(p.outcome.slice(0,120))}${p.outcome.length>120?'…':''}</div>`:''}
+      </div>
+      <button class="btn-icon" style="width:28px;height:28px;font-size:11px;flex-shrink:0" onclick="openEditProject('${p.id}',event)">✎</button>
+    </div>
+    <div class="proj-card-meta">
+      <span class="tag tag-status-${p.status}">${sLabels[p.status]}</span>
+      <span class="tag tag-pri-${p.priority}">${pLabels[p.priority]}</span>
+      ${p.deadline?`<span class="tag ${overdue?'tag-overdue':'tag-due'}">${overdue?'⚠ ':'📅 '}${p.deadline}</span>`:''}
+      ${catTags}
+      <span class="tag tag-cat">${tasks.length} open · ${doneTasks}/${allTasks.length} done</span>
+      ${isStalled?'<span class="tag tag-overdue">⚠ Stalled</span>':''}
+    </div>
+    ${nextAction
+      ? `<div class="proj-card-next">→ ${escHtml(nextAction.name)}</div>`
+      : p.status==='active'?`<div class="proj-card-next missing">⚠ No next action</div>`:''
+    }
+  </div>`;
+}
+
+function openProjectDetail(id) {
+  currentProjectId = id;
+  document.querySelectorAll('.app-view').forEach(v=>v.style.display='none');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('viewProjectDetail').style.display='flex';
+  document.querySelector('[data-view="projects"]').classList.add('active');
+  renderProjectDetail();
+}
+
+function renderProjectDetail() {
+  const p = state.projects.find(x=>x.id===currentProjectId);
+  if (!p) return;
+  document.getElementById('pdName').textContent = p.name;
+  const sLabels = {active:'Active',on_hold:'⏸ On Hold',complete:'✓ Complete',cancelled:'✕ Cancelled'};
+  const pLabels = {high:'🔴 High',medium:'🟡 Medium',low:'🔵 Low'};
+  const catTags = (p._categories||[]).map(c=>`<span class="tag tag-cat">${escHtml(c.name)}</span>`).join('');
+
+  document.getElementById('pdCard').innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:14px">
+      ${p.outcome?`<div class="pd-field"><div class="pd-label">Outcome</div><div class="pd-value" style="font-style:italic;color:var(--text2)">"${escHtml(p.outcome)}"</div></div>`:''}
+      <div style="display:flex;gap:16px;flex-wrap:wrap">
+        <div class="pd-field"><div class="pd-label">Status</div><div><span class="tag tag-status-${p.status}">${sLabels[p.status]}</span></div></div>
+        <div class="pd-field"><div class="pd-label">Priority</div><div><span class="tag tag-pri-${p.priority}">${pLabels[p.priority]}</span></div></div>
+        ${p.deadline?`<div class="pd-field"><div class="pd-label">Deadline</div><div class="pd-value">${p.deadline}</div></div>`:''}
+        ${catTags?`<div class="pd-field"><div class="pd-label">Categories</div><div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:2px">${catTags}</div></div>`:''}
+      </div>
+      ${p.status==='on_hold'?`<div style="background:#f0a85510;border:1px solid #f0a85530;border-radius:var(--r-sm);padding:10px 12px;font-size:12px;color:var(--orange);line-height:1.5">⏸ On hold${p.on_hold_until?' until '+p.on_hold_until:''}: ${p.on_hold_reason||'No reason given'}</div>`:''}
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${p.status==='active'?`<button class="btn btn-sm btn-secondary" onclick="openOnHold('${p.id}')">⏸ Put On Hold</button>`:''}
+        ${p.status==='on_hold'?`<button class="btn btn-sm btn-secondary" onclick="reactivateProject('${p.id}')">▶ Reactivate</button>`:''}
+        ${p.status!=='complete'&&p.status!=='cancelled'?`<button class="btn btn-sm btn-secondary" onclick="markProjectComplete('${p.id}')">✓ Mark Complete</button>`:''}
+        ${p.status!=='cancelled'?`<button class="btn btn-sm" style="background:#f0606020;color:var(--red);border:1px solid #f0606040" onclick="cancelProject('${p.id}')">✕ Cancel Project</button>`:''}
+      </div>
+    </div>`;
+
+  const ptasks = state.tasks.filter(t=>t.project_id===p.id&&t.status!=='done'&&t.status!=='cancelled');
+  const dtasks = state.tasks.filter(t=>t.project_id===p.id&&(t.status==='done'||t.status==='cancelled'));
+  let html = ptasks.length ? ptasks.map(t=>renderCard(t)).join('') : '<div class="empty-state" style="padding:24px 0"><div class="empty-sub">No open tasks. Add one above.</div></div>';
+  if (dtasks.length) html += `<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin:12px 0 6px">Done / Cancelled</div>` + dtasks.map(t=>renderCard(t)).join('');
+  document.getElementById('pdTaskList').innerHTML = html;
+}
+
+function openCaptureForProject() {
+  openCapture();
+  setTimeout(()=>{
+    const p = state.projects.find(x=>x.id===currentProjectId);
+    if (p) document.getElementById('cProject').value = p.id;
+  }, 150);
+}
+
+function openEditCurrentProject() { openEditProject(currentProjectId); }
+
+// ── PROJECT CRUD ──────────────────────────────────────────────────
+
+function openAddProject() {
+  editingProjectId = null; pmCatSel = [];
+  document.getElementById('projectModalTitle').textContent = 'New Project';
+  document.getElementById('pmSaveBtn').textContent = 'Create Project';
+  document.getElementById('pmName').value = '';
+  document.getElementById('pmOutcome').value = '';
+  document.getElementById('pmPriority').value = 'medium';
+  document.getElementById('pmDeadline').value = '';
+  document.getElementById('pmStatus').value = 'active';
+  document.getElementById('pmReviewDays').value = '30';
+  document.getElementById('pmOnHoldUntil').value = '';
+  document.getElementById('pmOnHoldReason').value = '';
+  document.getElementById('pmOnHoldFields').style.display = 'none';
+  document.getElementById('pmFirstActionGroup').style.display = 'block';
+  document.getElementById('pmFirstAction').value = '';
+  renderPmCatPicker();
+  document.getElementById('projectModal').classList.add('open');
+  setTimeout(()=>document.getElementById('pmName').focus(), 200);
+}
+
+function openEditProject(id, event) {
+  if (event) event.stopPropagation();
+  const p = state.projects.find(x=>x.id===id);
+  if (!p) return;
+  editingProjectId = id; pmCatSel = (p._categories||[]).map(c=>c.id);
+  document.getElementById('projectModalTitle').textContent = 'Edit Project';
+  document.getElementById('pmSaveBtn').textContent = 'Save Changes';
+  document.getElementById('pmName').value = p.name;
+  document.getElementById('pmOutcome').value = p.outcome||'';
+  document.getElementById('pmPriority').value = p.priority;
+  document.getElementById('pmDeadline').value = p.deadline||'';
+  document.getElementById('pmStatus').value = p.status;
+  document.getElementById('pmReviewDays').value = p.review_interval_days||30;
+  document.getElementById('pmOnHoldUntil').value = p.on_hold_until||'';
+  document.getElementById('pmOnHoldReason').value = p.on_hold_reason||'';
+  document.getElementById('pmOnHoldFields').style.display = p.status==='on_hold'?'flex':'none';
+  document.getElementById('pmFirstActionGroup').style.display = 'none';
+  renderPmCatPicker();
+  document.getElementById('projectModal').classList.add('open');
+}
+
+function togglePmOnHold() {
+  document.getElementById('pmOnHoldFields').style.display =
+    document.getElementById('pmStatus').value==='on_hold' ? 'flex' : 'none';
+}
+
+function renderPmCatPicker() {
+  const container = document.getElementById('pmCatPicker');
+  if (!state.categories.length) { container.innerHTML='<div style="color:var(--text3);font-size:12px">No categories</div>'; return; }
+  const grouped = {};
+  state.categories.forEach(c => {
+    if (!grouped[c.domain_id]) grouped[c.domain_id] = [];
+    grouped[c.domain_id].push(c);
+  });
+  container.innerHTML = Object.entries(grouped).map(([did, cats]) => {
+    const domain = state.domains.find(d=>d.id===did);
+    const label = domain ? `<div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.8px;text-transform:uppercase;padding:4px 2px 4px;margin-top:2px">${domain.icon||''} ${domain.name}</div>` : '';
+    const btns = cats.map(c => {
+      const sel = pmCatSel.includes(c.id);
+      return `<button type="button" onclick="togglePmCat('${c.id}')" style="background:${sel?'var(--accent)':'var(--surface3)'};color:${sel?'#0a0a0b':'var(--text2)'};border:1px solid ${sel?'var(--accent)':'var(--border)'};border-radius:var(--r-sm);padding:4px 10px;font-size:12px;cursor:pointer;transition:all .15s;font-family:'Instrument Sans',sans-serif;margin:2px">${escHtml(c.name)}</button>`;
+    }).join('');
+    return label + `<div style="display:flex;flex-wrap:wrap">${btns}</div>`;
+  }).join('');
+  document.getElementById('pmCatIds').value = pmCatSel.join(',');
+}
+
+function togglePmCat(id) {
+  if (pmCatSel.includes(id)) pmCatSel = pmCatSel.filter(x=>x!==id);
+  else pmCatSel.push(id);
+  document.getElementById('pmCatIds').value = pmCatSel.join(',');
+  renderPmCatPicker();
+}
+
+async function saveProject() {
+  const name = document.getElementById('pmName').value.trim();
+  if (!name) { toast('Project name is required','error'); return; }
+  if (!state.workspaceId) { toast('Workspace not loaded','error'); return; }
+  const firstAction = document.getElementById('pmFirstAction').value.trim();
+  if (!editingProjectId && !firstAction) { toast('A first next action is required','error'); return; }
+  const status = document.getElementById('pmStatus').value;
+  const payload = {
+    workspace_id:        state.workspaceId,
+    name,
+    outcome:             document.getElementById('pmOutcome').value.trim()||null,
+    priority:            document.getElementById('pmPriority').value,
+    deadline:            document.getElementById('pmDeadline').value||null,
+    status,
+    review_interval_days: parseInt(document.getElementById('pmReviewDays').value)||30,
+    on_hold_until:       status==='on_hold'?(document.getElementById('pmOnHoldUntil').value||null):null,
+    on_hold_reason:      status==='on_hold'?(document.getElementById('pmOnHoldReason').value.trim()||null):null,
+  };
+
+  let projectId = editingProjectId, res;
+  if (editingProjectId) {
+    res = await supa(`projects?id=eq.${editingProjectId}`, {method:'PATCH', body:JSON.stringify(payload)});
+  } else {
+    res = await supa('projects', {method:'POST', body:JSON.stringify(payload)});
+    if (res.ok) { const d=await res.json(); projectId=d[0]?.id; }
+  }
+  if (!res.ok) { const e=await res.json(); toast('Error: '+(e.message||'unknown'),'error'); return; }
+
+  // Save categories
+  if (projectId) {
+    await supa(`project_categories?project_id=eq.${projectId}`, {method:'DELETE', prefer:'return=minimal'});
+    if (pmCatSel.length) await supa('project_categories', {method:'POST', prefer:'return=minimal', body:JSON.stringify(pmCatSel.map(cid=>({project_id:projectId,category_id:cid})))});
+  }
+
+  // Create first action task
+  if (!editingProjectId && firstAction && projectId) {
+    await supa('tasks', {method:'POST', body:JSON.stringify({
+      workspace_id:state.workspaceId, project_id:projectId, name:firstAction,
+      type:'task', status:'next', reschedule_count:0, reschedule_reasons:[], ai_suggestions:{},
+    })});
+  }
+
+  // If setting to on_hold — put all open project tasks to waiting
+  if (status==='on_hold' && editingProjectId) {
+    await supa(`tasks?project_id=eq.${editingProjectId}&status=neq.done&status=neq.cancelled`, {
+      method:'PATCH', body:JSON.stringify({status:'waiting'})
+    });
+  }
+
+  toast(editingProjectId?'Project updated':'Project created ✓','success');
+  closeModal('projectModal');
+  await loadProjects(); await loadTasks();
+  if (currentProjectId===editingProjectId) renderProjectDetail();
+  else renderProjects();
+}
+
+async function markProjectComplete(id) {
+  const openCount = state.tasks.filter(t=>t.project_id===id&&t.status!=='done'&&t.status!=='cancelled').length;
+  if (openCount && !confirm(`${openCount} open task${openCount>1?'s':''} remain. Mark project complete anyway?`)) return;
+  await supa(`projects?id=eq.${id}`, {method:'PATCH', body:JSON.stringify({status:'complete', completed_at:new Date().toISOString()})});
+  toast('Project complete ✓','success');
+  await loadProjects(); await loadTasks(); renderProjectDetail();
+}
+
+function openOnHold(id) {
+  onHoldProjectId = id;
+  document.getElementById('ohReason').value = '';
+  document.getElementById('ohUntil').value = '';
+  document.getElementById('onHoldModal').classList.add('open');
+}
+
+async function confirmOnHold() {
+  const reason = document.getElementById('ohReason').value.trim();
+  if (!reason) { toast('Please give a reason','error'); return; }
+  const until = document.getElementById('ohUntil').value||null;
+  await supa(`projects?id=eq.${onHoldProjectId}`, {method:'PATCH', body:JSON.stringify({status:'on_hold', on_hold_reason:reason, on_hold_until:until})});
+  // Put all open tasks to waiting
+  await supa(`tasks?project_id=eq.${onHoldProjectId}&status=neq.done&status=neq.cancelled`, {method:'PATCH', body:JSON.stringify({status:'waiting'})});
+  toast('Project on hold','success');
+  closeModal('onHoldModal');
+  await loadProjects(); await loadTasks(); renderProjectDetail();
+}
+
+async function reactivateProject(id) {
+  await supa(`projects?id=eq.${id}`, {method:'PATCH', body:JSON.stringify({status:'active', on_hold_until:null, on_hold_reason:null})});
+  // Restore waiting tasks back to next
+  await supa(`tasks?project_id=eq.${id}&status=eq.waiting`, {method:'PATCH', body:JSON.stringify({status:'next'})});
+  toast('Project reactivated','success');
+  await loadProjects(); await loadTasks(); renderProjectDetail();
+}
+
+async function cancelProject(id) {
+  const reason = prompt('Reason for cancelling this project:');
+  if (reason === null) return;
+  if (!reason.trim()) { toast('A reason is required','error'); return; }
+  await supa(`projects?id=eq.${id}`, {method:'PATCH', body:JSON.stringify({status:'cancelled'})});
+  toast('Project cancelled','success');
+  await loadProjects(); await loadTasks(); switchView('projects');
+}
+
+// ── PHASE 3: LIFE AREAS ───────────────────────────────────────────
+
+let editingDomainId   = null;
+let editingCategoryId = null;
+let deleteAreaType    = null;
+let deleteAreaId      = null;
+
+function renderAreas() {
+  const container = document.getElementById('areasList');
+  if (!state.domains.length) {
+    container.innerHTML='<div class="empty-state"><div class="empty-icon">🌱</div><div class="empty-title">No domains yet</div></div>';
+    return;
+  }
+  container.innerHTML = state.domains.map(d => {
+    const cats = state.categories.filter(c=>c.domain_id===d.id);
+    const taskCount = state.tasks.filter(t=>t.status!=='done'&&t.status!=='cancelled'&&(t._categories||[]).some(c=>c.domain_id===d.id)).length;
+    return `<div class="domain-card" id="dc-${d.id}">
+      <div class="domain-header" onclick="toggleDomain('${d.id}')">
+        <div class="domain-icon">${d.icon||'◆'}</div>
+        <div style="flex:1;min-width:0">
+          <div class="domain-name">${escHtml(d.name)}</div>
+          <div class="domain-meta">
+            <span class="tag tag-cat">${cats.length} categories</span>
+            <span class="tag tag-cat">${taskCount} tasks</span>
+          </div>
+        </div>
+        <span class="domain-chevron" id="dchev-${d.id}">▶</span>
+      </div>
+      <div class="domain-body" id="db-${d.id}">
+        <div class="domain-actions">
+          <button class="btn btn-sm btn-secondary" onclick="openEditDomain('${d.id}')">✎ Edit</button>
+          <button class="btn btn-sm btn-secondary" onclick="openAddCategory('${d.id}')">+ Category</button>
+          <button class="btn btn-sm" style="background:#f0606020;color:var(--red);border:1px solid #f0606040;margin-left:auto" onclick="openDeleteDomain('${d.id}')">✕ Delete</button>
+        </div>
+        ${cats.length ? cats.map(c => {
+          const ct = state.tasks.filter(t=>t.status!=='done'&&t.status!=='cancelled'&&(t._categories||[]).some(x=>x.id===c.id)).length;
+          return `<div class="cat-row">
+            <div class="cat-row-name">${escHtml(c.name)}${c.is_paused?'<span class="tag tag-status-on_hold" style="margin-left:8px;font-size:9px">Paused</span>':''}</div>
+            <div class="cat-row-meta">${ct} tasks · every ${c.review_interval_days}d</div>
+            <div class="cat-row-actions">
+              <button class="btn-icon" style="width:26px;height:26px;font-size:11px" onclick="openEditCategory('${c.id}')">✎</button>
+              <button class="btn-icon" style="width:26px;height:26px;font-size:11px;color:var(--red)" onclick="openDeleteCategory('${c.id}')">✕</button>
+            </div>
+          </div>`;
+        }).join('') : '<div style="padding:12px 16px 12px 54px;font-size:12px;color:var(--text3)">No categories yet</div>'}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleDomain(id) {
+  document.getElementById('db-'+id).classList.toggle('open');
+  document.getElementById('dchev-'+id).classList.toggle('open');
+}
+
+// ── DOMAIN CRUD ───────────────────────────────────────────────────
+
+function openAddDomain() {
+  editingDomainId = null;
+  document.getElementById('domainModalTitle').textContent = 'Add Domain';
+  document.getElementById('dmName').value = '';
+  document.getElementById('dmIcon').value = '';
+  document.getElementById('domainModal').classList.add('open');
+  setTimeout(()=>document.getElementById('dmName').focus(), 200);
+}
+
+function openEditDomain(id) {
+  const d = state.domains.find(x=>x.id===id); if(!d) return;
+  editingDomainId = id;
+  document.getElementById('domainModalTitle').textContent = 'Edit Domain';
+  document.getElementById('dmName').value = d.name;
+  document.getElementById('dmIcon').value = d.icon||'';
+  document.getElementById('domainModal').classList.add('open');
+}
+
+async function saveDomain() {
+  const name = document.getElementById('dmName').value.trim();
+  if (!name) { toast('Domain name required','error'); return; }
+  const payload = { workspace_id:state.workspaceId, name, icon:document.getElementById('dmIcon').value.trim()||null, sort_order: editingDomainId ? undefined : state.domains.length+1 };
+  let res;
+  if (editingDomainId) res = await supa(`domains?id=eq.${editingDomainId}`, {method:'PATCH', body:JSON.stringify(payload)});
+  else res = await supa('domains', {method:'POST', body:JSON.stringify(payload)});
+  if (res.ok) {
+    toast(editingDomainId?'Domain updated':'Domain added','success');
+    closeModal('domainModal');
+    await loadDomains(); renderAreas();
+  } else { const e=await res.json(); toast('Error: '+(e.message||'unknown'),'error'); }
+}
+
+function openDeleteDomain(id) {
+  const d = state.domains.find(x=>x.id===id); if(!d) return;
+  deleteAreaType = 'domain'; deleteAreaId = id;
+  const cats = state.categories.filter(c=>c.domain_id===id);
+  const taskCount = state.tasks.filter(t=>(t._categories||[]).some(c=>c.domain_id===id)).length;
+  document.getElementById('daTitle').textContent = 'Delete Domain — '+d.name;
+  document.getElementById('daWarning').textContent = taskCount
+    ? `This domain has ${cats.length} categories and ${taskCount} linked tasks. Choose where to move the tasks before deleting.`
+    : cats.length ? `This domain has ${cats.length} categories with no tasks. They will be deleted.` : 'This domain has no categories or tasks. Safe to delete.';
+  const moveGroup = document.getElementById('daMoveGroup');
+  if (taskCount) {
+    moveGroup.style.display='flex';
+    const sel = document.getElementById('daMoveTarget');
+    sel.innerHTML = state.categories.filter(c=>c.domain_id!==id).map(c=>`<option value="${c.id}">${escHtml(c.name)}</option>`).join('');
+  } else moveGroup.style.display='none';
+  document.getElementById('deleteAreaModal').classList.add('open');
+}
+
+// ── CATEGORY CRUD ─────────────────────────────────────────────────
+
+function openAddCategory(domainId) {
+  editingCategoryId = null;
+  document.getElementById('categoryModalTitle').textContent = 'Add Category';
+  document.getElementById('cmName').value = '';
+  document.getElementById('cmReviewDays').value = '30';
+  document.getElementById('cmPaused').value = 'false';
+  document.getElementById('cmPauseFields').style.display = 'none';
+  document.getElementById('cmPausedUntil').value = '';
+  document.getElementById('cmPauseReason').value = '';
+  const ds = document.getElementById('cmDomain');
+  ds.innerHTML = '<option value="">— select domain —</option>' + state.domains.map(d=>`<option value="${d.id}"${d.id===domainId?' selected':''}>${d.icon||''} ${escHtml(d.name)}</option>`).join('');
+  document.getElementById('categoryModal').classList.add('open');
+  setTimeout(()=>document.getElementById('cmName').focus(), 200);
+}
+
+function openEditCategory(id) {
+  const c = state.categories.find(x=>x.id===id); if(!c) return;
+  editingCategoryId = id;
+  document.getElementById('categoryModalTitle').textContent = 'Edit Category';
+  document.getElementById('cmName').value = c.name;
+  document.getElementById('cmReviewDays').value = c.review_interval_days;
+  document.getElementById('cmPaused').value = c.is_paused?'true':'false';
+  document.getElementById('cmPausedUntil').value = c.paused_until||'';
+  document.getElementById('cmPauseReason').value = c.pause_reason||'';
+  document.getElementById('cmPauseFields').style.display = c.is_paused?'flex':'none';
+  const ds = document.getElementById('cmDomain');
+  ds.innerHTML = '<option value="">— select domain —</option>' + state.domains.map(d=>`<option value="${d.id}"${d.id===c.domain_id?' selected':''}>${d.icon||''} ${escHtml(d.name)}</option>`).join('');
+  document.getElementById('categoryModal').classList.add('open');
+}
+
+function toggleCmPause() {
+  document.getElementById('cmPauseFields').style.display = document.getElementById('cmPaused').value==='true'?'flex':'none';
+}
+
+async function saveCategory() {
+  const name = document.getElementById('cmName').value.trim();
+  const domainId = document.getElementById('cmDomain').value;
+  if (!name) { toast('Category name required','error'); return; }
+  if (!domainId) { toast('Please select a domain','error'); return; }
+  const isPaused = document.getElementById('cmPaused').value==='true';
+  const payload = {
+    workspace_id:state.workspaceId, domain_id:domainId, name,
+    review_interval_days:parseInt(document.getElementById('cmReviewDays').value)||30,
+    is_paused:isPaused,
+    paused_until:isPaused?(document.getElementById('cmPausedUntil').value||null):null,
+    pause_reason:isPaused?(document.getElementById('cmPauseReason').value.trim()||null):null,
+    sort_order: editingCategoryId ? undefined : state.categories.filter(c=>c.domain_id===domainId).length+1,
+  };
+  let res;
+  if (editingCategoryId) res = await supa(`categories?id=eq.${editingCategoryId}`, {method:'PATCH', body:JSON.stringify(payload)});
+  else res = await supa('categories', {method:'POST', body:JSON.stringify(payload)});
+  if (res.ok) {
+    toast(editingCategoryId?'Category updated':'Category added','success');
+    closeModal('categoryModal');
+    await loadDomains(); await loadTasks(); renderAreas();
+    // Re-render inline cat pickers
+    renderInlineCatPicker(); renderPmCatPicker();
+  } else { const e=await res.json(); toast('Error: '+(e.message||'unknown'),'error'); }
+}
+
+function openDeleteCategory(id) {
+  const c = state.categories.find(x=>x.id===id); if(!c) return;
+  deleteAreaType = 'category'; deleteAreaId = id;
+  const taskCount = state.tasks.filter(t=>(t._categories||[]).some(x=>x.id===id)).length;
+  document.getElementById('daTitle').textContent = 'Delete Category — '+c.name;
+  document.getElementById('daWarning').textContent = taskCount
+    ? `${taskCount} task${taskCount>1?'s':''} are linked to this category. Choose where to move them before deleting.`
+    : 'No tasks are linked to this category. Safe to delete.';
+  const moveGroup = document.getElementById('daMoveGroup');
+  if (taskCount) {
+    moveGroup.style.display='flex';
+    const sel = document.getElementById('daMoveTarget');
+    sel.innerHTML = state.categories.filter(c=>c.id!==id).map(c=>`<option value="${c.id}">${escHtml(c.name)}</option>`).join('');
+  } else moveGroup.style.display='none';
+  document.getElementById('deleteAreaModal').classList.add('open');
+}
+
+async function confirmDeleteArea() {
+  const moveTarget = document.getElementById('daMoveGroup').style.display!=='none'
+    ? document.getElementById('daMoveTarget').value : null;
+
+  if (deleteAreaType === 'category') {
+    if (moveTarget) {
+      // Move task_categories to new category
+      const tasks = state.tasks.filter(t=>(t._categories||[]).some(x=>x.id===deleteAreaId));
+      for (const t of tasks) {
+        await supa(`task_categories?task_id=eq.${t.id}&category_id=eq.${deleteAreaId}`, {method:'DELETE', prefer:'return=minimal'});
+        await supa('task_categories', {method:'POST', prefer:'return=minimal', body:JSON.stringify([{task_id:t.id, category_id:moveTarget}])});
+      }
+    }
+    await supa(`categories?id=eq.${deleteAreaId}`, {method:'DELETE', prefer:'return=minimal'});
+    toast('Category deleted','success');
+  } else if (deleteAreaType === 'domain') {
+    if (moveTarget) {
+      // Move all tasks in this domain's categories to target
+      const cats = state.categories.filter(c=>c.domain_id===deleteAreaId);
+      for (const c of cats) {
+        const tasks = state.tasks.filter(t=>(t._categories||[]).some(x=>x.id===c.id));
+        for (const t of tasks) {
+          await supa(`task_categories?task_id=eq.${t.id}&category_id=eq.${c.id}`, {method:'DELETE', prefer:'return=minimal'});
+          await supa('task_categories', {method:'POST', prefer:'return=minimal', body:JSON.stringify([{task_id:t.id, category_id:moveTarget}])});
+        }
+      }
+    }
+    // Delete categories first, then domain
+    const cats = state.categories.filter(c=>c.domain_id===deleteAreaId);
+    for (const c of cats) await supa(`categories?id=eq.${c.id}`, {method:'DELETE', prefer:'return=minimal'});
+    await supa(`domains?id=eq.${deleteAreaId}`, {method:'DELETE', prefer:'return=minimal'});
+    toast('Domain deleted','success');
+  }
+  closeModal('deleteAreaModal');
+  await loadDomains(); await loadTasks(); renderAreas();
+}
+
 // ── CANCEL TASK ───────────────────────────────────────────
 
 let cancellingId = null;
@@ -1468,7 +2290,9 @@ function switchView(view){
   if(el) el.style.display='flex';
   const btn=document.querySelector(`[data-view="${view}"]`);
   if(btn) btn.classList.add('active');
-  if(view==='calendar') renderCalendar();
+  if(view==='calendar')  renderCalendar();
+  if(view==='projects')  renderProjects();
+  if(view==='areas')     renderAreas();
 }
 
 // ── UTILS ─────────────────────────────────────────────────
