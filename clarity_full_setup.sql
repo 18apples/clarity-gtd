@@ -792,3 +792,29 @@ grant select on public.blackout_periods to anon;
  
 -- Confirm
 select 'blackout_periods table created ✓' as status;
+
+-- ============================================================
+-- CLARITY GTD — ADD SUBTASKS TABLE
+-- Run in Supabase SQL Editor
+-- ============================================================
+ 
+create table subtasks (
+  id          uuid primary key default uuid_generate_v4(),
+  task_id     uuid not null references tasks(id) on delete cascade,
+  name        text not null,
+  is_done     boolean not null default false,
+  sort_order  integer not null default 0,
+  created_at  timestamptz not null default now()
+);
+ 
+create index idx_subtasks_task on subtasks(task_id);
+ 
+alter table subtasks enable row level security;
+create policy "authenticated access" on subtasks
+  for all to authenticated using (true);
+ 
+grant select, insert, update, delete on public.subtasks to authenticated;
+grant select, insert, update, delete on public.subtasks to service_role;
+grant select on public.subtasks to anon;
+ 
+select 'subtasks table created ✓' as status;
