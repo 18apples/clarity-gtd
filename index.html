@@ -3534,7 +3534,7 @@ function renderCalMonth() {
         + shown.map(t => {
             const cls  = chipClass(t, ts);
             const icon = t.type==='recurring'?'🔄 ':t.type==='idea'?'💡 ':'';
-            return '<div class="cal-month-chip ' + cls + '" title="' + escHtml(t.name) + '" onclick="openEdit('' + t.id + '')">' + icon + escHtml(t.name) + '</div>';
+            return '<div class="cal-month-chip ' + cls + '" title="' + escHtml(t.name) + '" onclick="openEdit(\'' + t.id + '\')">' + icon + escHtml(t.name) + '</div>';
           }).join('')
         + (extra > 0 ? '<div class="cal-more">+' + extra + ' more</div>' : '')
         + '</div>';
