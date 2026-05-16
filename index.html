@@ -3201,7 +3201,7 @@ function taskBreakdownChips(tasks, filterType, filterId) {
 
 function domainStatsRow(domainId) {
   const tasks = getTasksForDomain(domainId);
-  if (!tasks.length) return '<div style="padding:8px 14px;font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace">No active tasks</div>';
+  if (!tasks.length) return '<div style="padding:8px 14px;font-size:11px;color:var(--text3);font-family:JetBrains Mono,monospace">No active tasks</div>';
   const chips = taskBreakdownChips(tasks, 'domain', domainId);
   return `<div style="padding:8px 14px 10px;display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid var(--border)">${chips}</div>`;
 }
