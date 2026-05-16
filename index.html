@@ -463,8 +463,16 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
     </div>
 
     <!-- FILTERS -->
-    <div style="display:flex;flex-direction:column;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:14px">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:2px">Filter by</div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer" onclick="toggleInboxFilterPanel()">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase">Filters</span>
+          <span id="inboxFilterBadge" style="display:none;background:var(--accent);color:#0a0a0b;border-radius:10px;padding:1px 7px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600"></span>
+        </div>
+        <span id="inboxFilterChevron" style="color:var(--text3);font-size:11px;transition:transform .2s">▶</span>
+      </div>
+      <div id="inboxFilterPanel" style="display:none;flex-direction:column;gap:10px;padding:0 14px 14px;border-top:1px solid var(--border)">
+      <div style="height:10px"></div>
 
       <!-- Domain filter -->
       <div>
@@ -502,6 +510,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
           <button class="filter-chip active" data-tasktype="all"       onclick="setInboxTaskType('all')">All</button>
           <button class="filter-chip"        data-tasktype="recurring" onclick="setInboxTaskType('recurring')">🔄 Recurring</button>
           <button class="filter-chip"        data-tasktype="regular"   onclick="setInboxTaskType('regular')">Regular</button>
+          <button class="filter-chip"        data-tasktype="idea"      onclick="setInboxTaskType('idea')">💡 Ideas</button>
         </div>
       </div>
 
@@ -1980,7 +1989,7 @@ async function saveTask() {
     name,
     notes:            document.getElementById('cNotes').value.trim()||null,
     type:             isRecurring?'recurring':type,
-    status:           due&&due<=todayStr()?'next':'inbox',
+    status:           isIdea && catPickerSel.length > 0 ? 'someday' : (due&&due<=todayStr()?'next':'inbox'),
     importance_speed: document.getElementById('cIQ').value||null,
     context:          document.getElementById('cContext').value||null,
     due_date:         due||null,
@@ -2335,6 +2344,41 @@ function openEditTask(id) {
 }
 
 
+
+// ── INBOX FILTER PANEL TOGGLE (#50) ──────────────────────────────
+
+let inboxFilterPanelOpen = false;
+
+function toggleInboxFilterPanel() {
+  inboxFilterPanelOpen = !inboxFilterPanelOpen;
+  const panel   = document.getElementById('inboxFilterPanel');
+  const chevron = document.getElementById('inboxFilterChevron');
+  if (panel)   panel.style.display   = inboxFilterPanelOpen ? 'flex' : 'none';
+  if (chevron) chevron.style.transform = inboxFilterPanelOpen ? 'rotate(90deg)' : 'rotate(0deg)';
+}
+
+function updateInboxFilterBadge() {
+  const badge = document.getElementById('inboxFilterBadge');
+  if (!badge) return;
+  const count = [
+    inboxFilters.domainIds.length,
+    inboxFilters.catIds.length,
+    inboxFilters.iqValues.length,
+    inboxFilters.contextVals.length,
+    inboxFilters.taskType !== 'all' ? 1 : 0,
+    inboxFilters.estMin ? 1 : 0,
+    inboxFilters.estMax ? 1 : 0,
+    inboxFilters.missing.length,
+    inboxFilters.statusFilter ? 1 : 0,
+  ].reduce((a,b)=>a+b,0);
+  if (count > 0) {
+    badge.style.display = 'inline';
+    badge.textContent   = count + ' active';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
 // ── INBOX SEARCH + FILTER ─────────────────────────────────────────
 
 // Persistent filter state
@@ -2348,7 +2392,8 @@ const inboxFilters = {
   estMin:      null,
   estMax:      null,
   missing:     [],
-  showAll:     false,   // true when navigating from Life Areas — shows all statuses
+  showAll:     false,
+  statusFilter: null,   // specific status filter from Life Areas link
 };
 
 function initInboxFilters() {
@@ -2458,9 +2503,11 @@ function toggleInboxIQ(iq) {
 function updateInboxClearBtn() {
   const hasFilter = inboxFilters.domainIds.length || inboxFilters.catIds.length ||
     inboxFilters.iqValues.length || inboxFilters.search || inboxFilters.contextVals.length ||
-    inboxFilters.taskType !== 'all' || inboxFilters.estMin || inboxFilters.estMax || inboxFilters.missing.length;
+    inboxFilters.taskType !== 'all' || inboxFilters.estMin || inboxFilters.estMax ||
+    inboxFilters.missing.length || inboxFilters.statusFilter;
   const btn = document.getElementById('inboxClearBtn');
   if (btn) btn.style.display = hasFilter ? 'block' : 'none';
+  updateInboxFilterBadge();
 }
 
 function clearInboxFilters() {
@@ -2473,7 +2520,8 @@ function clearInboxFilters() {
   inboxFilters.estMin      = null;
   inboxFilters.estMax      = null;
   inboxFilters.missing     = [];
-  inboxFilters.showAll     = false;
+  inboxFilters.showAll      = false;
+  inboxFilters.statusFilter = null;
   const searchEl = document.getElementById('inboxSearch');
   if (searchEl) searchEl.value = '';
   const estMin = document.getElementById('inboxEstMin');
@@ -2488,9 +2536,8 @@ function clearInboxFilters() {
 }
 
 // Navigate to inbox pre-filtered by domain
-function goToInboxFiltered(type, id) {
+function goToInboxFiltered(type, id, taskType, taskStatus) {
   clearInboxFilters();
-  // Set showAll flag so we show all statuses not just inbox
   inboxFilters.showAll = true;
   if (type === 'domain') {
     inboxFilters.domainIds = [id];
@@ -2499,6 +2546,8 @@ function goToInboxFiltered(type, id) {
     const cat = state.categories.find(c=>c.id===id);
     if (cat) inboxFilters.domainIds = [cat.domain_id];
   }
+  if (taskType && taskType !== 'all') inboxFilters.taskType = taskType;
+  if (taskStatus) inboxFilters.statusFilter = taskStatus;
   switchView('inbox');
 }
 
@@ -2554,7 +2603,11 @@ function renderInbox() {
 
   // Apply task type filter
   if (inboxFilters.taskType === 'recurring') tasks = tasks.filter(t => t.type === 'recurring');
-  if (inboxFilters.taskType === 'regular')   tasks = tasks.filter(t => t.type !== 'recurring');
+  if (inboxFilters.taskType === 'regular')   tasks = tasks.filter(t => t.type !== 'recurring' && t.type !== 'idea');
+  if (inboxFilters.taskType === 'idea')      tasks = tasks.filter(t => t.type === 'idea');
+
+  // Apply status filter (from Life Areas link)
+  if (inboxFilters.statusFilter) tasks = tasks.filter(t => t.status === inboxFilters.statusFilter);
 
   // Apply estimated time filter
   const estMin = parseInt(document.getElementById('inboxEstMin')?.value);
@@ -2735,7 +2788,13 @@ function renderReference() {
 let promotingTaskId = null;
 
 function renderIdeas() {
-  const tasks = state.tasks.filter(t=>t.type==='idea'&&t.status!=='done'&&t.status!=='cancelled');
+  // #47: Only show uncategorised ideas — categorised ideas are promoted to someday
+  const tasks = state.tasks.filter(t=>
+    t.type==='idea' &&
+    t.status!=='done' &&
+    t.status!=='cancelled' &&
+    !(t._categories||[]).length
+  );
   document.getElementById('ideasCount').textContent = `${tasks.length} ideas`;
   const list = document.getElementById('ideasList');
   if (!tasks.length) { list.innerHTML = pipelineEmpty('💡','No ideas yet','Capture a thought without worrying about what to do with it.'); return; }
@@ -3098,6 +3157,63 @@ let editingCategoryId = null;
 let deleteAreaType    = null;
 let deleteAreaId      = null;
 
+
+// ── LIFE AREAS TASK BREAKDOWN (#49) ──────────────────────────────
+
+function getTasksForDomain(domainId) {
+  const catIds = state.categories.filter(c=>c.domain_id===domainId).map(c=>c.id);
+  return state.tasks.filter(t =>
+    t.status !== 'done' && t.status !== 'cancelled' &&
+    (t._categories||[]).some(c => catIds.includes(c.id))
+  );
+}
+
+function getTasksForCategory(catId) {
+  return state.tasks.filter(t =>
+    t.status !== 'done' && t.status !== 'cancelled' &&
+    (t._categories||[]).some(c => c.id === catId)
+  );
+}
+
+function taskBreakdownChips(tasks, filterType, filterId) {
+  const regular   = tasks.filter(t => t.type==='task').length;
+  const recurring = tasks.filter(t => t.type==='recurring').length;
+  const ideas     = tasks.filter(t => t.type==='idea').length;
+  const inbox     = tasks.filter(t => t.status==='inbox').length;
+  const next      = tasks.filter(t => t.status==='next').length;
+  const waiting   = tasks.filter(t => t.status==='waiting').length;
+  const someday   = tasks.filter(t => t.status==='someday').length;
+
+  const chip = (label, count, type, status) => count > 0
+    ? `<span class="tag tag-cat" style="cursor:pointer;font-size:10px" onclick="goToInboxFiltered('${filterType}','${filterId}','${type||''}','${status||''}')">${label}: ${count}</span>`
+    : '';
+
+  return [
+    chip('📋 Tasks',     regular,   'regular',   ''),
+    chip('🔄 Recurring', recurring, 'recurring', ''),
+    chip('💡 Ideas',     ideas,     'idea',      ''),
+    chip('📥 Inbox',     inbox,     '',          'inbox'),
+    chip('⚡ Next',      next,      '',          'next'),
+    chip('⏳ Waiting',   waiting,   '',          'waiting'),
+    chip('🌙 Someday',   someday,   '',          'someday'),
+  ].filter(Boolean).join('');
+}
+
+function domainStatsRow(domainId) {
+  const tasks = getTasksForDomain(domainId);
+  if (!tasks.length) return '<div style="padding:8px 14px;font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace">No active tasks</div>';
+  const chips = taskBreakdownChips(tasks, 'domain', domainId);
+  return `<div style="padding:8px 14px 10px;display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid var(--border)">${chips}</div>`;
+}
+
+function catStatsInline(catId) {
+  const tasks = getTasksForCategory(catId);
+  const total = tasks.length;
+  if (!total) return '<span style="color:var(--text3)">0 tasks</span>';
+  const chips = taskBreakdownChips(tasks, 'category', catId);
+  return chips || `<span>${total} tasks</span>`;
+}
+
 function renderAreas() {
   const container = document.getElementById('areasList');
   if (!state.domains.length) {
@@ -3114,7 +3230,7 @@ function renderAreas() {
           <div class="domain-name">${escHtml(d.name)}</div>
           <div class="domain-meta">
             <span class="tag tag-cat">${cats.length} categories</span>
-            <span class="tag tag-cat" style="cursor:pointer;border-color:var(--border2)" onclick="event.stopPropagation();goToInboxFiltered('domain','${d.id}')" title="View in Inbox">${taskCount} tasks →</span>
+            <span class="tag tag-cat" style="cursor:pointer" onclick="event.stopPropagation();goToInboxFiltered('domain','${d.id}')" title="All tasks">${taskCount} total</span>
           </div>
         </div>
         <span class="domain-chevron" id="dchev-${d.id}">▶</span>
@@ -3125,11 +3241,12 @@ function renderAreas() {
           <button class="btn btn-sm btn-secondary" onclick="openAddCategory('${d.id}')">+ Category</button>
           <button class="btn btn-sm" style="background:#f0606020;color:var(--red);border:1px solid #f0606040;margin-left:auto" onclick="openDeleteDomain('${d.id}')">✕ Delete</button>
         </div>
+        ${domainStatsRow(d.id)}
         ${cats.length ? cats.map(c => {
           const ct = state.tasks.filter(t=>t.status!=='done'&&t.status!=='cancelled'&&(t._categories||[]).some(x=>x.id===c.id)).length;
           return `<div class="cat-row">
             <div class="cat-row-name">${escHtml(c.name)}${c.is_paused?'<span class="tag tag-status-on_hold" style="margin-left:8px;font-size:9px">Paused</span>':''}</div>
-            <div class="cat-row-meta"><span style="cursor:pointer" onclick="goToInboxFiltered('category','${c.id}')" title="View in Inbox">${ct} tasks →</span> · every ${c.review_interval_days}d</div>
+            <div class="cat-row-meta">${catStatsInline(c.id)} · every ${c.review_interval_days}d</div>
             <div class="cat-row-actions">
               <button class="btn-icon" style="width:26px;height:26px;font-size:11px" onclick="openEditCategory('${c.id}')">✎</button>
               <button class="btn-icon" style="width:26px;height:26px;font-size:11px;color:var(--red)" onclick="openDeleteCategory('${c.id}')">✕</button>
@@ -3754,7 +3871,14 @@ function switchView(view){
   if(view==='calendar')  renderCalendar();
   if(view==='projects')  renderProjects();
   if(view==='areas')     renderAreas();
-  if(view==='inbox')     { initInboxFilters(); renderInbox(); }
+  if(view==='inbox')     {
+    initInboxFilters(); renderInbox();
+    // Auto-open filter panel if filters are pre-set (from Life Areas)
+    if (inboxFilters.showAll || inboxFilters.domainIds.length || inboxFilters.catIds.length || inboxFilters.statusFilter) {
+      inboxFilterPanelOpen = false;
+      toggleInboxFilterPanel();
+    }
+  }
   if(view==='next')      renderNext();
   if(view==='waiting')   renderWaiting();
   if(view==='someday')   renderSomeday();
