@@ -1388,7 +1388,7 @@ async function loadCoreData() {
     const [r1,r2,r3,r4,r5,r6] = await Promise.all([
       supa('workspaces?select=id,name&limit=1'),
       supa('domains?select=id,name,icon,sort_order&order=sort_order'),
-      supa('categories?select=id,name,domain_id,review_interval_days,is_paused,sort_order&order=sort_order'),
+      supa('categories?select=id,name,domain_id,review_interval_days,is_paused,paused_until,pause_reason,sort_order&order=sort_order'),
       supa('projects?select=id,name,status&status=eq.active&order=created_at.desc'),
       supa('contexts?select=id,name,icon,sort_order,is_active&order=sort_order'),
       supa('blackout_periods?select=id,label,start_date,end_date&order=start_date'),
@@ -1648,7 +1648,13 @@ async function completeTask(id) {
         await supa(`tasks?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({current_count:newCount})});
         task.current_count = newCount;
         toast(`${newCount}/${target} done today`,'success');
-        renderFocus(); return;
+        await loadTasks(); renderFocus(); return;
+      } else {
+        // Final count — mark done, generate next instance, remove from Focus
+        await supa(`tasks?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({current_count:newCount,status:'done',completed_at:new Date().toISOString()})});
+        toast(target+'/'+target+' done — see you tomorrow! 🎉','success');
+        await finishRecurring(id, null);
+        await loadTasks(); renderFocus(); return;
       }
     }
     if (task.recur_pattern==='adhoc') {
@@ -1852,10 +1858,6 @@ function openEdit(id) {
   document.getElementById('recurFields').style.display = 'none';
   document.querySelectorAll('.day-btn').forEach(b=>b.classList.remove('on'));
   // Restore due date group visibility
-  const dueDateGroupCap = document.getElementById('cDue')?.closest('.form-group');
-  if (dueDateGroupCap) dueDateGroupCap.style.display = 'flex';
-  document.querySelectorAll('.day-btn').forEach(b=>b.classList.remove('on'));
-  // Restore due date group visibility
   const dueDateGroup = document.getElementById('cDue')?.closest('.form-group');
   if (dueDateGroup) dueDateGroup.style.display = 'flex';
   document.getElementById('captureTitle').textContent = 'Edit Task';
@@ -1876,7 +1878,50 @@ function openEdit(id) {
   document.getElementById('subtasksSection').style.display = 'flex';
   document.getElementById('cancelTaskBtnWrap').style.display = 'block';
   loadSubtasks(id);
+  // B15: If recurring task, load recurrence template and set toggle ON
+  if (task.type === 'recurring' && task.recurrence_id) {
+    loadRecurrenceIntoForm(task);
+  }
   document.getElementById('captureModal').classList.add('open');
+}
+
+async function loadRecurrenceIntoForm(task) {
+  try {
+    const res  = await supa(`recurrences?id=eq.${task.recurrence_id}&select=*`);
+    const data = await res.json();
+    const tmpl = Array.isArray(data) ? data[0] : null;
+    if (!tmpl) return;
+    // Set toggle ON
+    recurOn = true;
+    document.getElementById('recurTrack').classList.add('on');
+    document.getElementById('recurFields').style.display = 'flex';
+    // Hide top-level due date — First Due Date drives it
+    const dg = document.getElementById('cDue')?.closest('.form-group');
+    if (dg) dg.style.display = 'none';
+    // Populate fields
+    const patEl = document.getElementById('rPattern');
+    const modEl = document.getElementById('rMode');
+    const fduEl = document.getElementById('rFirstDue');
+    if (patEl) patEl.value = tmpl.recur_pattern || 'weekly';
+    if (modEl) modEl.value = tmpl.recur_mode || 'fixed';
+    if (fduEl) fduEl.value = task.due_date || tmpl.next_occurrence || todayStr();
+    onPatternChange();
+    // Interval
+    const intEl = document.getElementById('rInterval');
+    if (intEl && tmpl.recur_interval_value) intEl.value = tmpl.recur_interval_value;
+    // Times per day
+    const tpdEl = document.getElementById('rTimesPerDay');
+    if (tpdEl && tmpl.recur_times_per_day) tpdEl.value = tmpl.recur_times_per_day;
+    // Days of week
+    if (tmpl.recur_days_of_week?.length) {
+      selectedDays = tmpl.recur_days_of_week;
+      document.querySelectorAll('.day-btn').forEach(b => {
+        b.classList.toggle('on', selectedDays.includes(parseInt(b.dataset.day)));
+      });
+    }
+  } catch(e) {
+    console.error('loadRecurrenceIntoForm:', e);
+  }
 }
 
 function quickCapture() {
