@@ -2013,6 +2013,7 @@ async function saveTask() {
   }
 
   const due = document.getElementById('cDue').value;
+  const isIdea      = type === 'idea';
   const isRecurring = recurOn && type !== 'idea';
   let recurrenceId = null;
 
