@@ -315,6 +315,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
       <button class="nav-btn"        data-view="reference" onclick="switchView('reference')">Reference</button>
       <button class="nav-btn"        data-view="ideas"     onclick="switchView('ideas')">Ideas</button>
       <button class="nav-btn"        data-view="calendar"  onclick="switchView('calendar')">Calendar</button>
+      <button class="nav-btn" onclick="openGlobalSearch()" title="Search all tasks">🔍</button>
     </nav>
     <div class="header-right">
       <button class="btn-icon" onclick="openSettings()">⚙</button>
@@ -1300,6 +1301,37 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
   </div>
 </div>
 
+<!-- STATUS CHANGE MODAL -->
+<div class="modal-overlay" id="statusModal">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="closeModal('statusModal')">✕</button>
+    <div class="modal-title">Move Task To</div>
+    <div id="statusTaskName" style="font-size:13px;color:var(--text2);padding:8px 12px;background:var(--surface2);border-radius:var(--r-sm);margin-bottom:4px;line-height:1.4"></div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <button class="btn btn-secondary" onclick="setTaskStatus('inbox')">📥 Inbox</button>
+      <button class="btn btn-secondary" onclick="setTaskStatus('next')">⚡ Next Action</button>
+      <button class="btn btn-secondary" onclick="setTaskStatus('waiting')">⏳ Waiting For</button>
+      <button class="btn btn-secondary" onclick="setTaskStatus('someday')">🌙 Someday</button>
+      <button class="btn btn-secondary" onclick="setTaskStatus('reference')">📚 Reference</button>
+    </div>
+  </div>
+</div>
+
+<!-- GLOBAL SEARCH OVERLAY -->
+<div class="modal-overlay" id="searchOverlay">
+  <div class="modal" style="max-width:600px;max-height:80vh;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:1px solid var(--border)">
+      <span style="font-size:18px">🔍</span>
+      <input type="text" id="globalSearchInput" placeholder="Search all tasks, notes..."
+        style="flex:1;background:none;border:none;font-size:16px;color:var(--text);font-family:'Instrument Sans',sans-serif"
+        oninput="renderGlobalSearch()" autocomplete="off">
+      <button class="btn-icon" onclick="closeModal('searchOverlay')" style="flex-shrink:0">✕</button>
+    </div>
+    <div id="globalSearchResults" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:6px;padding-top:12px"></div>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toastWrap"></div>
 
 <script>
@@ -1468,7 +1500,20 @@ async function loadTasks() {
         });
       }
     }
-    console.log(`loadTasks: ${state.tasks.length} tasks`);
+    // B22: Deduplicate recurring tasks — keep only latest instance per recurrence_id
+    const seen = new Map();
+    const deduped = [];
+    // Sort by created_at desc first so we keep the latest
+    state.tasks.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+    for (const t of state.tasks) {
+      if (t.recurrence_id && t.status !== 'done' && t.status !== 'cancelled') {
+        if (seen.has(t.recurrence_id)) continue; // skip older instances
+        seen.set(t.recurrence_id, true);
+      }
+      deduped.push(t);
+    }
+    state.tasks = deduped;
+    console.log(`loadTasks: ${state.tasks.length} tasks (deduped from ${state.tasks.length + (state.tasks.length - deduped.length)})`);
   } catch(e) {
     console.error('loadTasks:', e);
     state.tasks = [];
@@ -1586,7 +1631,7 @@ function renderFocus() {
   // Only show tasks due today or overdue — no date = inbox only
   const overdue = active.filter(t => t.due_date && t.due_date < today);
   const focus   = active.filter(t => t.due_date === today);
-  const inbox   = active.filter(t => t.status === 'inbox');
+  const inbox   = active.filter(t => t.status === 'inbox' && t.type !== 'idea');
 
   // Overdue
   const od = document.getElementById('overdueSection');
@@ -1639,6 +1684,7 @@ function renderCard(task, overdue=false) {
       <div class="task-meta">${typeTag}${iqTag}${cats}${dueTag}${estTag}${subtaskBadge}</div>
     </div>
     <div class="task-actions">
+      <button class="btn-icon" style="font-size:12px" title="Move to..." onclick="openStatusChange('${task.id}')">↕</button>
       <button class="btn-icon" style="font-size:12px" title="Reschedule" onclick="openReschedule('${task.id}')">↻</button>
       <button class="btn-icon" style="font-size:12px;color:var(--red)" title="Cancel" onclick="openCancel('${task.id}')">✕</button>
       <button class="btn-icon" style="font-size:12px" title="Edit" onclick="openEdit('${task.id}')">✎</button>
@@ -1836,7 +1882,7 @@ function openCapture(prefill) {
   document.getElementById('cIQ').value        = '';
   document.getElementById('cContext').value   = '';
   document.getElementById('cDue').value       = todayStr();
-  document.getElementById('cEstimated').value = '';
+  document.getElementById('cEstimated').value = '30';
   document.getElementById('cNotes').value     = '';
   document.getElementById('cProject').value   = '';
   document.getElementById('cCatIds').value    = '';
@@ -2382,6 +2428,7 @@ function renderPipelineCard(task, extraActions='') {
     </div>
     <div class="task-actions">
       ${extraActions}
+      <button class="btn-icon" style="font-size:12px" title="Move to..." onclick="openStatusChange('${task.id}')">↕</button>
       <button class="btn-icon" style="font-size:12px" title="Reschedule" onclick="openReschedule('${task.id}')">↻</button>
       <button class="btn-icon" style="font-size:12px" title="Edit" onclick="openEditTask('${task.id}')">✎</button>
       <button class="btn-icon" style="font-size:12px;color:var(--red)" title="Cancel" onclick="openCancel('${task.id}')">✕</button>
@@ -3520,13 +3567,46 @@ function renderSubtaskList() {
   if (!list) return;
   const visible = currentSubtasks.filter(s => !s.toDelete);
   list.innerHTML = visible.length ? visible.map((s, i) => `
-    <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">
-      <input type="checkbox" ${s.is_done?'checked':''} onchange="toggleSubtask('${s.id||'new_'+i}')"
-        style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent)">
+    <div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--border)">
+      <input type="checkbox" ${s.is_done?'checked':''} onchange="toggleSubtaskByIndex(${i})"
+        style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent);flex-shrink:0">
       <span style="flex:1;font-size:13px;${s.is_done?'text-decoration:line-through;color:var(--text3)':''}">${escHtml(s.name)}</span>
-      <button class="btn-icon" style="width:22px;height:22px;font-size:10px;color:var(--red)"
-        onclick="removeSubtask('${s.id||'new_'+i}')">✕</button>
+      <div style="display:flex;gap:2px;flex-shrink:0">
+        <button class="btn-icon" style="width:24px;height:24px;font-size:11px" title="Move up"
+          onclick="moveSubtask(${i},-1)" ${i===0?'disabled style="opacity:.3;cursor:default"':''}>↑</button>
+        <button class="btn-icon" style="width:24px;height:24px;font-size:11px" title="Move down"
+          onclick="moveSubtask(${i},1)" ${i===visible.length-1?'disabled style="opacity:.3;cursor:default"':''}>↓</button>
+        <button class="btn-icon" style="width:24px;height:24px;font-size:10px;color:var(--red)"
+          onclick="removeSubtaskByIndex(${i})">✕</button>
+      </div>
     </div>`).join('') : '<div style="font-size:12px;color:var(--text3);padding:4px 0">No subtasks yet</div>';
+}
+
+function toggleSubtaskByIndex(i) {
+  const visible = currentSubtasks.filter(s => !s.toDelete);
+  if (visible[i]) { visible[i].is_done = !visible[i].is_done; renderSubtaskList(); }
+}
+
+function removeSubtaskByIndex(i) {
+  const visible = currentSubtasks.filter(s => !s.toDelete);
+  const s = visible[i];
+  if (!s) return;
+  const idx = currentSubtasks.indexOf(s);
+  if (s.isNew) currentSubtasks.splice(idx, 1);
+  else s.toDelete = true;
+  renderSubtaskList();
+}
+
+function moveSubtask(i, dir) {
+  const visible = currentSubtasks.filter(s => !s.toDelete);
+  const newI = i + dir;
+  if (newI < 0 || newI >= visible.length) return;
+  const tmp = visible[i];
+  visible[i] = visible[newI];
+  visible[newI] = tmp;
+  // Update sort_order
+  visible.forEach((s, idx) => s.sort_order = idx);
+  renderSubtaskList();
 }
 
 function addSubtask() {
@@ -3596,6 +3676,107 @@ function cancelFromEditForm() {
   if (!id) return;
   closeModal('captureModal');
   openCancel(id);
+}
+
+
+
+// ── GLOBAL SEARCH (#52) ───────────────────────────────────────────
+
+function openGlobalSearch() {
+  document.getElementById('globalSearchInput').value = '';
+  document.getElementById('globalSearchResults').innerHTML = '<div style="font-size:13px;color:var(--text3);text-align:center;padding:20px">Start typing to search all tasks...</div>';
+  document.getElementById('searchOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('globalSearchInput').focus(), 150);
+}
+
+function renderGlobalSearch() {
+  const q = document.getElementById('globalSearchInput').value.toLowerCase().trim();
+  const results = document.getElementById('globalSearchResults');
+  if (!q) {
+    results.innerHTML = '<div style="font-size:13px;color:var(--text3);text-align:center;padding:20px">Start typing to search all tasks...</div>';
+    return;
+  }
+  const matches = state.tasks.filter(t =>
+    t.name.toLowerCase().includes(q) ||
+    (t.notes||'').toLowerCase().includes(q)
+  ).slice(0, 30);
+
+  if (!matches.length) {
+    results.innerHTML = '<div style="font-size:13px;color:var(--text3);text-align:center;padding:20px">No tasks found for "' + escHtml(q) + '"</div>';
+    return;
+  }
+
+  const statusIcon = {inbox:'📥',next:'⚡',waiting:'⏳',someday:'🌙',reference:'📚',done:'✓',cancelled:'✕'};
+  const statusColor = {inbox:'var(--text2)',next:'var(--accent)',waiting:'var(--orange)',someday:'var(--blue)',reference:'var(--text3)',done:'var(--text3)',cancelled:'var(--text3)'};
+
+  results.innerHTML = matches.map(t => {
+    const cats = (t._categories||[]).map(c=>`<span class="tag tag-cat" style="font-size:10px">${escHtml(c.name)}</span>`).join('');
+    const icon  = statusIcon[t.status] || '•';
+    const color = statusColor[t.status] || 'var(--text2)';
+    const hi    = (str) => escHtml(str).replace(new RegExp(escHtml(q),'gi'), m=>`<mark style="background:#b8f06030;border-radius:2px">${m}</mark>`);
+    return `<div style="padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);cursor:pointer;transition:border-color .15s"
+      onmouseenter="this.style.borderColor='var(--border2)'" onmouseleave="this.style.borderColor='var(--border)'"
+      onclick="closeModal('searchOverlay');openEdit('${t.id}')">
+      <div style="display:flex;align-items:flex-start;gap:8px">
+        <span style="font-size:12px;color:${color};flex-shrink:0;padding-top:1px">${icon}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:500;line-height:1.3">${hi(t.name)}</div>
+          ${t.notes?`<div style="font-size:11px;color:var(--text3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${hi(t.notes.slice(0,100))}</div>`:''}
+          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px">${cats}${t.due_date?`<span class="tag tag-cat" style="font-size:10px">📅 ${t.due_date}</span>`:''}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Keyboard shortcut: / or Cmd+K to open search
+document.addEventListener('keydown', e => {
+  if ((e.key === '/' || (e.metaKey && e.key === 'k') || (e.ctrlKey && e.key === 'k')) &&
+      !document.querySelector('.modal-overlay.open')) {
+    e.preventDefault();
+    openGlobalSearch();
+  }
+  if (e.key === 'Escape') {
+    const open = document.querySelector('.modal-overlay.open');
+    if (open) open.classList.remove('open');
+  }
+});
+
+// ── STATUS CHANGE (#51) ───────────────────────────────────────────
+
+let statusChangingId = null;
+
+function openStatusChange(id) {
+  const task = state.tasks.find(t=>t.id===id);
+  if (!task) return;
+  statusChangingId = id;
+  document.getElementById('statusTaskName').textContent = task.name;
+  document.getElementById('statusModal').classList.add('open');
+}
+
+async function setTaskStatus(newStatus) {
+  if (!statusChangingId) return;
+  await supa(`tasks?id=eq.${statusChangingId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status: newStatus })
+  });
+  toast('Moved to ' + newStatus, 'success');
+  closeModal('statusModal');
+  await loadTasks();
+  renderFocus();
+  // Re-render current pipeline view if open
+  const views = ['inbox','next','waiting','someday','reference','ideas'];
+  views.forEach(v => {
+    const el = document.getElementById('view' + v.charAt(0).toUpperCase() + v.slice(1));
+    if (el && el.style.display !== 'none') {
+      if (v==='inbox')     renderInbox();
+      if (v==='next')      renderNext();
+      if (v==='waiting')   renderWaiting();
+      if (v==='someday')   renderSomeday();
+      if (v==='reference') renderReference();
+      if (v==='ideas')     renderIdeas();
+    }
+  });
 }
 
 // ── CANCEL TASK ───────────────────────────────────────────
