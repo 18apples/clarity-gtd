@@ -51,12 +51,31 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.6);cursor:p
 header{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;border-bottom:1px solid var(--border);background:var(--surface);position:sticky;top:0;z-index:100;gap:12px;flex-shrink:0}
 .logo{font-family:'Instrument Serif',serif;font-size:20px;letter-spacing:-.5px;flex-shrink:0}
 .logo span{color:var(--accent);font-style:italic}
-.app-nav{display:flex;gap:2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:3px;overflow-x:auto;flex:1;max-width:560px;-webkit-overflow-scrolling:touch}
-.app-nav::-webkit-scrollbar{height:2px}
-.app-nav::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
-.nav-btn{background:none;border:none;color:var(--text2);padding:5px 12px;border-radius:5px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;letter-spacing:.3px;transition:all .15s;white-space:nowrap}
+.app-nav{display:flex;align-items:center;gap:2px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:3px}
+.nav-btn{background:none;border:none;color:var(--text2);padding:6px 12px;border-radius:5px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;letter-spacing:.3px;transition:all .15s;white-space:nowrap}
 .nav-btn:hover{color:var(--text);background:var(--surface3)}
 .nav-btn.active{background:var(--accent);color:#0a0a0b;font-weight:600}
+.nav-more-wrap{position:relative}
+.nav-more-btn{background:none;border:none;color:var(--text2);padding:6px 10px;border-radius:5px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:4px}
+.nav-more-btn:hover{color:var(--text);background:var(--surface3)}
+.nav-more-btn.has-active{color:var(--accent)}
+.nav-dropdown{position:absolute;top:calc(100% + 6px);left:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:4px;min-width:140px;z-index:200;box-shadow:0 8px 24px #00000030;display:none;flex-direction:column;gap:2px}
+.nav-dropdown.open{display:flex}
+.nav-dropdown-btn{background:none;border:none;color:var(--text2);padding:8px 12px;border-radius:var(--r-sm);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;text-align:left;transition:all .15s;white-space:nowrap}
+.nav-dropdown-btn:hover{color:var(--text);background:var(--surface2)}
+.nav-dropdown-btn.active{color:var(--accent);font-weight:600}
+.nav-icon-btn{background:none;border:none;color:var(--text2);padding:6px 8px;border-radius:5px;cursor:pointer;font-size:15px;transition:all .15s;line-height:1}
+.nav-icon-btn:hover{color:var(--text);background:var(--surface3)}
+/* SETTINGS PAGE */
+.settings-page{display:none;flex-direction:column;gap:0;width:100%;max-width:720px;margin:0 auto}
+.settings-tabs{display:flex;gap:2px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:3px;flex-wrap:wrap;margin-bottom:20px}
+.settings-tab{background:none;border:none;color:var(--text2);padding:7px 14px;border-radius:var(--r-sm);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;transition:all .15s;white-space:nowrap}
+.settings-tab:hover{color:var(--text);background:var(--surface3)}
+.settings-tab.active{background:var(--accent);color:#0a0a0b;font-weight:600}
+.settings-panel{display:none;flex-direction:column;gap:20px}
+.settings-panel.active{display:flex}
+.settings-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:14px}
+.settings-section-title{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text3);padding-bottom:10px;border-bottom:1px solid var(--border)}
 .header-right{display:flex;gap:8px;align-items:center;flex-shrink:0}
 .app-view{padding:24px 20px;max-width:700px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:20px;flex:1}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
@@ -305,20 +324,28 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
   <header>
     <div class="logo">clarity<span>.</span></div>
     <nav class="app-nav">
-      <button class="nav-btn active" data-view="focus"     onclick="switchView('focus')">Focus</button>
-      <button class="nav-btn"        data-view="projects"  onclick="switchView('projects')">Projects</button>
-      <button class="nav-btn"        data-view="areas"     onclick="switchView('areas')">Life Areas</button>
-      <button class="nav-btn"        data-view="inbox"     onclick="switchView('inbox')">Inbox</button>
-      <button class="nav-btn"        data-view="next"      onclick="switchView('next')">Next</button>
-      <button class="nav-btn"        data-view="waiting"   onclick="switchView('waiting')">Waiting</button>
-      <button class="nav-btn"        data-view="someday"   onclick="switchView('someday')">Someday</button>
-      <button class="nav-btn"        data-view="reference" onclick="switchView('reference')">Reference</button>
-      <button class="nav-btn"        data-view="ideas"     onclick="switchView('ideas')">Ideas</button>
-      <button class="nav-btn"        data-view="calendar"  onclick="switchView('calendar')">Calendar</button>
-      <button class="nav-btn" onclick="openGlobalSearch()" title="Search all tasks">🔍</button>
+      <!-- Primary tabs -->
+      <button class="nav-btn active" data-view="focus"    onclick="switchView('focus')">Focus</button>
+      <button class="nav-btn"        data-view="inbox"    onclick="switchView('inbox')">Inbox</button>
+      <button class="nav-btn"        data-view="projects" onclick="switchView('projects')">Projects</button>
+      <button class="nav-btn"        data-view="areas"    onclick="switchView('areas')">Life Areas</button>
+      <button class="nav-btn"        data-view="calendar" onclick="switchView('calendar')">Calendar</button>
+      <!-- More dropdown -->
+      <div class="nav-more-wrap" id="navMoreWrap">
+        <button class="nav-more-btn" id="navMoreBtn" onclick="toggleNavMore()">More ▾</button>
+        <div class="nav-dropdown" id="navDropdown">
+          <button class="nav-dropdown-btn" data-view="next"      onclick="switchView('next');closeNavMore()">⚡ Next</button>
+          <button class="nav-dropdown-btn" data-view="waiting"   onclick="switchView('waiting');closeNavMore()">⏳ Waiting</button>
+          <button class="nav-dropdown-btn" data-view="someday"   onclick="switchView('someday');closeNavMore()">🌙 Someday</button>
+          <button class="nav-dropdown-btn" data-view="reference" onclick="switchView('reference');closeNavMore()">📚 Reference</button>
+          <button class="nav-dropdown-btn" data-view="ideas"     onclick="switchView('ideas');closeNavMore()">💡 Ideas</button>
+        </div>
+      </div>
+      <!-- Icon buttons -->
+      <button class="nav-icon-btn" onclick="openGlobalSearch()" title="Search all tasks">🔍</button>
     </nav>
     <div class="header-right">
-      <button class="btn-icon" onclick="openSettings()">⚙</button>
+      <button class="nav-icon-btn" onclick="switchView('settings')" title="Settings">⚙️</button>
     </div>
   </header>
 
@@ -622,6 +649,129 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
     <div id="ideasList" style="display:flex;flex-direction:column;gap:8px"></div>
   </main>
 
+  <!-- SETTINGS VIEW -->
+  <main class="app-view" id="viewSettings" style="display:none;padding:20px">
+    <div class="settings-page" id="settingsPage" style="display:flex">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <div style="font-family:'Instrument Serif',serif;font-size:28px;letter-spacing:-.8px">Settings</div>
+        <button class="btn btn-sm btn-ghost" onclick="signOut()">↪ Sign Out</button>
+      </div>
+      <!-- Sub-tabs -->
+      <div class="settings-tabs">
+        <button class="settings-tab active" data-stab="account"     onclick="switchSettingsTab('account')">Account</button>
+        <button class="settings-tab"        data-stab="workspace"   onclick="switchSettingsTab('workspace')">Workspace</button>
+        <button class="settings-tab"        data-stab="contexts"    onclick="switchSettingsTab('contexts')">Contexts</button>
+        <button class="settings-tab"        data-stab="blackouts"   onclick="switchSettingsTab('blackouts')">Blackout Periods</button>
+        <button class="settings-tab"        data-stab="users"       onclick="switchSettingsTab('users')">Users & Permissions</button>
+        <button class="settings-tab"        data-stab="admin"       onclick="switchSettingsTab('admin')">Admin</button>
+      </div>
+
+      <!-- ACCOUNT -->
+      <div class="settings-panel active" id="stab-account">
+        <div class="settings-section">
+          <div class="settings-section-title">Profile</div>
+          <div style="display:flex;align-items:center;gap:14px">
+            <div id="settingsAvatar" style="width:48px;height:48px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;color:#0a0a0b;font-size:20px;flex-shrink:0">A</div>
+            <div>
+              <div id="settingsEmail" style="font-size:15px;font-weight:600">—</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);margin-top:3px">★ Super User</div>
+            </div>
+          </div>
+        </div>
+        <div class="settings-section">
+          <div class="settings-section-title">Change Password</div>
+          <div class="form-group"><label class="form-label">New Password</label><input type="password" id="settingsNewPwd" placeholder="Min 8 characters"></div>
+          <div class="form-group"><label class="form-label">Confirm Password</label><input type="password" id="settingsConfirmPwd" placeholder="Repeat password"></div>
+          <div class="auth-error" id="pwdError"></div>
+          <div style="display:flex;justify-content:flex-end"><button class="btn btn-sm btn-secondary" onclick="changePassword()">Update Password</button></div>
+        </div>
+      </div>
+
+      <!-- WORKSPACE -->
+      <div class="settings-panel" id="stab-workspace">
+        <div class="settings-section">
+          <div class="settings-section-title">Workspace</div>
+          <div class="form-group"><label class="form-label">Workspace Name</label><input type="text" id="settingsWsName" placeholder="Personal"></div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)">ID: <span id="settingsWsId">—</span></div>
+          <div style="display:flex;justify-content:flex-end"><button class="btn btn-sm btn-secondary" onclick="saveWorkspaceName()">Save Name</button></div>
+        </div>
+        <div class="settings-section">
+          <div class="settings-section-title">Default Daily Capacity</div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <input type="number" id="settingsCapacity" min="1" max="1440"
+              style="width:80px;padding:8px 10px;font-size:13px;font-family:'JetBrains Mono',monospace;text-align:center" placeholder="180">
+            <span style="font-size:13px;color:var(--text2)">minutes per day (default: 180)</span>
+          </div>
+          <div class="hint">Override per day in the Focus view. Resets each morning.</div>
+          <div style="display:flex;justify-content:flex-end"><button class="btn btn-sm btn-secondary" onclick="saveDefaultCapacity()">Save Default</button></div>
+        </div>
+      </div>
+
+      <!-- CONTEXTS -->
+      <div class="settings-panel" id="stab-contexts">
+        <div class="settings-section">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div class="settings-section-title">Contexts</div>
+            <button class="btn btn-sm btn-secondary" onclick="openAddContext()">+ Add Context</button>
+          </div>
+          <div id="settingsContextList" style="display:flex;flex-direction:column;gap:6px"></div>
+        </div>
+      </div>
+
+      <!-- BLACKOUT PERIODS -->
+      <div class="settings-panel" id="stab-blackouts">
+        <div class="settings-section">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div class="settings-section-title">Blackout Periods</div>
+            <button class="btn btn-sm btn-secondary" onclick="openAddBlackout()">+ Add Period</button>
+          </div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.5">Dates when you are unavailable. Tasks due during these periods show a warning.</div>
+          <div id="settingsBlackoutList" style="display:flex;flex-direction:column;gap:6px"></div>
+        </div>
+      </div>
+
+      <!-- USERS & PERMISSIONS -->
+      <div class="settings-panel" id="stab-users">
+        <div class="settings-section">
+          <div class="settings-section-title">Users & Permissions</div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:20px;text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center">
+            <div style="font-size:24px">👨‍👩‍👧</div>
+            <div style="font-size:14px;font-weight:600">Family access coming in Phase 5</div>
+            <div style="font-size:12px;color:var(--text2);max-width:360px;line-height:1.6">Add family members so they can manage their own tasks and receive delegated work from you.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADMIN -->
+      <div class="settings-panel" id="stab-admin">
+        <div class="settings-section">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div class="settings-section-title">🔒 Admin Panel</div>
+            <div id="adminStatus" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)">Locked</div>
+          </div>
+          <div id="adminLocked">
+            <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:12px">Re-enter your credentials to access API configuration. Unlocks for 1 hour.</div>
+            <div class="form-group"><label class="form-label">Email</label><input type="email" id="adminEmail" placeholder="your@email.com"></div>
+            <div class="form-group"><label class="form-label">Password</label><input type="password" id="adminPwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')unlockAdmin()"></div>
+            <div class="auth-error" id="adminError"></div>
+            <button class="btn btn-sm" onclick="unlockAdmin()">Unlock</button>
+          </div>
+          <div id="adminUnlocked" style="display:none;flex-direction:column;gap:12px">
+            <div class="admin-unlock-banner">✓ Unlocked — auto-locks in <span id="adminCountdown">60:00</span></div>
+            <div class="form-group"><label class="form-label">Supabase Project URL</label><input type="text" id="adminUrl" placeholder="https://xyzxyz.supabase.co"></div>
+            <div class="form-group"><label class="form-label">Supabase Anon Key</label><input type="password" id="adminKey" placeholder="eyJ..."></div>
+            <div class="form-group"><label class="form-label">Anthropic API Key (optional)</label><input type="password" id="adminAI" placeholder="sk-ant-..."><div class="hint">For AI auto-tagging.</div></div>
+            <div style="display:flex;gap:8px;justify-content:flex-end">
+              <button class="btn btn-sm btn-secondary" onclick="lockAdmin()">Lock Now</button>
+              <button class="btn btn-sm" onclick="saveAdminSettings()">Save & Reconnect</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
   <!-- CALENDAR VIEW -->
   <main class="app-view" id="viewCalendar" style="display:none;max-width:1100px;width:100%">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;max-width:900px;width:100%;margin:0 auto">
@@ -869,94 +1019,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
   </div>
 </div>
 
-<!-- SETTINGS MODAL -->
-<div class="modal-overlay" id="settingsModal">
-  <div class="modal" style="max-width:480px">
-    <div class="modal-handle"></div>
-    <button class="modal-close" onclick="closeModal('settingsModal')">✕</button>
-    <div class="modal-title">Settings</div>
-    <div class="settings-block">
-      <div class="settings-block-title">Profile</div>
-      <div style="display:flex;align-items:center;gap:12px">
-        <div id="settingsAvatar" style="width:40px;height:40px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;color:#0a0a0b;font-size:18px;flex-shrink:0">A</div>
-        <div>
-          <div id="settingsEmail" style="font-size:14px;font-weight:600">—</div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);margin-top:2px">★ Super User</div>
-        </div>
-      </div>
-    </div>
-    <div class="settings-block">
-      <div class="settings-block-title">Workspace</div>
-      <div class="form-group"><label class="form-label">Workspace Name</label><input type="text" id="settingsWsName" placeholder="Personal"></div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)">ID: <span id="settingsWsId">—</span></div>
-      <div style="display:flex;justify-content:flex-end"><button class="btn btn-sm btn-secondary" onclick="saveWorkspaceName()">Save Name</button></div>
-    </div>
-    <div class="settings-block">
-      <div class="settings-block-title">Change Password</div>
-      <div class="form-group"><label class="form-label">New Password</label><input type="password" id="settingsNewPwd" placeholder="Min 8 characters"></div>
-      <div class="form-group"><label class="form-label">Confirm Password</label><input type="password" id="settingsConfirmPwd" placeholder="Repeat password"></div>
-      <div class="auth-error" id="pwdError"></div>
-      <div style="display:flex;justify-content:flex-end"><button class="btn btn-sm btn-secondary" onclick="changePassword()">Update Password</button></div>
-    </div>
-    <div class="settings-block">
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <div class="settings-block-title">🔒 Admin Panel</div>
-        <div id="adminStatus" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)">Locked</div>
-      </div>
-      <div id="adminLocked">
-        <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:12px">Re-enter your credentials to access API configuration. Unlocks for 1 hour.</div>
-        <div class="form-group" style="margin-bottom:8px"><label class="form-label">Email</label><input type="email" id="adminEmail" placeholder="your@email.com"></div>
-        <div class="form-group" style="margin-bottom:12px"><label class="form-label">Password</label><input type="password" id="adminPwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')unlockAdmin()"></div>
-        <div class="auth-error" id="adminError"></div>
-        <button class="btn btn-sm" onclick="unlockAdmin()">Unlock</button>
-      </div>
-      <div id="adminUnlocked" style="display:none;flex-direction:column;gap:12px">
-        <div class="admin-unlock-banner">✓ Unlocked — auto-locks in <span id="adminCountdown">60:00</span></div>
-        <div class="form-group"><label class="form-label">Supabase Project URL</label><input type="text" id="adminUrl" placeholder="https://xyzxyz.supabase.co"></div>
-        <div class="form-group"><label class="form-label">Supabase Anon Key</label><input type="password" id="adminKey" placeholder="eyJ..."></div>
-        <div class="form-group"><label class="form-label">Anthropic API Key (optional)</label><input type="password" id="adminAI" placeholder="sk-ant-..."><div class="hint">For AI auto-tagging.</div></div>
-        <div style="display:flex;gap:8px;justify-content:flex-end">
-          <button class="btn btn-sm btn-secondary" onclick="lockAdmin()">Lock Now</button>
-          <button class="btn btn-sm" onclick="saveAdminSettings()">Save & Reconnect</button>
-        </div>
-      </div>
-    </div>
-    <!-- CONTEXTS -->
-    <div class="settings-block">
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <div class="settings-block-title">Contexts</div>
-        <button class="btn btn-sm btn-secondary" onclick="openAddContext()">+ Add</button>
-      </div>
-      <div id="settingsContextList" style="display:flex;flex-direction:column;gap:6px"></div>
-    </div>
-
-    <!-- BLACKOUT PERIODS -->
-    <div class="settings-block">
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <div class="settings-block-title">Blackout Periods</div>
-        <button class="btn btn-sm btn-secondary" onclick="openAddBlackout()">+ Add</button>
-      </div>
-      <div id="settingsBlackoutList" style="display:flex;flex-direction:column;gap:6px"></div>
-    </div>
-
-    <!-- DEFAULT CAPACITY -->
-    <div class="settings-block">
-      <div class="settings-block-title">Default Daily Capacity</div>
-      <div style="display:flex;align-items:center;gap:10px">
-        <input type="number" id="settingsCapacity" min="1" max="1440"
-          style="width:80px;padding:8px 10px;font-size:13px;font-family:'JetBrains Mono',monospace;text-align:center"
-          placeholder="180">
-        <span style="font-size:13px;color:var(--text2)">minutes per day (default: 180)</span>
-      </div>
-      <div class="hint">This is your default. You can override it each day in the Focus view.</div>
-      <div style="display:flex;justify-content:flex-end">
-        <button class="btn btn-sm btn-secondary" onclick="saveDefaultCapacity()">Save Default</button>
-      </div>
-    </div>
-
-    <button class="btn btn-ghost" onclick="signOut()">↪ Sign Out</button>
-  </div>
-</div>
+<!-- Settings modal removed — now full page view -->
 
 <!-- CANCEL MODAL -->
 <div class="modal-overlay" id="cancelModal">
@@ -3827,6 +3890,61 @@ async function confirmCancel() {
   renderCalendar();
 }
 
+
+// ── NAVIGATION ────────────────────────────────────────────────────
+
+function toggleNavMore() {
+  const dd = document.getElementById('navDropdown');
+  dd.classList.toggle('open');
+}
+
+function closeNavMore() {
+  document.getElementById('navDropdown')?.classList.remove('open');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('navMoreWrap');
+  if (wrap && !wrap.contains(e.target)) closeNavMore();
+});
+
+function updateNavMoreBtn() {
+  // Check if current active view is in the dropdown
+  const dropdownViews = ['next','waiting','someday','reference','ideas'];
+  const activeBtn = document.querySelector('.nav-dropdown-btn.active');
+  const moreBtn = document.getElementById('navMoreBtn');
+  if (moreBtn) {
+    moreBtn.classList.toggle('has-active', !!activeBtn);
+    moreBtn.textContent = activeBtn
+      ? activeBtn.textContent.trim() + ' ▾'
+      : 'More ▾';
+  }
+}
+
+// ── SETTINGS TAB SWITCHING ────────────────────────────────────────
+
+function switchSettingsTab(tab) {
+  document.querySelectorAll('.settings-tab').forEach(b =>
+    b.classList.toggle('active', b.dataset.stab === tab)
+  );
+  document.querySelectorAll('.settings-panel').forEach(p =>
+    p.classList.toggle('active', p.id === 'stab-' + tab)
+  );
+  // Load dynamic content per tab
+  if (tab === 'contexts')  renderSettingsContexts();
+  if (tab === 'blackouts') renderSettingsBlackouts();
+  if (tab === 'workspace') {
+    document.getElementById('settingsWsName').value = state.workspaceName||'Personal';
+    document.getElementById('settingsWsId').textContent = state.workspaceId||'—';
+    const defCap = localStorage.getItem('clarity_default_capacity') || DEFAULT_CAPACITY_MINS;
+    document.getElementById('settingsCapacity').value = defCap;
+  }
+  if (tab === 'admin') {
+    if (adminUnlockExpiry && Date.now() < adminUnlockExpiry) showAdminUnlocked();
+    else showAdminLocked();
+  }
+}
+
 // ── CALENDAR VIEW ─────────────────────────────────────────
 
 let calMode   = 'week';
@@ -4019,18 +4137,8 @@ function saveDefaultCapacity() {
 }
 
 function openSettings(){
-  const email=localStorage.getItem('clarity_email')||getSession()?.user?.email||'—';
-  document.getElementById('settingsEmail').textContent=email;
-  document.getElementById('settingsAvatar').textContent=email.charAt(0).toUpperCase();
-  document.getElementById('settingsWsName').value=state.workspaceName||'Personal';
-  document.getElementById('settingsWsId').textContent=state.workspaceId||'—';
-  document.getElementById('pwdError').classList.remove('show');
-  if(adminUnlockExpiry&&Date.now()<adminUnlockExpiry)showAdminUnlocked();else showAdminLocked();
-  renderSettingsContexts();
-  renderSettingsBlackouts();
-  const defCap = localStorage.getItem('clarity_default_capacity') || DEFAULT_CAPACITY_MINS;
-  document.getElementById('settingsCapacity').value = defCap;
-  document.getElementById('settingsModal').classList.add('open');
+  // Redirect to full-page settings view
+  switchView('settings');
 }
 function showAdminLocked(){
   document.getElementById('adminLocked').style.display='block';
@@ -4102,17 +4210,26 @@ async function changePassword(){
 // ── VIEW SWITCHING ────────────────────────────────────────
 function switchView(view){
   document.querySelectorAll('.app-view').forEach(v=>v.style.display='none');
+  // Clear all active states
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.nav-dropdown-btn').forEach(b=>b.classList.remove('active'));
+  // Show the view
   const el=document.getElementById('view'+view.charAt(0).toUpperCase()+view.slice(1));
   if(el) el.style.display='flex';
-  const btn=document.querySelector(`[data-view="${view}"]`);
-  if(btn) btn.classList.add('active');
+  // Mark active on primary or dropdown
+  const primaryBtn=document.querySelector(`.nav-btn[data-view="${view}"]`);
+  const dropBtn=document.querySelector(`.nav-dropdown-btn[data-view="${view}"]`);
+  if(primaryBtn) primaryBtn.classList.add('active');
+  if(dropBtn)    dropBtn.classList.add('active');
+  // Update More button label
+  updateNavMoreBtn();
+  // Render views
   if(view==='calendar')  renderCalendar();
   if(view==='projects')  renderProjects();
   if(view==='areas')     renderAreas();
+  if(view==='settings')  openSettingsPage();
   if(view==='inbox')     {
     initInboxFilters(); renderInbox();
-    // Auto-open filter panel if filters are pre-set (from Life Areas)
     if (inboxFilters.showAll || inboxFilters.domainIds.length || inboxFilters.catIds.length || inboxFilters.statusFilter) {
       inboxFilterPanelOpen = false;
       toggleInboxFilterPanel();
@@ -4123,6 +4240,14 @@ function switchView(view){
   if(view==='someday')   renderSomeday();
   if(view==='reference') renderReference();
   if(view==='ideas')     renderIdeas();
+}
+
+function openSettingsPage() {
+  const email = localStorage.getItem('clarity_email') || '';
+  document.getElementById('settingsEmail').textContent  = email || '—';
+  document.getElementById('settingsAvatar').textContent = email ? email.charAt(0).toUpperCase() : 'A';
+  document.getElementById('pwdError').classList.remove('show');
+  switchSettingsTab('account');
 }
 
 // ── UTILS ─────────────────────────────────────────────────
