@@ -1988,44 +1988,86 @@ async function saveTask() {
     workspace_id:     state.workspaceId,
     name,
     notes:            document.getElementById('cNotes').value.trim()||null,
-    type:             isRecurring?'recurring':type,
-    status:           isIdea && catPickerSel.length > 0 ? 'someday' : (due&&due<=todayStr()?'next':'inbox'),
+    type:             isRecurring ? 'recurring' : type,
+    status:           editingTaskId ? undefined : (isIdea && catPickerSel.length > 0 ? 'someday' : (due&&due<=todayStr()?'next':'inbox')),
     importance_speed: document.getElementById('cIQ').value||null,
     context:          document.getElementById('cContext').value||null,
     due_date:         due||null,
     estimated_mins:   parseInt(document.getElementById('cEstimated').value)||null,
     project_id:       document.getElementById('cProject').value||null,
-    reschedule_count: 0,
-    reschedule_reasons: [],
-    ai_suggestions:   {},
+    reschedule_count: editingTaskId ? undefined : 0,
+    reschedule_reasons: editingTaskId ? undefined : [],
+    ai_suggestions:   editingTaskId ? undefined : {},
   };
 
-  if (isRecurring && !editingTaskId) {
+  // Helper: build recurrence template payload from form
+  function buildRecurPayload() {
+    const pattern = document.getElementById('rPattern').value;
+    return {
+      workspace_id:      state.workspaceId,
+      project_id:        payload.project_id,
+      name, notes:       payload.notes,
+      importance_speed:  payload.importance_speed,
+      context:           payload.context,
+      estimated_mins:    payload.estimated_mins,
+      recur_mode:        document.getElementById('rMode').value,
+      recur_pattern:     pattern,
+      recur_interval_value: ['every_x_weeks','every_x_months'].includes(pattern) ? parseInt(document.getElementById('rIntervalVal').value) : null,
+      recur_days_of_week:   pattern==='x_per_week' ? selectedDays : null,
+      recur_times_per_day:  pattern==='x_per_day' ? parseInt(document.getElementById('rTimesPerDay').value) : null,
+      counter_reset_mode:   pattern==='x_per_day' ? document.getElementById('rResetMode').value : null,
+      recur_random_min_days: pattern==='random' ? parseInt(document.getElementById('rRandMin').value) : null,
+      recur_random_max_days: pattern==='random' ? parseInt(document.getElementById('rRandMax').value) : null,
+      recur_anchor_date: ['monthly','yearly','weekly'].includes(pattern) ? (document.getElementById('rAnchorDate').value||null) : null,
+      next_occurrence:   document.getElementById('rFirstDue').value||due||null,
+      is_active: true,
+    };
+  }
+
+  const editingTask = editingTaskId ? state.tasks.find(t=>t.id===editingTaskId) : null;
+  const wasRecurring = editingTask?.type === 'recurring' && editingTask?.recurrence_id;
+
+  if (isRecurring) {
     const pattern = document.getElementById('rPattern').value;
     if (pattern==='x_per_week' && selectedDays.length===0) { toast('Please select days of the week','error'); return; }
-    const rp = {
-      workspace_id:state.workspaceId, project_id:payload.project_id,
-      name, notes:payload.notes, importance_speed:payload.importance_speed, context:payload.context, estimated_mins:payload.estimated_mins,
-      recur_mode:document.getElementById('rMode').value, recur_pattern:pattern,
-      recur_interval_value:['every_x_weeks','every_x_months'].includes(pattern)?parseInt(document.getElementById('rIntervalVal').value):null,
-      recur_days_of_week:pattern==='x_per_week'?selectedDays:null,
-      recur_times_per_day:pattern==='x_per_day'?parseInt(document.getElementById('rTimesPerDay').value):null,
-      counter_reset_mode:pattern==='x_per_day'?document.getElementById('rResetMode').value:null,
-      recur_random_min_days:pattern==='random'?parseInt(document.getElementById('rRandMin').value):null,
-      recur_random_max_days:pattern==='random'?parseInt(document.getElementById('rRandMax').value):null,
-      recur_anchor_date:['monthly','yearly','weekly'].includes(pattern)?(document.getElementById('rAnchorDate').value||null):null,
-      next_occurrence:document.getElementById('rFirstDue').value||due||null,
-      is_active:true,
-    };
-    const rr = await supa('recurrences',{method:'POST',body:JSON.stringify(rp)});
-    if (!rr.ok) { const e=await rr.json(); toast('Error creating recurrence: '+(e.message||'unknown'),'error'); return; }
-    const rd = await rr.json();
-    recurrenceId = rd[0]?.id;
+    const rp = buildRecurPayload();
+
+    if (!editingTaskId) {
+      // Scenario 1: New recurring task — create template
+      const rr = await supa('recurrences',{method:'POST',body:JSON.stringify(rp)});
+      if (!rr.ok) { const e=await rr.json(); toast('Error creating recurrence: '+(e.message||'unknown'),'error'); return; }
+      const rd = await rr.json();
+      recurrenceId = rd[0]?.id;
+    } else if (wasRecurring) {
+      // Scenario 2: Editing existing recurring — update template
+      recurrenceId = editingTask.recurrence_id;
+      await supa(`recurrences?id=eq.${recurrenceId}`,{method:'PATCH',body:JSON.stringify(rp)});
+    } else {
+      // Scenario 3: Converting non-recurring to recurring — create new template
+      const rr = await supa('recurrences',{method:'POST',body:JSON.stringify(rp)});
+      if (!rr.ok) { const e=await rr.json(); toast('Error creating recurrence: '+(e.message||'unknown'),'error'); return; }
+      const rd = await rr.json();
+      recurrenceId = rd[0]?.id;
+    }
+
     payload.recurrence_id = recurrenceId;
     payload.recur_pattern = pattern;
+    payload.type          = 'recurring';
     payload.target_count  = rp.recur_times_per_day;
-    payload.current_count = 0;
+    payload.current_count = wasRecurring ? undefined : 0;
     payload.due_date      = rp.next_occurrence||due||null;
+
+  } else if (editingTaskId && wasRecurring) {
+    // Scenario 4: Converting recurring to non-recurring — deactivate template
+    await supa(`recurrences?id=eq.${editingTask.recurrence_id}`,{method:'PATCH',body:JSON.stringify({is_active:false})});
+    payload.recurrence_id = null;
+    payload.recur_pattern = null;
+    payload.type          = 'task';
+    payload.target_count  = null;
+    payload.current_count = 0;
+
+  } else if (!isRecurring && !editingTaskId) {
+    // New non-recurring — validation already done
   }
 
   let res;
@@ -2049,6 +2091,8 @@ async function saveTask() {
   }
 
   if (recurrenceId && catPickerSel.length) {
+    // Delete existing recurrence categories first (handles update case)
+    await supa(`recurrence_categories?recurrence_id=eq.${recurrenceId}`,{method:'DELETE',prefer:'return=minimal'});
     await supa('recurrence_categories',{method:'POST',prefer:'return=minimal',body:JSON.stringify(catPickerSel.map(cid=>({recurrence_id:recurrenceId,category_id:cid})))});
   }
 
