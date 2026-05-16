@@ -796,10 +796,11 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
     </div>
 
     <!-- SUBTASKS -->
-    <div id="subtasksSection" style="display:none;flex-direction:column;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:14px">
+    <div id="subtasksSection" style="display:flex;flex-direction:column;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:14px">
       <div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:var(--text3)">Subtasks</div>
+      <div id="subtaskNewHint" style="font-size:12px;color:var(--text3);display:none">Save this task first, then re-open to add subtasks.</div>
       <div id="subtaskList" style="display:flex;flex-direction:column;gap:6px"></div>
-      <div style="display:flex;gap:8px;align-items:center">
+      <div id="subtaskInputRow" style="display:flex;gap:8px;align-items:center">
         <input type="text" id="subtaskInput" placeholder="Add a subtask..." style="flex:1;min-width:0"
                onkeydown="if(event.key==='Enter'){event.preventDefault();addSubtask();}"
                autocomplete="off" autocorrect="off" autocapitalize="sentences">
@@ -810,12 +811,14 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
       </div>
     </div>
 
-    <div class="modal-actions">
-      <button class="btn btn-sm btn-secondary" onclick="closeModal('captureModal')">Cancel</button>
-      <div id="cancelTaskBtnWrap" style="display:none">
-        <button class="btn btn-sm" style="background:#f0606020;color:var(--red);border:1px solid #f0606040" onclick="cancelFromEditForm()">Cancel Task</button>
+    <div class="modal-actions" style="justify-content:space-between">
+      <button class="btn btn-sm btn-secondary" onclick="closeModal('captureModal')">Close</button>
+      <div style="display:flex;gap:8px">
+        <div id="cancelTaskBtnWrap" style="display:none">
+          <button class="btn btn-sm" style="background:#f0606020;color:var(--red);border:1px solid #f0606040;min-height:36px" onclick="cancelFromEditForm()">Cancel Task</button>
+        </div>
+        <button class="btn btn-sm" onclick="saveTask()" style="min-height:36px;min-width:80px">Save</button>
       </div>
-      <button class="btn btn-sm" onclick="saveTask()">Save</button>
     </div>
   </div>
 </div>
@@ -1850,8 +1853,10 @@ function openCapture(prefill) {
   populateProjectSelect();
   populateContextSelect();
   renderInlineCatPicker();
-  // Hide subtasks and cancel button for new task capture
-  document.getElementById('subtasksSection').style.display = 'none';
+  // For new tasks: show subtask section with hint, hide input row
+  document.getElementById('subtaskNewHint').style.display   = 'block';
+  document.getElementById('subtaskInputRow').style.display  = 'none';
+  document.getElementById('subtaskList').innerHTML = '';
   document.getElementById('cancelTaskBtnWrap').style.display = 'none';
   currentSubtasks = [];
   document.getElementById('captureModal').classList.add('open');
@@ -1887,6 +1892,9 @@ function openEdit(id) {
   document.getElementById('subtasksSection').style.display = 'flex';
   document.getElementById('cancelTaskBtnWrap').style.display = 'block';
   loadSubtasks(id);
+  // Show subtask input row, hide hint for existing tasks
+  document.getElementById('subtaskNewHint').style.display  = 'none';
+  document.getElementById('subtaskInputRow').style.display = 'flex';
   // B15: If recurring task, load recurrence template and set toggle ON
   if (task.type === 'recurring' && task.recurrence_id) {
     loadRecurrenceIntoForm(task);
@@ -1967,6 +1975,30 @@ function populateContextSelect(selected) {
     active.map(c=>`<option value="${c.name}"${c.name===selected?' selected':''}>${c.icon||''} ${escHtml(c.name)}</option>`).join('');
 }
 
+function buildRecurPayload(taskPayload, taskDue) {
+  const pattern = document.getElementById('rPattern').value;
+  return {
+    workspace_id:      state.workspaceId,
+    project_id:        taskPayload.project_id,
+    name:              taskPayload.name,
+    notes:             taskPayload.notes,
+    importance_speed:  taskPayload.importance_speed,
+    context:           taskPayload.context,
+    estimated_mins:    taskPayload.estimated_mins,
+    recur_mode:        document.getElementById('rMode').value,
+    recur_pattern:     pattern,
+    recur_interval_value: ['every_x_weeks','every_x_months'].includes(pattern) ? parseInt(document.getElementById('rIntervalVal').value) : null,
+    recur_days_of_week:   pattern==='x_per_week' ? selectedDays : null,
+    recur_times_per_day:  pattern==='x_per_day'  ? parseInt(document.getElementById('rTimesPerDay').value) : null,
+    counter_reset_mode:   pattern==='x_per_day'  ? document.getElementById('rResetMode').value : null,
+    recur_random_min_days: pattern==='random' ? parseInt(document.getElementById('rRandMin').value) : null,
+    recur_random_max_days: pattern==='random' ? parseInt(document.getElementById('rRandMax').value) : null,
+    recur_anchor_date: ['monthly','yearly','weekly'].includes(pattern) ? (document.getElementById('rAnchorDate').value||null) : null,
+    next_occurrence:   document.getElementById('rFirstDue').value || taskDue || null,
+    is_active: true,
+  };
+}
+
 async function saveTask() {
   const name = document.getElementById('cName').value.trim();
   const type = document.getElementById('cType').value;
@@ -2000,37 +2032,13 @@ async function saveTask() {
     ai_suggestions:   editingTaskId ? undefined : {},
   };
 
-  // Helper: build recurrence template payload from form
-  function buildRecurPayload() {
-    const pattern = document.getElementById('rPattern').value;
-    return {
-      workspace_id:      state.workspaceId,
-      project_id:        payload.project_id,
-      name, notes:       payload.notes,
-      importance_speed:  payload.importance_speed,
-      context:           payload.context,
-      estimated_mins:    payload.estimated_mins,
-      recur_mode:        document.getElementById('rMode').value,
-      recur_pattern:     pattern,
-      recur_interval_value: ['every_x_weeks','every_x_months'].includes(pattern) ? parseInt(document.getElementById('rIntervalVal').value) : null,
-      recur_days_of_week:   pattern==='x_per_week' ? selectedDays : null,
-      recur_times_per_day:  pattern==='x_per_day' ? parseInt(document.getElementById('rTimesPerDay').value) : null,
-      counter_reset_mode:   pattern==='x_per_day' ? document.getElementById('rResetMode').value : null,
-      recur_random_min_days: pattern==='random' ? parseInt(document.getElementById('rRandMin').value) : null,
-      recur_random_max_days: pattern==='random' ? parseInt(document.getElementById('rRandMax').value) : null,
-      recur_anchor_date: ['monthly','yearly','weekly'].includes(pattern) ? (document.getElementById('rAnchorDate').value||null) : null,
-      next_occurrence:   document.getElementById('rFirstDue').value||due||null,
-      is_active: true,
-    };
-  }
-
   const editingTask = editingTaskId ? state.tasks.find(t=>t.id===editingTaskId) : null;
   const wasRecurring = editingTask?.type === 'recurring' && editingTask?.recurrence_id;
 
   if (isRecurring) {
     const pattern = document.getElementById('rPattern').value;
     if (pattern==='x_per_week' && selectedDays.length===0) { toast('Please select days of the week','error'); return; }
-    const rp = buildRecurPayload();
+    const rp = buildRecurPayload(payload, due);
 
     if (!editingTaskId) {
       // Scenario 1: New recurring task — create template
