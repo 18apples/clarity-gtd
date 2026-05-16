@@ -1853,9 +1853,9 @@ function openCapture(prefill) {
   populateProjectSelect();
   populateContextSelect();
   renderInlineCatPicker();
-  // For new tasks: show subtask section with hint, hide input row
-  document.getElementById('subtaskNewHint').style.display   = 'block';
-  document.getElementById('subtaskInputRow').style.display  = 'none';
+  // Show subtask section fully for new tasks too
+  document.getElementById('subtaskNewHint').style.display   = 'none';
+  document.getElementById('subtaskInputRow').style.display  = 'flex';
   document.getElementById('subtaskList').innerHTML = '';
   document.getElementById('cancelTaskBtnWrap').style.display = 'none';
   currentSubtasks = [];
@@ -2021,15 +2021,15 @@ async function saveTask() {
     name,
     notes:            document.getElementById('cNotes').value.trim()||null,
     type:             isRecurring ? 'recurring' : type,
-    status:           editingTaskId ? undefined : (isIdea && catPickerSel.length > 0 ? 'someday' : (due&&due<=todayStr()?'next':'inbox')),
+    status:           editingTaskId ? undefined : (isIdea && catPickerSel.length > 0 ? 'someday' : 'inbox'),
     importance_speed: document.getElementById('cIQ').value||null,
     context:          document.getElementById('cContext').value||null,
     due_date:         due||null,
     estimated_mins:   parseInt(document.getElementById('cEstimated').value)||null,
     project_id:       document.getElementById('cProject').value||null,
-    reschedule_count: editingTaskId ? undefined : 0,
-    reschedule_reasons: editingTaskId ? undefined : [],
-    ai_suggestions:   editingTaskId ? undefined : {},
+    reschedule_count:   0,
+    reschedule_reasons: [],
+    ai_suggestions:     {},
   };
 
   const editingTask = editingTaskId ? state.tasks.find(t=>t.id===editingTaskId) : null;
@@ -2079,8 +2079,13 @@ async function saveTask() {
   }
 
   let res;
-  if (editingTaskId) res = await supa(`tasks?id=eq.${editingTaskId}`,{method:'PATCH',body:JSON.stringify(payload)});
-  else               res = await supa('tasks',{method:'POST',body:JSON.stringify(payload)});
+  if (editingTaskId) {
+    // Strip undefined values from patch payload
+    const patchPayload = Object.fromEntries(Object.entries(payload).filter(([,v])=>v!==undefined));
+    res = await supa(`tasks?id=eq.${editingTaskId}`,{method:'PATCH',body:JSON.stringify(patchPayload)});
+  } else {
+    res = await supa('tasks',{method:'POST',body:JSON.stringify(payload)});
+  }
 
   if (!res.ok) {
     const err = await res.json();
@@ -2104,8 +2109,8 @@ async function saveTask() {
     await supa('recurrence_categories',{method:'POST',prefer:'return=minimal',body:JSON.stringify(catPickerSel.map(cid=>({recurrence_id:recurrenceId,category_id:cid})))});
   }
 
-  // Save subtasks if editing
-  if (savedId && editingTaskId) await saveSubtasks(savedId);
+  // Save subtasks for both new and edited tasks
+  if (savedId && currentSubtasks.length) await saveSubtasks(savedId);
 
   toast(editingTaskId?'Task updated ✓':'Task captured ✓','success');
   closeModal('captureModal');
