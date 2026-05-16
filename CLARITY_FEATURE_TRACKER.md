@@ -10,9 +10,9 @@
 | # | Feature | Notes |
 |---|---|---|
 | 1 | Auth — sign in / sign up / session refresh | |
-| 2 | First-time Supabase setup | Config button on auth screen, disappears after setup |
-| 3 | App shell + navigation | 10 tabs including Calendar |
-| 4 | Settings modal — profile, workspace, password, admin panel | Admin locked, re-auth required, 1hr unlock |
+| 2 | First-time Supabase setup | Config button on auth screen |
+| 3 | App shell + navigation | 10 tabs + 🔍 global search button |
+| 4 | Settings modal — profile, workspace, password, admin | Admin locked, re-auth required, 1hr unlock |
 | 5 | Task capture — all fields, verb enforcement | Name, type, categories, IQ, context, due date, est. time, project, recurring, notes |
 | 6 | Inline category picker — grouped by domain | Tap to toggle, multi-select |
 | 7 | Daily Focus — overdue + today only | Tasks without due dates go to Inbox only |
@@ -20,7 +20,7 @@
 | 9 | Complete task + recurring next instance | Ad-hoc prompts for next date |
 | 10 | Reschedule — requires reason | Tracks reschedule_count and reschedule_reasons[] |
 | 11 | Cancel task — requires reason | From task cards and from edit form |
-| 12 | Calendar — week + month toggle | Week/month views, nav arrows, Today button |
+| 12 | Calendar — week + month toggle | Week/month views, nav arrows, Today button, blackout highlights |
 | 13 | Notion inbox import — SQL | 162 tasks imported via clarity_notion_import.sql |
 | 14 | Projects — create, edit, list, detail | Grouped by status, filter chips |
 | 15 | Project on hold — tasks → waiting | Optional on-hold-until date + reason |
@@ -30,168 +30,142 @@
 | 19 | Delete domain/category — move tasks | Safety check: prompts to move linked tasks |
 | 20 | Project task capture — inherits categories | Pre-selects project categories |
 | 21 | Inbox view — full pipeline | Search + filters (domain, category, IQ, context, type, est. time, missing fields) |
-| 22 | Next Actions view | Filterable by context, sorted by due date |
-| 23 | Waiting view | Move to Next button |
-| 24 | Someday view | Set revisit date, resurfaces to inbox automatically |
-| 25 | Reference view | Live search by name and notes |
-| 26 | Ideas view | Promote to task or project |
-| 27 | Edit task | Full edit form, pre-fills all fields |
-| 28 | Process task from Inbox | Assign status, due date, revisit date, or cancel |
-| 29 | Task count → Inbox filter | Clicking count in Life Areas opens Inbox pre-filtered |
-| 30 | Day capacity planner | Focus view. Visual bar: required vs available. Override per day. Default 3hrs in Settings |
-| 31 | Contexts table + management | DB table, 4 seeded: @home @out-and-about @MuraliMama&Co @laptop. Managed in Settings |
-| 32 | Inbox filters — context, type, est. time, missing | Full filter suite with persist + clear |
-| 33 | Blackout periods | Settings section: add/edit/delete. Warning on cards + date field. Calendar highlight |
-| 34 | x_per_day carry-over | Deficit carries forward to next instance target_count |
-| 35 | Subtasks | Checklist in edit form. ☑ 2/4 badge on cards. Blocks completion until all done |
-| 36 | Cancel button on edit form | Red Cancel Task shown only when editing existing tasks |
+| 22 | Inbox filter panel collapsible | Collapsed by default, shows active filter count badge |
+| 23 | Next Actions view | Filterable by context, sorted by due date |
+| 24 | Waiting view | Move to Next button |
+| 25 | Someday view | Set revisit date, resurfaces to inbox automatically |
+| 26 | Reference view | Live search by name and notes |
+| 27 | Ideas view | Shows only uncategorised ideas. Promote to task or project |
+| 28 | Edit task | Full edit form, pre-fills all fields |
+| 29 | Process task from Inbox | Assign status, due date, revisit date, or cancel |
+| 30 | Task count → Inbox filter | Clicking domain/category in Life Areas opens Inbox pre-filtered |
+| 31 | Life Areas task breakdown | Per domain/category: type and status breakdown chips, each clickable |
+| 32 | Day capacity planner | Focus view. Visual bar: required vs available. Override per day. Default 3hrs in Settings |
+| 33 | Contexts table + management | DB table, 4 seeded. Managed in Settings. Capture pulls from DB |
+| 34 | Inbox filters — context, type, est. time, missing | Full filter suite with persist + clear + collapsible panel |
+| 35 | Blackout periods | Settings section: add/edit/delete. Warning on cards + date field. Calendar highlight |
+| 36 | x_per_day carry-over | Deficit carries forward to next instance target_count |
+| 37 | Subtasks | Checklist in edit form AND new task capture. ☑ 2/4 badge on cards. Up/down reorder. Blocks completion until all done |
+| 38 | Cancel button on edit form | Red Cancel Task shown only when editing existing tasks |
+| 39 | Idea → Someday auto-promotion | Ideas with a category auto-set to someday status |
+| 40 | Status change on task cards | ↕ button on every card opens status picker modal |
+| 41 | Global task search | 🔍 in nav. Searches all tasks/statuses/types. Keyboard: / or Cmd+K |
+| 42 | pg_cron jobs scheduled | surface_recurring, surface_someday, generate_review_tasks — all daily |
+| 43 | Default 30 mins estimated time | New task capture pre-fills 30 mins |
+| 44 | Recurring task edit — all 4 scenarios | New / edit existing / convert to recurring / convert to non-recurring |
 
 ---
 
 ## 🐛 KNOWN BUGS
 
-| # | Bug | Details | Status |
-|---|---|---|---|
-| B1 | Calendar month view not rendering | Clicking Month toggle may not switch from week view. Fix applied in last build — needs verification | Needs testing |
-| B2 | Settings modal may break after patches | Caused by accumulated JS patches — fixed in last build | Needs testing |
-| B3 | `sp is not defined` in renderCard | subtaskBadge variable used before defined. Fixed in last build | Fixed |
-| B4 | Syntax error line 1603 | Broken quotes in task-check onclick. Fixed in last build | Fixed |
+| # | Bug | Status |
+|---|---|---|
+| B15 | Recurring toggle shows OFF for existing recurring tasks | Fixed — still testing |
+| B18 | Converting task to recurring not saving | Fixed — still testing |
 
 ---
 
 ## 🔜 FEATURES NOT YET BUILT
 
-### #37 — Settings Redesign (Full Page + Sub-tabs)
-**Effort:** Medium
-**Priority:** Next build
-**Details:**
+### Navigation & Layout
+
+**#37 — Settings Redesign (Full Page + Sub-tabs)**
+**Effort:** Medium | **Priority:** Next major build
 - Replace current modal popup with a full-page Settings tab in the nav
-- Sub-tabs within the Settings page:
-  - **Account** — profile display, email, password change
-  - **Workspace** — workspace name, default daily capacity
-  - **Contexts** — manage @context list (add, edit, toggle active/inactive)
-  - **Blackout Periods** — manage unavailable date ranges
-  - **Users & Permissions** — placeholder for now, family user management later
-  - **Admin** — Supabase URL, anon key, Anthropic API key — stays locked behind re-auth
-- Settings tab added to main nav alongside Focus, Projects etc.
+- Sub-tabs: Account / Workspace / Contexts / Blackout Periods / Users & Permissions / Admin
+- Admin stays locked behind re-auth
+- Build together with #53 (nav redesign)
+
+**#53 — Navigation Bar Redesign**
+**Effort:** Medium | **Build with #37**
+- Current 10-tab horizontal scroll is cluttered and hard to use on mobile
+- Proposed grouping: Primary (Focus, Inbox, Projects) + Pipeline dropdown (Next, Waiting, Someday, Reference, Ideas) + Explore (Calendar, Life Areas) + Settings
+- Mobile: bottom tab bar or hamburger for secondary tabs
 
 ---
 
-### #38 — Analytics Dashboard
-**Effort:** Large
-**Details:**
-- Completion rates over time (tasks done vs created)
-- Procrastination patterns (reschedule count distribution, reasons breakdown)
-- Domain/category balance (where are most tasks?)
-- Cancelled task reasons breakdown
-- Streaks and trends over time
-- Powered by analytics_events table (already in DB, events logged throughout app)
+### Task Management
+
+**#51 — Status Change — DONE ✅**
+Built in last build.
+
+**#54 — Action Verb Warning Less Intrusive**
+**Effort:** Small
+- Replace blocking confirm() dialog with a subtle inline hint
+- Warning is informational only — does not block saving
+- "Tip: starting with an action verb keeps tasks actionable"
+
+**#56 — Task Card Color Coding Redesign**
+**Effort:** Small | **Phase:** Future refinement
+- Current coloring is too busy and not useful in practice
+- Strip to one meaningful signal (e.g. domain color as left border stripe only)
+- Everything else monochrome
 
 ---
 
-### #39 — Google Calendar Sync
-**Effort:** Large
-**Details:**
-- Two-way sync between Clarity tasks (with due dates) and Google Calendar
-- Tasks with due dates appear as calendar events in Google Calendar
-- Moving/resizing an event in Google Calendar updates task due date in Clarity
-- Requires OAuth2 setup with Google Calendar API
-- Deferred — complex OAuth flow, build after core is fully stable
+### Views & Discovery
+
+**#49 — Life Areas Task Count Visual Improvements**
+**Effort:** Medium | **Deferred — visual improvements phase**
+- Current breakdown chips work but need visual polish
+- Better layout for the type/status breakdown within domain accordion
+
+**#52 — Global Task Search — DONE ✅**
+Built in last build.
 
 ---
 
-### #40 — AI Auto-tagging
-**Effort:** Medium
-**Details:**
-- Fires 600ms after typing stops in task name field
-- Calls Anthropic API with task name + list of domains, categories, contexts, importance values
-- Suggests: category, importance/speed, context, estimated time
-- Suggestions shown as pre-fills — user can accept or change
-- Tracks accepted vs overridden per field in ai_suggestions jsonb column (already in tasks table)
-- Requires Anthropic API key configured in Admin Settings
-- Infrastructure already exists — just needs the UI trigger and API call
+### Ideas & Someday
+
+**#47 — Idea → Someday Auto-promotion — DONE ✅**
+Built and confirmed working.
+
+**#57 — Idea vs Someday Refinement**
+**Effort:** Small | **Phase:** Needs more real-world use before deciding
+- Concepts currently overlap in some edge cases
+- Current rule: idea + no category = stays as idea; idea + category = promoted to someday
+- Revisit after more use to see if further distinction is needed
 
 ---
 
-### #41 — Family Multi-User
-**Effort:** Very Large
-**Phase:** 5
-**Details:**
+### Analytics
 
-**Vision:** Each family member has their own account and their own complete view of the world.
+**#38 — Eisenhower Matrix Time Distribution Chart**
+**Effort:** Medium | **Phase:** 5 — first analytics feature
+- Chart showing completed task distribution across 4 Eisenhower quadrants
+- Toggle: Day / Week / Month
+- Data: completed tasks within period, uses estimated_mins as proxy for time
+- Visual: donut or bar chart, percentage + total mins per quadrant
+- Insight text: e.g. "68% of time was Important+Urgent — shift more to Important+Not Urgent"
+- Tasks without importance_speed shown as "Untagged"
 
-**Confirmed decisions:**
-- Each user gets their own Focus, Inbox, Next, Projects, Life Areas, Calendar etc.
-- Each user can have multiple workspaces (Personal + Work, or Personal + School for kids)
-- Family members cannot see each other's tasks unless specifically included on a task or project
-- When you delegate a task to someone (e.g. Siddharth):
-  - Task stays in YOUR view as **Waiting** status, tagged "delegated to Siddharth"
-  - Task appears in SIDDHARTH's view so he can plan around it
-  - How it lives in his view (copied vs referenced) — **TBD**
+---
+
+### Family & Multi-user
+
+**#41 — Family Multi-User**
+**Effort:** Very Large | **Phase:** 5
+- Each family member has own account, own complete view (Focus, Inbox, Projects etc.)
+- Each user can have multiple workspaces (Personal + Work/School)
+- Family members cannot see each other's tasks unless specifically included
+- Delegating a task → stays in your view as Waiting (delegated), appears in assignee's view
+- Projects shared between family members — TBD
+- How delegated tasks live (copied vs referenced) — TBD
 - No simplified UI for children — middle school age and above, same full UI
-- Projects shared between family members — **TBD, to be refined**
+- DB changes needed: users table, families table, delegations, RLS scoped to family_id
 
-**DB changes needed:**
-- `users` table (beyond Supabase Auth) — name, family_id, role
-- `families` table — top-level container above workspaces
-- Delegations table or field linking tasks to other users
-- RLS policies scoped to family_id
-
-**Open questions:**
-- Copied vs referenced: when a task is delegated, does it create a copy in the assignee's DB or just a pointer?
-- Projects: can a project be co-owned? Who can add tasks to it?
-- What happens when the assignee completes a delegated task — does the delegator's copy update?
+**#42 — Multi-tenant + Social Ecosystem**
+**Effort:** Massive | **Phase:** Future only
+- Friends can spin up own isolated Clarity instance
+- Long-term: social linking between families
+- Not building now
 
 ---
 
-### #42 — Multi-tenant + Social Ecosystem
-**Effort:** Massive
-**Phase:** Future ideas only — not building now
-**Details:**
+### Subtasks
 
-**Multi-tenant:** Friends can spin up their own completely isolated Clarity instance for their family. Two approaches:
-- Same Supabase project, different family workspaces (careful RLS needed)
-- Separate Supabase project per family (more isolated, more setup)
-
-**Social ecosystem (long-term vision):** Families could optionally link to share things — a shared shopping list, a family event, a task delegated to a friend outside the family. Think of it as a lightweight family OS that can connect outward to a broader social graph.
-
-**Not building now.** Revisit after multi-user is stable.
-
----
-
-### #43 — Subtasks Enhancements
-**Effort:** Small
-**Details:**
-- Drag to reorder subtasks within the edit form
-- Subtask notes (optional, small text field)
-
----
-
-### #44 — Blackout Periods — Calendar Stripe
-**Effort:** Small
-**Details:**
-- Currently: individual blackout dates highlighted in orange tint
-- Enhancement: show a continuous labelled stripe/band across multi-day blackout ranges
-- Blackout label shown on first day of the range in month view
-
----
-
-### #45 — Per-task Time Tracking
-**Effort:** Medium
-**Details:**
-- Start/stop timer on task cards
-- Fills actual_mins field (already in tasks table)
-- Actual vs estimated comparison in analytics
-
----
-
-### #46 — Full Text Search
-**Effort:** Small
-**Details:**
-- Search bar accessible from header or dedicated view
-- Searches across task names, notes, project names
-- PostgreSQL tsvector index to add to tasks table
-- Deferred — add when volume of tasks makes finding things harder
+**#43 — Subtask Reordering — DONE ✅**
+Built in last build — up/down arrow buttons on each subtask.
 
 ---
 
@@ -204,6 +178,7 @@
 | `clarity_add_contexts.sql` | Adds contexts table + seeds 4 contexts | ✅ Run |
 | `clarity_add_blackouts.sql` | Adds blackout_periods table | ✅ Run |
 | `clarity_add_subtasks.sql` | Adds subtasks table | ✅ Run |
+| `clarity_schedule_cron.sql` | Schedules 3 pg_cron daily jobs | ✅ Run |
 
 ---
 
@@ -213,7 +188,7 @@
 |---|---|
 | workspaces | Top-level container |
 | domains | Life area labels (Career, Home, etc.) |
-| categories | Grouped under domains |
+| categories | Grouped under domains, with review cadence |
 | projects | Multi-step goals |
 | tasks | All tasks, ideas, recurring instances, reviews |
 | recurrences | Recurring task templates |
@@ -251,12 +226,12 @@ create policy "authenticated access" on public.new_table
 ## 💡 DEFERRED IDEAS PARKING LOT
 
 - Calendar drag to reschedule — desktop only, triggers reason modal
-- x_per_day deficit detail — show breakdown of how deficit built up over multiple days
-- Someday revisit date — surface in more places across the app
-- Blackout period calendar stripe — continuous band across multi-day ranges
-- Subtask reordering — drag within edit form
+- x_per_day deficit detail — show breakdown of how deficit built up over days
+- Blackout period calendar stripe — continuous band across multi-day ranges in month view
 - Per-task time tracking — start/stop timer, actual vs estimated
-- Full text search — across tasks, notes, projects
+- Full text search — PostgreSQL tsvector index on tasks (global search currently in-memory)
+- Task card color coding redesign — strip to one meaningful signal (#56)
+- Someday revisit date — surface in more places across the app
 
 ---
 
