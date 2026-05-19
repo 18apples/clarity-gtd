@@ -1533,6 +1533,11 @@ async function loadTasks() {
       return;
     }
     state.tasks = data;
+    // Diagnostic: check for duplicate ids from Supabase
+    const idCounts = {};
+    data.forEach(t => idCounts[t.id] = (idCounts[t.id]||0)+1);
+    const dupIds = Object.entries(idCounts).filter(([,c])=>c>1).map(([id])=>id);
+    if (dupIds.length) console.warn('Duplicate task ids from Supabase:', dupIds);
     // Attach categories
     if (state.tasks.length) {
       const ids = state.tasks.map(t=>t.id).join(',');
@@ -2740,9 +2745,11 @@ function renderInbox() {
 
   // When coming from Life Areas, show all non-done tasks regardless of status
   // When in normal inbox mode, show only inbox status tasks
+  // B23: Deduplicate before filtering
+  const uniqueForInbox = [...new Map(state.tasks.map(t=>[t.id,t])).values()];
   let tasks = inboxFilters.showAll
-    ? state.tasks.filter(t => t.status !== 'done' && t.status !== 'cancelled')
-    : state.tasks.filter(t => t.status === 'inbox' && t.type !== 'idea');
+    ? uniqueForInbox.filter(t => t.status !== 'done' && t.status !== 'cancelled')
+    : uniqueForInbox.filter(t => t.status === 'inbox' && t.type !== 'idea');
   const total = tasks.length;
 
   // Apply search
@@ -2876,7 +2883,7 @@ function setNextFilter(ctx) {
 }
 
 function renderNext() {
-  let tasks = state.tasks.filter(t=>t.status==='next'&&t.type!=='idea');
+  let tasks = [...new Map(state.tasks.map(t=>[t.id,t])).values()].filter(t=>t.status==='next'&&t.type!=='idea');
   if (nextContextFilter !== 'all') tasks = tasks.filter(t=>t.context===nextContextFilter);
   document.getElementById('nextCount').textContent = `${tasks.length} actions`;
   const list = document.getElementById('nextList');
@@ -2895,7 +2902,7 @@ function renderNext() {
 // ── 26. WAITING ───────────────────────────────────────────────────
 
 function renderWaiting() {
-  const tasks = state.tasks.filter(t=>t.status==='waiting');
+  const tasks = [...new Map(state.tasks.map(t=>[t.id,t])).values()].filter(t=>t.status==='waiting');
   document.getElementById('waitingCount').textContent = `${tasks.length} items`;
   const list = document.getElementById('waitingList');
   if (!tasks.length) { list.innerHTML = pipelineEmpty('⏳','Nothing waiting','Great — no dependencies blocking you.'); return; }
@@ -2915,7 +2922,7 @@ async function moveToNext(id) {
 let revisitingTaskId = null;
 
 function renderSomeday() {
-  const tasks = state.tasks.filter(t=>t.status==='someday');
+  const tasks = [...new Map(state.tasks.map(t=>[t.id,t])).values()].filter(t=>t.status==='someday');
   document.getElementById('somedayCount').textContent = `${tasks.length} items`;
   const list = document.getElementById('somedayList');
   if (!tasks.length) { list.innerHTML = pipelineEmpty('🌙','Nothing parked','Someday items live here.'); return; }
@@ -2945,7 +2952,7 @@ async function confirmRevisit() {
 
 function renderReference() {
   const q = (document.getElementById('refSearch')?.value||'').toLowerCase().trim();
-  let tasks = state.tasks.filter(t=>t.status==='reference');
+  let tasks = [...new Map(state.tasks.map(t=>[t.id,t])).values()].filter(t=>t.status==='reference');
   if (q) tasks = tasks.filter(t=>t.name.toLowerCase().includes(q)||(t.notes||'').toLowerCase().includes(q));
   document.getElementById('referenceCount').textContent = `${state.tasks.filter(t=>t.status==='reference').length} items`;
   const list = document.getElementById('referenceList');
@@ -2964,7 +2971,7 @@ let promotingTaskId = null;
 
 function renderIdeas() {
   // #47: Only show uncategorised ideas — categorised ideas are promoted to someday
-  const tasks = state.tasks.filter(t=>
+  const tasks = [...new Map(state.tasks.map(t=>[t.id,t])).values()].filter(t=>
     t.type==='idea' &&
     t.status!=='done' &&
     t.status!=='cancelled' &&
@@ -3128,8 +3135,10 @@ function renderProjectDetail() {
       </div>
     </div>`;
 
-  const ptasks = state.tasks.filter(t=>t.project_id===p.id&&t.status!=='done'&&t.status!=='cancelled');
-  const dtasks = state.tasks.filter(t=>t.project_id===p.id&&(t.status==='done'||t.status==='cancelled'));
+  // B23: Deduplicate tasks by id before rendering
+  const allUnique = [...new Map(state.tasks.map(t=>[t.id,t])).values()];
+  const ptasks = allUnique.filter(t=>t.project_id===p.id&&t.status!=='done'&&t.status!=='cancelled');
+  const dtasks = allUnique.filter(t=>t.project_id===p.id&&(t.status==='done'||t.status==='cancelled'));
   let html = ptasks.length ? ptasks.map(t=>renderCard(t)).join('') : '<div class="empty-state" style="padding:24px 0"><div class="empty-sub">No open tasks. Add one above.</div></div>';
   if (dtasks.length) html += `<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin:12px 0 6px">Done / Cancelled</div>` + dtasks.map(t=>renderCard(t)).join('');
   document.getElementById('pdTaskList').innerHTML = html;
