@@ -109,11 +109,11 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
 @keyframes toastOut{from{opacity:1}to{opacity:0}}
 /* TASK CARDS */
 .task-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;display:flex;align-items:flex-start;gap:12px;transition:border-color .15s;position:relative;overflow:hidden}
-.task-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
-.task-card[data-iq="important_urgent"]::before{background:var(--red)}
-.task-card[data-iq="important_not_urgent"]::before{background:var(--accent)}
-.task-card[data-iq="not_important_urgent"]::before{background:var(--orange)}
-.task-card[data-iq="not_important_not_urgent"]::before{background:var(--blue)}
+.task-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:transparent}
+.task-card[data-status="next"]::before{background:var(--accent)}
+.task-card[data-status="waiting"]::before{background:var(--orange)}
+.task-card[data-status="someday"]::before{background:var(--blue)}
+.task-card[data-status="inbox"]::before{background:var(--border2)}
 .task-card:hover{border-color:var(--border2)}
 .task-check{width:20px;height:20px;border:1.5px solid var(--border2);border-radius:5px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:none;transition:all .15s;margin-top:1px}
 .task-check:hover{border-color:var(--accent)}
@@ -127,14 +127,14 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
 .task-card:hover .task-actions{opacity:1}
 .tag{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 7px;border-radius:4px;letter-spacing:.3px;white-space:nowrap}
 .tag-cat{background:var(--surface3);color:var(--text2);border:1px solid var(--border)}
-.tag-iu{background:#f0606018;color:var(--red);border:1px solid #f0606030}
-.tag-inu{background:#b8f06018;color:var(--accent);border:1px solid #b8f06030}
-.tag-niu{background:#f0a85518;color:var(--orange);border:1px solid #f0a85530}
-.tag-ninu{background:#60a8f018;color:var(--blue);border:1px solid #60a8f030}
+.tag-iu{background:var(--surface3);color:var(--text2);border:1px solid var(--border)}
+.tag-inu{background:var(--surface3);color:var(--text2);border:1px solid var(--border)}
+.tag-niu{background:var(--surface3);color:var(--text2);border:1px solid var(--border)}
+.tag-ninu{background:var(--surface3);color:var(--text2);border:1px solid var(--border)}
 .tag-due{background:var(--surface3);color:var(--text2);border:1px solid var(--border)}
 .tag-overdue{background:#f0606015;color:var(--red);border:1px solid #f0606030}
-.tag-recur{background:#a060f015;color:#a060f0;border:1px solid #a060f030}
-.tag-idea{background:#f0a85515;color:var(--orange);border:1px solid #f0a85530}
+.tag-recur{background:var(--surface3);color:var(--text2);border:1px solid var(--border)}
+.tag-idea{background:var(--surface3);color:var(--text2);border:1px solid var(--border)}
 /* RECURRING TOGGLE */
 .toggle-track{position:relative;width:36px;height:20px;background:var(--border);border-radius:20px;transition:background .2s;cursor:pointer;flex-shrink:0}
 .toggle-track.on{background:var(--accent)}
@@ -917,13 +917,25 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
         <div id="rDaysFields" style="display:none;flex-direction:column;gap:8px">
           <label class="form-label">Days of week</label>
           <div style="display:flex;gap:6px;flex-wrap:wrap" id="rDayBtns">
-            <button type="button" class="day-btn" data-d="0" onclick="toggleDay(0)">Sun</button>
-            <button type="button" class="day-btn" data-d="1" onclick="toggleDay(1)">Mon</button>
-            <button type="button" class="day-btn" data-d="2" onclick="toggleDay(2)">Tue</button>
-            <button type="button" class="day-btn" data-d="3" onclick="toggleDay(3)">Wed</button>
-            <button type="button" class="day-btn" data-d="4" onclick="toggleDay(4)">Thu</button>
-            <button type="button" class="day-btn" data-d="5" onclick="toggleDay(5)">Fri</button>
-            <button type="button" class="day-btn" data-d="6" onclick="toggleDay(6)">Sat</button>
+            <!-- Presets -->
+            <div style="display:flex;gap:4px;flex-wrap:wrap;padding-bottom:6px;border-bottom:1px solid var(--border)">
+              <button type="button" class="btn btn-sm btn-secondary" style="font-size:10px;padding:3px 8px" onclick="setDayPreset([1,2,3,4,5])">Weekdays</button>
+              <button type="button" class="btn btn-sm btn-secondary" style="font-size:10px;padding:3px 8px" onclick="setDayPreset([0,6])">Weekends</button>
+              <button type="button" class="btn btn-sm btn-secondary" style="font-size:10px;padding:3px 8px" onclick="setDayPreset([1,3,5])">M·W·F</button>
+              <button type="button" class="btn btn-sm btn-secondary" style="font-size:10px;padding:3px 8px" onclick="setDayPreset([2,4])">T·Th</button>
+              <button type="button" class="btn btn-sm btn-secondary" style="font-size:10px;padding:3px 8px" onclick="setDayPreset([0,1,2,3,4,5,6])">Every day</button>
+              <button type="button" class="btn btn-sm btn-ghost" style="font-size:10px;padding:3px 8px" onclick="setDayPreset([])">Clear</button>
+            </div>
+            <!-- Day buttons -->
+            <div style="display:flex;gap:4px;flex-wrap:wrap">
+              <button type="button" class="day-btn" data-d="0" onclick="toggleDay(0)">Sun</button>
+              <button type="button" class="day-btn" data-d="1" onclick="toggleDay(1)">Mon</button>
+              <button type="button" class="day-btn" data-d="2" onclick="toggleDay(2)">Tue</button>
+              <button type="button" class="day-btn" data-d="3" onclick="toggleDay(3)">Wed</button>
+              <button type="button" class="day-btn" data-d="4" onclick="toggleDay(4)">Thu</button>
+              <button type="button" class="day-btn" data-d="5" onclick="toggleDay(5)">Fri</button>
+              <button type="button" class="day-btn" data-d="6" onclick="toggleDay(6)">Sat</button>
+            </div>
           </div>
         </div>
         <div id="rIntervalFields" style="display:none">
@@ -967,6 +979,9 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
       <div style="display:flex;gap:8px">
         <div id="cancelTaskBtnWrap" style="display:none">
           <button class="btn btn-sm" style="background:#f0606020;color:var(--red);border:1px solid #f0606040;min-height:36px" onclick="cancelFromEditForm()">Cancel Task</button>
+        </div>
+        <div id="completeTaskBtnWrap" style="display:none">
+          <button class="btn btn-sm" style="background:#b8f06020;color:var(--accent);border:1px solid #b8f06040;min-height:36px" onclick="completeFromEditForm()">✓ Mark Complete</button>
         </div>
         <button class="btn btn-sm" onclick="saveTask()" style="min-height:36px;min-width:80px">Save</button>
       </div>
@@ -1751,7 +1766,7 @@ function renderCard(task, overdue=false) {
     ? "showSubtaskBlock('" + task.id + "')"
     : "completeTask('" + task.id + "')";
   const checkTitle = (sp && sp.done < sp.total) ? 'Complete all subtasks first' : '';
-  return `<div class="task-card" data-id="${task.id}" data-iq="${iq}">
+  return `<div class="task-card" data-id="${task.id}" data-iq="${iq}" data-status="${task.status}">
     <button class="task-check" onclick="${checkFn}" title="${checkTitle}"></button>
     <div class="task-body">
       <div class="task-name">${escHtml(task.name)}</div>
@@ -1978,7 +1993,8 @@ function openCapture(prefill) {
   document.getElementById('subtaskNewHint').style.display   = 'none';
   document.getElementById('subtaskInputRow').style.display  = 'flex';
   document.getElementById('subtaskList').innerHTML = '';
-  document.getElementById('cancelTaskBtnWrap').style.display = 'none';
+  document.getElementById('cancelTaskBtnWrap').style.display    = 'none';
+  document.getElementById('completeTaskBtnWrap').style.display  = 'none';
   currentSubtasks = [];
   document.getElementById('captureModal').classList.add('open');
   setTimeout(()=>document.getElementById('cName').focus(),200);
@@ -2014,8 +2030,9 @@ function openEdit(id) {
   document.getElementById('cancelTaskBtnWrap').style.display = 'block';
   loadSubtasks(id);
   // Show subtask input row, hide hint for existing tasks
-  document.getElementById('subtaskNewHint').style.display  = 'none';
-  document.getElementById('subtaskInputRow').style.display = 'flex';
+  document.getElementById('subtaskNewHint').style.display     = 'none';
+  document.getElementById('subtaskInputRow').style.display    = 'flex';
+  document.getElementById('completeTaskBtnWrap').style.display = 'block';
   // B15: If recurring task, load recurrence template and set toggle ON
   if (task.type === 'recurring' && task.recurrence_id) {
     loadRecurrenceIntoForm(task);
@@ -2126,12 +2143,7 @@ async function saveTask() {
   if (!name) { toast('Task name is required','error'); return; }
   if (!state.workspaceId) { toast('Workspace not loaded — refresh the page','error'); return; }
 
-  if (type !== 'idea') {
-    const first = name.split(' ')[0].toLowerCase().replace(/[^a-z]/g,'');
-    if (!ACTION_VERBS.includes(first)) {
-      if (!confirm("This task doesn't start with an action verb. Save anyway?")) return;
-    }
-  }
+  // #54: Verb warning is informational only — never blocks saving
 
   const due = document.getElementById('cDue').value;
   const isIdea      = type === 'idea';
@@ -2494,7 +2506,7 @@ function renderPipelineCard(task, extraActions='') {
     ? "showSubtaskBlock('" + task.id + "')"
     : "completeTask('" + task.id + "')";
   const checkTitle = (sp && sp.done < sp.total) ? 'Complete all subtasks first' : '';
-  return `<div class="task-card" data-id="${task.id}" data-iq="${iq}">
+  return `<div class="task-card" data-id="${task.id}" data-iq="${iq}" data-status="${task.status}">
     <button class="task-check" onclick="${checkFn}" title="${checkTitle}"></button>
     <div class="task-body">
       <div class="task-name">${escHtml(task.name)}</div>
@@ -3752,6 +3764,25 @@ function getSubtaskProgress(taskId) {
 function showSubtaskBlock(id) {
   toast('Complete all subtasks first', 'error');
   openEdit(id);
+}
+
+
+// ── COMPLETE FROM EDIT FORM (#60) ────────────────────────────────
+
+async function completeFromEditForm() {
+  const id = editingTaskId;
+  if (!id) return;
+  // Check subtasks
+  const incomplete = currentSubtasks.filter(s => !s.toDelete && !s.is_done);
+  if (incomplete.length) {
+    toast(`Complete all subtasks first — ${incomplete.length} remaining`, 'error');
+    return;
+  }
+  // Save any pending changes first
+  await saveSubtasks(id);
+  // Complete the task
+  await completeTask(id);
+  closeModal('captureModal');
 }
 
 function cancelFromEditForm() {
