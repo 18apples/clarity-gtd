@@ -1540,10 +1540,17 @@ async function loadTasks() {
       const tcs = await cr.json();
       const tcsArr = Array.isArray(tcs) ? tcs : [];
       state.tasks.forEach(t => {
-        const catIds = tcsArr.filter(tc=>tc.task_id===t.id).map(tc=>tc.category_id);
+        // Deduplicate category ids per task
+        const catIds = [...new Set(tcsArr.filter(tc=>tc.task_id===t.id).map(tc=>tc.category_id))];
         t._categories = state.categories.filter(c=>catIds.includes(c.id));
       });
     }
+    // B23: Deduplicate tasks by id before processing
+    // Supabase can return duplicate rows in some join scenarios
+    const taskMap = new Map();
+    state.tasks.forEach(t => { if (!taskMap.has(t.id)) taskMap.set(t.id, t); });
+    state.tasks = Array.from(taskMap.values());
+
     // Load subtask progress for all tasks
     if (state.tasks.length) {
       const tids = state.tasks.map(t=>t.id).join(',');
