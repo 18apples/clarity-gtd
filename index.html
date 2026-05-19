@@ -1554,7 +1554,7 @@ async function loadTasks() {
     // Load subtask progress for all tasks
     if (state.tasks.length) {
       const tids = state.tasks.map(t=>t.id).join(',');
-      const sr   = await supa(`subtasks?task_id=in.(${tids})&select=task_id,is_done`);
+      const sr   = await supa(`subtasks?task_id=in.(${tids})&select=id,task_id,is_done`);
       const subs = await sr.json();
       if (Array.isArray(subs)) {
         state.tasks.forEach(t => {
