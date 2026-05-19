@@ -3139,6 +3139,10 @@ function renderProjectDetail() {
   const allUnique = [...new Map(state.tasks.map(t=>[t.id,t])).values()];
   const ptasks = allUnique.filter(t=>t.project_id===p.id&&t.status!=='done'&&t.status!=='cancelled');
   const dtasks = allUnique.filter(t=>t.project_id===p.id&&(t.status==='done'||t.status==='cancelled'));
+  // Diagnostic: log what we're about to render
+  console.log('[B23] ptasks:', ptasks.length, ptasks.map(t=>t.name.slice(0,20)+'('+t.id.slice(0,8)+')'));
+  console.log('[B23] dtasks:', dtasks.length, dtasks.map(t=>t.name.slice(0,20)+'('+t.id.slice(0,8)+')'));
+  console.log('[B23] state.tasks total:', state.tasks.length, 'unique:', allUnique.length);
   let html = ptasks.length ? ptasks.map(t=>renderCard(t)).join('') : '<div class="empty-state" style="padding:24px 0"><div class="empty-sub">No open tasks. Add one above.</div></div>';
   if (dtasks.length) html += `<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin:12px 0 6px">Done / Cancelled</div>` + dtasks.map(t=>renderCard(t)).join('');
   document.getElementById('pdTaskList').innerHTML = html;
