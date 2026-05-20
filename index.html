@@ -840,6 +840,16 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
         <option value="idea">Idea — a thought, no action yet</option>
       </select>
     </div>
+    <div class="form-group" id="cStatusGroup" style="display:none">
+      <label class="form-label">Status</label>
+      <select id="cStatus">
+        <option value="inbox">📥 Inbox</option>
+        <option value="next">⚡ Next Action</option>
+        <option value="waiting">⏳ Waiting For</option>
+        <option value="someday">🌙 Someday</option>
+        <option value="reference">📚 Reference</option>
+      </select>
+    </div>
     <div class="form-group">
       <label class="form-label">Categories <span style="color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0">(tap to select)</span></label>
       <div id="inlineCatPicker" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px;max-height:220px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain"></div>
@@ -1556,7 +1566,7 @@ async function loadCoreData() {
 
 async function loadTasks() {
   try {
-    const res = await supa('tasks?select=id,name,notes,type,status,importance_speed,context,due_date,revisit_date,estimated_mins,reschedule_count,reschedule_reasons,recurrence_id,recur_pattern,current_count,target_count,project_id,created_at&order=created_at.desc');
+    const res = await supa('tasks?select=id,name,notes,type,status,importance_speed,context,due_date,revisit_date,estimated_mins,reschedule_count,reschedule_reasons,recurrence_id,recur_pattern,current_count,target_count,project_id,completed_at,cancelled_at,cancellation_reason,created_at&order=created_at.desc');
     const data = await res.json();
     if (!Array.isArray(data)) {
       console.error('loadTasks error:', data);
@@ -2003,6 +2013,8 @@ function openCapture(prefill) {
   document.getElementById('recurTrack').classList.remove('on');
   document.getElementById('recurFields').style.display = 'none';
   document.querySelectorAll('.day-btn').forEach(b=>b.classList.remove('on'));
+  const skipEl = document.getElementById('rSkipBlackouts');
+  if (skipEl) skipEl.checked = false;
   // Restore due date group visibility
   const dueDateGroupCap = document.getElementById('cDue')?.closest('.form-group');
   if (dueDateGroupCap) dueDateGroupCap.style.display = 'flex';
@@ -2055,10 +2067,26 @@ function openEdit(id) {
   document.getElementById('subtaskNewHint').style.display     = 'none';
   document.getElementById('subtaskInputRow').style.display    = 'flex';
   document.getElementById('completeTaskBtnWrap').style.display = 'block';
-  const sgEl = document.getElementById('cStatusGroup');
-  const stEl = document.getElementById('cStatus');
+  const sgEl  = document.getElementById('cStatusGroup');
+  const stEl  = document.getElementById('cStatus');
+  const siEl  = document.getElementById('cStatusInfo');
   if(sgEl) sgEl.style.display = 'flex';
   if(stEl) stEl.value = task.status || 'inbox';
+  // Show completion/cancellation info for done/cancelled tasks
+  if (siEl) {
+    if (task.status === 'done' && task.completed_at) {
+      siEl.style.display = 'block';
+      siEl.style.color   = 'var(--accent)';
+      siEl.innerHTML     = `✓ Completed on ${task.completed_at.split('T')[0]}`;
+    } else if (task.status === 'cancelled' && task.cancelled_at) {
+      siEl.style.display = 'block';
+      siEl.style.color   = 'var(--red)';
+      siEl.innerHTML     = `✕ Cancelled on ${task.cancelled_at.split('T')[0]}`
+        + (task.cancellation_reason ? `<br><span style="color:var(--text2)">Reason: ${escHtml(task.cancellation_reason)}</span>` : '');
+    } else {
+      siEl.style.display = 'none';
+    }
+  }
   // B15: If recurring task, load recurrence template and set toggle ON
   if (task.type === 'recurring' && task.recurrence_id) {
     loadRecurrenceIntoForm(task);
@@ -2186,7 +2214,7 @@ async function saveTask() {
     notes:            document.getElementById('cNotes').value.trim()||null,
     type:             isRecurring ? 'recurring' : type,
     status:           editingTaskId
-      ? document.getElementById('cStatus').value
+      ? (()=>{ const s=document.getElementById('cStatus')?.value; return (s&&s!=='done'&&s!=='cancelled')?s:undefined; })()
       : (isIdea && catPickerSel.length > 0 ? 'someday' : 'inbox'),
     importance_speed: document.getElementById('cIQ').value||null,
     context:          document.getElementById('cContext').value||null,
