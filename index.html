@@ -976,15 +976,7 @@ option[value="done"],option[value="cancelled"]{color:var(--text3)}
         </div>
         <div class="form-group"><label class="form-label">First due date</label><input type="date" id="rFirstDue"></div>
       </div>
-      <!-- Skip blackouts — outside recurFields for reliable click handling -->
-      <div id="rSkipBlackoutsRow" style="display:none;align-items:center;justify-content:space-between;padding-top:4px;border-top:1px solid var(--border)">
-        <div>
-          <div style="font-size:13px;font-weight:500">Skip blackout periods</div>
-          <div style="font-size:11px;color:var(--text3);margin-top:2px">Roll forward past unavailable dates</div>
-        </div>
-        <input type="checkbox" id="rSkipBlackouts"
-          style="width:20px;height:20px;accent-color:var(--accent);cursor:pointer;flex-shrink:0">
-      </div>
+
     </div>
     <div class="form-group">
       <label class="form-label">Notes (optional)</label>
@@ -2019,10 +2011,7 @@ function openCapture(prefill) {
   document.getElementById('recurTrack').classList.remove('on');
   document.getElementById('recurFields').style.display = 'none';
   document.querySelectorAll('.day-btn').forEach(b=>b.classList.remove('on'));
-  const skipEl = document.getElementById('rSkipBlackouts');
-  if (skipEl) skipEl.checked = false;
-  const skipRow = document.getElementById('rSkipBlackoutsRow');
-  if (skipRow) skipRow.style.display = 'none';
+  // skip_blackouts UI removed
   // Restore due date group visibility
   const dueDateGroupCap = document.getElementById('cDue')?.closest('.form-group');
   if (dueDateGroupCap) dueDateGroupCap.style.display = 'flex';
@@ -2138,10 +2127,7 @@ async function loadRecurrenceIntoForm(task) {
         b.classList.toggle('on', selectedDays.includes(parseInt(b.dataset.day)));
       });
     }
-    // skip_blackouts
-    const skipEl = document.getElementById('rSkipBlackouts');
-    if (skipEl) skipEl.checked = tmpl.skip_blackouts || false;
-    document.getElementById('rSkipBlackoutsRow').style.display = 'flex';
+    // skip_blackouts loaded but UI removed — keep for future
   } catch(e) {
     console.error('loadRecurrenceIntoForm:', e);
   }
@@ -2201,7 +2187,7 @@ function buildRecurPayload(taskPayload, taskDue) {
     recur_random_max_days: pattern==='random' ? parseInt(document.getElementById('rRandMax').value) : null,
     recur_anchor_date: ['monthly','yearly','weekly'].includes(pattern) ? (document.getElementById('rAnchorDate').value||null) : null,
     next_occurrence:   document.getElementById('rFirstDue').value || taskDue || null,
-    skip_blackouts:    document.getElementById('rSkipBlackouts')?.checked || false,
+    skip_blackouts:    false, // UI removed — always false until rebuilt
     is_active: true,
   };
 }
@@ -2329,7 +2315,6 @@ function toggleRecur() {
   recurOn = !recurOn;
   document.getElementById('recurTrack').classList.toggle('on',recurOn);
   document.getElementById('recurFields').style.display          = recurOn?'flex':'none';
-  document.getElementById('rSkipBlackoutsRow').style.display    = recurOn?'flex':'none';
   // Hide the top-level due date when recurring is on — First Due Date drives it
   const dueDateGroup = document.getElementById('cDue')?.closest('.form-group');
   if (dueDateGroup) dueDateGroup.style.display = recurOn ? 'none' : 'flex';
