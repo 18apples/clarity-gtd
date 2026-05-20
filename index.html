@@ -280,6 +280,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
 .pd-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px}
 .pd-value{font-size:13px;color:var(--text)}
 
+option[value="done"],option[value="cancelled"]{color:var(--text3)}
 ::-webkit-scrollbar{width:5px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
@@ -972,11 +973,15 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
         </div>
         <div class="form-group"><label class="form-label">First due date</label><input type="date" id="rFirstDue"></div>
         <div class="form-group">
-          <label class="form-label" style="display:flex;align-items:center;gap:8px;cursor:pointer">
-            <input type="checkbox" id="rSkipBlackouts" style="width:16px;height:16px;accent-color:var(--accent)">
-            <span>Skip blackout periods automatically</span>
-          </label>
-          <div class="hint">When a future instance falls on a blackout period, it will roll forward to the next available day.</div>
+          <div style="display:flex;align-items:center;gap:10px;cursor:pointer" onclick="document.getElementById('rSkipBlackouts').click()">
+            <input type="checkbox" id="rSkipBlackouts"
+              style="width:18px;height:18px;accent-color:var(--accent);cursor:pointer;flex-shrink:0"
+              onclick="event.stopPropagation()">
+            <div>
+              <div style="font-size:13px;color:var(--text)">Skip blackout periods automatically</div>
+              <div class="hint" style="margin-top:2px">Future instances that land on a blackout will roll forward to the next clear day.</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -2074,14 +2079,16 @@ function openEdit(id) {
   if(stEl) stEl.value = task.status || 'inbox';
   // Show completion/cancellation info for done/cancelled tasks
   if (siEl) {
-    if (task.status === 'done' && task.completed_at) {
+    if (task.status === 'done') {
       siEl.style.display = 'block';
       siEl.style.color   = 'var(--accent)';
-      siEl.innerHTML     = `✓ Completed on ${task.completed_at.split('T')[0]}`;
-    } else if (task.status === 'cancelled' && task.cancelled_at) {
+      siEl.innerHTML     = task.completed_at
+        ? `✓ Completed on ${task.completed_at.split('T')[0]}`
+        : '✓ Completed';
+    } else if (task.status === 'cancelled') {
       siEl.style.display = 'block';
       siEl.style.color   = 'var(--red)';
-      siEl.innerHTML     = `✕ Cancelled on ${task.cancelled_at.split('T')[0]}`
+      siEl.innerHTML     = (task.cancelled_at ? `✕ Cancelled on ${task.cancelled_at.split('T')[0]}` : '✕ Cancelled')
         + (task.cancellation_reason ? `<br><span style="color:var(--text2)">Reason: ${escHtml(task.cancellation_reason)}</span>` : '');
     } else {
       siEl.style.display = 'none';
