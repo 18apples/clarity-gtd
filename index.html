@@ -2016,7 +2016,7 @@ function openCapture(prefill) {
   document.getElementById('subtaskList').innerHTML = '';
   document.getElementById('cancelTaskBtnWrap').style.display    = 'none';
   document.getElementById('completeTaskBtnWrap').style.display  = 'none';
-  document.getElementById('cStatusGroup').style.display         = 'none';
+  const sg = document.getElementById('cStatusGroup'); if(sg) sg.style.display = 'none';
   currentSubtasks = [];
   document.getElementById('captureModal').classList.add('open');
   setTimeout(()=>document.getElementById('cName').focus(),200);
@@ -2055,8 +2055,10 @@ function openEdit(id) {
   document.getElementById('subtaskNewHint').style.display     = 'none';
   document.getElementById('subtaskInputRow').style.display    = 'flex';
   document.getElementById('completeTaskBtnWrap').style.display = 'block';
-  document.getElementById('cStatusGroup').style.display       = 'flex';
-  document.getElementById('cStatus').value                    = task.status || 'inbox';
+  const sgEl = document.getElementById('cStatusGroup');
+  const stEl = document.getElementById('cStatus');
+  if(sgEl) sgEl.style.display = 'flex';
+  if(stEl) stEl.value = task.status || 'inbox';
   // B15: If recurring task, load recurrence template and set toggle ON
   if (task.type === 'recurring' && task.recurrence_id) {
     loadRecurrenceIntoForm(task);
