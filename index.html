@@ -115,6 +115,10 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
 .task-card[data-status="someday"]::before{background:var(--blue)}
 .task-card[data-status="inbox"]::before{background:var(--border2)}
 .task-card:hover{border-color:var(--border2)}
+.task-card.is-done{opacity:.6;background:var(--surface2)}
+.task-card.is-done .task-name{text-decoration:line-through;color:var(--text3)}
+.task-card.is-cancelled{opacity:.5;background:var(--surface2)}
+.task-card.is-cancelled .task-name{text-decoration:line-through;color:var(--text3)}
 .task-check{width:20px;height:20px;border:1.5px solid var(--border2);border-radius:5px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:none;transition:all .15s;margin-top:1px}
 .task-check:hover{border-color:var(--accent)}
 .task-check.checked{background:var(--accent);border-color:var(--accent)}
@@ -860,8 +864,14 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">Due Date</label>
-        <input type="date" id="cDue" onchange="checkDueDateBlackout(this.value,'cDueBlackoutWarn')">
-        <div id="cDueBlackoutWarn" style="display:none;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--orange);margin-top:3px;line-height:1.5"></div>
+        <input type="date" id="cDue" onchange="onDueDateChange(this.value)">
+        <div id="cDueBlackoutWarn" style="display:none;background:#f0a85510;border:1px solid #f0a85530;border-radius:var(--r-sm);padding:8px 10px;margin-top:4px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--orange);line-height:1.5;margin-bottom:6px" id="cDueBlackoutMsg"></div>
+          <div style="display:flex;gap:6px">
+            <button type="button" class="btn btn-sm btn-secondary" style="font-size:10px;padding:3px 8px" onclick="skipToNextAvailable()">Skip to next available day</button>
+            <button type="button" class="btn btn-sm btn-ghost" style="font-size:10px;padding:3px 8px" onclick="keepBlackoutDate()">Keep this date</button>
+          </div>
+        </div>
       </div>
       <div class="form-group">
         <label class="form-label">Estimated Time (mins)</label>
@@ -951,6 +961,13 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
           <div class="form-group"><label class="form-label" id="rAnchorLabel">Anchor date</label><input type="date" id="rAnchorDate"></div>
         </div>
         <div class="form-group"><label class="form-label">First due date</label><input type="date" id="rFirstDue"></div>
+        <div class="form-group">
+          <label class="form-label" style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="rSkipBlackouts" style="width:16px;height:16px;accent-color:var(--accent)">
+            <span>Skip blackout periods automatically</span>
+          </label>
+          <div class="hint">When a future instance falls on a blackout period, it will roll forward to the next available day.</div>
+        </div>
       </div>
     </div>
     <div class="form-group">
@@ -1766,10 +1783,14 @@ function renderCard(task, overdue=false) {
     ? "showSubtaskBlock('" + task.id + "')"
     : "completeTask('" + task.id + "')";
   const checkTitle = (sp && sp.done < sp.total) ? 'Complete all subtasks first' : '';
-  return `<div class="task-card" data-id="${task.id}" data-iq="${iq}" data-status="${task.status}">
+  const isDone      = task.status === 'done';
+  const isCancelled = task.status === 'cancelled';
+  const doneClass   = isDone ? ' is-done' : isCancelled ? ' is-cancelled' : '';
+  const namePrefix  = isDone ? '✓ ' : isCancelled ? '✕ ' : '';
+  return `<div class="task-card${doneClass}" data-id="${task.id}" data-iq="${iq}" data-status="${task.status}">
     <button class="task-check" onclick="${checkFn}" title="${checkTitle}"></button>
     <div class="task-body">
-      <div class="task-name">${escHtml(task.name)}</div>
+      <div class="task-name">${namePrefix}${escHtml(task.name)}</div>
       ${task.notes?`<div class="task-notes">${escHtml(task.notes.slice(0,100))}${task.notes.length>100?'…':''}</div>`:''}
       <div class="task-meta">${typeTag}${iqTag}${cats}${dueTag}${estTag}${subtaskBadge}</div>
     </div>
@@ -1995,6 +2016,7 @@ function openCapture(prefill) {
   document.getElementById('subtaskList').innerHTML = '';
   document.getElementById('cancelTaskBtnWrap').style.display    = 'none';
   document.getElementById('completeTaskBtnWrap').style.display  = 'none';
+  document.getElementById('cStatusGroup').style.display         = 'none';
   currentSubtasks = [];
   document.getElementById('captureModal').classList.add('open');
   setTimeout(()=>document.getElementById('cName').focus(),200);
@@ -2033,6 +2055,8 @@ function openEdit(id) {
   document.getElementById('subtaskNewHint').style.display     = 'none';
   document.getElementById('subtaskInputRow').style.display    = 'flex';
   document.getElementById('completeTaskBtnWrap').style.display = 'block';
+  document.getElementById('cStatusGroup').style.display       = 'flex';
+  document.getElementById('cStatus').value                    = task.status || 'inbox';
   // B15: If recurring task, load recurrence template and set toggle ON
   if (task.type === 'recurring' && task.recurrence_id) {
     loadRecurrenceIntoForm(task);
@@ -2074,6 +2098,9 @@ async function loadRecurrenceIntoForm(task) {
         b.classList.toggle('on', selectedDays.includes(parseInt(b.dataset.day)));
       });
     }
+    // skip_blackouts
+    const skipEl = document.getElementById('rSkipBlackouts');
+    if (skipEl) skipEl.checked = tmpl.skip_blackouts || false;
   } catch(e) {
     console.error('loadRecurrenceIntoForm:', e);
   }
@@ -2133,6 +2160,7 @@ function buildRecurPayload(taskPayload, taskDue) {
     recur_random_max_days: pattern==='random' ? parseInt(document.getElementById('rRandMax').value) : null,
     recur_anchor_date: ['monthly','yearly','weekly'].includes(pattern) ? (document.getElementById('rAnchorDate').value||null) : null,
     next_occurrence:   document.getElementById('rFirstDue').value || taskDue || null,
+    skip_blackouts:    document.getElementById('rSkipBlackouts')?.checked || false,
     is_active: true,
   };
 }
@@ -2155,7 +2183,9 @@ async function saveTask() {
     name,
     notes:            document.getElementById('cNotes').value.trim()||null,
     type:             isRecurring ? 'recurring' : type,
-    status:           editingTaskId ? undefined : (isIdea && catPickerSel.length > 0 ? 'someday' : 'inbox'),
+    status:           editingTaskId
+      ? document.getElementById('cStatus').value
+      : (isIdea && catPickerSel.length > 0 ? 'someday' : 'inbox'),
     importance_speed: document.getElementById('cIQ').value||null,
     context:          document.getElementById('cContext').value||null,
     due_date:         due||null,
@@ -2197,7 +2227,9 @@ async function saveTask() {
     payload.type          = 'recurring';
     payload.target_count  = rp.recur_times_per_day;
     payload.current_count = wasRecurring ? undefined : 0;
-    payload.due_date      = rp.next_occurrence||due||null;
+    // If skip_blackouts is set, roll the due date past any blackout periods
+    const rawDue = rp.next_occurrence||due||null;
+    payload.due_date = (rp.skip_blackouts && rawDue) ? rollPastBlackouts(rawDue) : rawDue;
 
   } else if (editingTaskId && wasRecurring) {
     // Scenario 4: Converting recurring to non-recurring — deactivate template
@@ -2286,6 +2318,57 @@ function toggleDay(day) {
 
 
 
+
+
+// ── BLACKOUT DATE HANDLING (#65) ─────────────────────────────────
+
+function onDueDateChange(dateStr) {
+  const warn    = document.getElementById('cDueBlackoutWarn');
+  const msg     = document.getElementById('cDueBlackoutMsg');
+  if (!warn || !msg) return;
+  if (!dateStr) { warn.style.display='none'; return; }
+  const blackout = isBlackoutDate(dateStr);
+  if (blackout) {
+    warn.style.display = 'block';
+    msg.textContent    = `⚠ ${dateStr} falls in blackout period "${blackout.label}" (${blackout.start_date} → ${blackout.end_date})`;
+  } else {
+    warn.style.display = 'none';
+  }
+}
+
+function skipToNextAvailable() {
+  const current = document.getElementById('cDue').value;
+  if (!current) return;
+  let d = new Date(current + 'T00:00:00');
+  // Advance past all blackout periods
+  for (let i = 0; i < 365; i++) {
+    d.setDate(d.getDate() + 1);
+    const dStr = d2s(d);
+    if (!isBlackoutDate(dStr)) {
+      document.getElementById('cDue').value = dStr;
+      onDueDateChange(dStr);
+      toast('Due date moved to ' + dStr, 'success');
+      return;
+    }
+  }
+}
+
+function keepBlackoutDate() {
+  document.getElementById('cDueBlackoutWarn').style.display = 'none';
+  toast('Date kept — blackout warning will show on the task card', 'success');
+}
+
+// Roll a date forward past any blackout periods
+function rollPastBlackouts(dateStr) {
+  if (!state.blackouts.length) return dateStr;
+  let d = new Date(dateStr + 'T00:00:00');
+  for (let i = 0; i < 365; i++) {
+    const dStr = d2s(d);
+    if (!isBlackoutDate(dStr)) return dStr;
+    d.setDate(d.getDate() + 1);
+  }
+  return dateStr;
+}
 
 // ── BLACKOUT PERIODS (#29) ────────────────────────────────────────
 
@@ -2506,10 +2589,14 @@ function renderPipelineCard(task, extraActions='') {
     ? "showSubtaskBlock('" + task.id + "')"
     : "completeTask('" + task.id + "')";
   const checkTitle = (sp && sp.done < sp.total) ? 'Complete all subtasks first' : '';
-  return `<div class="task-card" data-id="${task.id}" data-iq="${iq}" data-status="${task.status}">
+  const isDone      = task.status === 'done';
+  const isCancelled = task.status === 'cancelled';
+  const doneClass   = isDone ? ' is-done' : isCancelled ? ' is-cancelled' : '';
+  const namePrefix  = isDone ? '✓ ' : isCancelled ? '✕ ' : '';
+  return `<div class="task-card${doneClass}" data-id="${task.id}" data-iq="${iq}" data-status="${task.status}">
     <button class="task-check" onclick="${checkFn}" title="${checkTitle}"></button>
     <div class="task-body">
-      <div class="task-name">${escHtml(task.name)}</div>
+      <div class="task-name">${namePrefix}${escHtml(task.name)}</div>
       ${task.notes?`<div class="task-notes">${escHtml(task.notes.slice(0,100))}${task.notes.length>100?'…':''}</div>`:''}
       <div class="task-meta">${typeTag}${iqTag}${ctxTag}${cats}${projTag}${dueTag}${revisitTag}${estTag}${subtaskBadge}</div>
     </div>
@@ -3156,7 +3243,16 @@ function renderProjectDetail() {
   console.log('[B23] dtasks:', dtasks.length, dtasks.map(t=>t.name.slice(0,20)+'('+t.id.slice(0,8)+')'));
   console.log('[B23] state.tasks total:', state.tasks.length, 'unique:', allUnique.length);
   let html = ptasks.length ? ptasks.map(t=>renderCard(t)).join('') : '<div class="empty-state" style="padding:24px 0"><div class="empty-sub">No open tasks. Add one above.</div></div>';
-  if (dtasks.length) html += `<div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin:12px 0 6px">Done / Cancelled</div>` + dtasks.map(t=>renderCard(t)).join('');
+  if (dtasks.length) {
+    html += `<div style="margin-top:12px">
+      <button onclick="togglePdDone(this)" style="background:none;border:none;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;padding:6px 0;display:flex;align-items:center;gap:6px">
+        <span class="pd-done-chevron">▶</span> ${dtasks.length} completed / cancelled
+      </button>
+      <div class="pd-done-list" style="display:none;flex-direction:column;gap:8px;margin-top:6px">
+        ${dtasks.map(t=>renderCard(t)).join('')}
+      </div>
+    </div>`;
+  }
   document.getElementById('pdTaskList').innerHTML = html;
 }
 
@@ -3785,6 +3881,14 @@ async function completeFromEditForm() {
   closeModal('captureModal');
 }
 
+function togglePdDone(btn) {
+  const list    = btn.nextElementSibling;
+  const chevron = btn.querySelector('.pd-done-chevron');
+  const open    = list.style.display === 'flex';
+  list.style.display    = open ? 'none' : 'flex';
+  chevron.style.transform = open ? 'rotate(0deg)' : 'rotate(90deg)';
+}
+
 function cancelFromEditForm() {
   const id = editingTaskId;
   if (!id) return;
@@ -3834,7 +3938,7 @@ function renderGlobalSearch() {
       <div style="display:flex;align-items:flex-start;gap:8px">
         <span style="font-size:12px;color:${color};flex-shrink:0;padding-top:1px">${icon}</span>
         <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:500;line-height:1.3">${hi(t.name)}</div>
+          <div style="font-size:13px;font-weight:500;line-height:1.3;${t.status==='done'||t.status==='cancelled'?'text-decoration:line-through;color:var(--text3)':''}">${t.status==='done'?'✓ ':t.status==='cancelled'?'✕ ':''}${hi(t.name)}</div>
           ${t.notes?`<div style="font-size:11px;color:var(--text3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${hi(t.notes.slice(0,100))}</div>`:''}
           <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px">${cats}${t.due_date?`<span class="tag tag-cat" style="font-size:10px">📅 ${t.due_date}</span>`:''}</div>
         </div>
