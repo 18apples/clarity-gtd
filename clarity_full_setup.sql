@@ -818,3 +818,13 @@ grant select, insert, update, delete on public.subtasks to service_role;
 grant select on public.subtasks to anon;
  
 select 'subtasks table created ✓' as status;
+
+
+-- ============================================================
+-- CLARITY GTD — ADD skip_blackouts TO RECURRENCES
+ 
+alter table recurrences
+  add column if not exists skip_blackouts boolean not null default false;
+ 
+-- Confirm
+select 'skip_blackouts column added ✓' as status;
