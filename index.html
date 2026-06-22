@@ -477,7 +477,7 @@ option[value="done"],option[value="cancelled"]{color:var(--text3)}
   <main class="app-view" id="viewInbox" style="display:none">
     <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap">
       <div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Process these</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Needs review</div>
         <div style="font-family:'Instrument Serif',serif;font-size:28px;letter-spacing:-.8px;line-height:1">Inbox</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
@@ -1277,49 +1277,6 @@ option[value="done"],option[value="cancelled"]{color:var(--text3)}
 </div>
 
 
-<!-- PROCESS TASK MODAL (Inbox) -->
-<div class="modal-overlay" id="processModal">
-  <div class="modal" style="max-width:460px">
-    <div class="modal-handle"></div>
-    <button class="modal-close" onclick="closeModal('processModal')">✕</button>
-    <div class="modal-title">Process Task</div>
-    <div id="processTaskName" style="font-size:14px;font-weight:500;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);line-height:1.4"></div>
-    <div class="form-group">
-      <label class="form-label">What is this?</label>
-      <select id="processStatus">
-        <option value="next">Next Action — I will do this</option>
-        <option value="waiting">Waiting For — blocked on someone/something</option>
-        <option value="someday">Someday — maybe later</option>
-        <option value="reference">Reference — not actionable, keep for info</option>
-        <option value="cancelled">Cancel — not doing this</option>
-      </select>
-    </div>
-    <div class="form-group" id="processCancelReasonGroup" style="display:none">
-      <label class="form-label">Reason for cancelling</label>
-      <select id="processCancelReason">
-        <option value="">— select reason —</option>
-        <option value="no_longer_relevant">No longer relevant</option>
-        <option value="duplicate">Duplicate</option>
-        <option value="decided_against">Decided against it</option>
-        <option value="circumstances_changed">Circumstances changed</option>
-        <option value="other">Other</option>
-      </select>
-    </div>
-    <div class="form-group" id="processDueDateGroup">
-      <label class="form-label">Due Date (optional)</label>
-      <input type="date" id="processDueDate">
-    </div>
-    <div class="form-group" id="processRevisitGroup" style="display:none">
-      <label class="form-label">Revisit Date (optional — resurfaces to inbox on this date)</label>
-      <input type="date" id="processRevisitDate">
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-sm btn-secondary" onclick="closeModal('processModal')">Cancel</button>
-      <button class="btn btn-sm" onclick="confirmProcess()">Process</button>
-    </div>
-  </div>
-</div>
-
 <!-- PROMOTE IDEA MODAL -->
 <div class="modal-overlay" id="promoteModal">
   <div class="modal" style="max-width:400px">
@@ -1762,7 +1719,7 @@ function renderFocus() {
   const ia = document.getElementById('inboxAlert');
   if (inbox.length) {
     ia.style.display = 'flex';
-    document.getElementById('inboxAlertText').textContent = `${inbox.length} item${inbox.length>1?'s':''} in inbox need processing`;
+    document.getElementById('inboxAlertText').textContent = `${inbox.length} item${inbox.length>1?'s':''} need review`;
   } else {
     ia.style.display = 'none';
   }
@@ -2025,7 +1982,8 @@ function openCapture(prefill) {
   document.getElementById('subtaskList').innerHTML = '';
   document.getElementById('cancelTaskBtnWrap').style.display    = 'none';
   document.getElementById('completeTaskBtnWrap').style.display  = 'none';
-  const sg = document.getElementById('cStatusGroup'); if(sg) sg.style.display = 'none';
+  const sg = document.getElementById('cStatusGroup'); if(sg) { sg.style.display = 'flex'; sg.dataset.editing = 'false'; }
+  const stNew = document.getElementById('cStatus'); if(stNew) stNew.value = 'next';
   currentSubtasks = [];
   document.getElementById('captureModal').classList.add('open');
   setTimeout(()=>document.getElementById('cName').focus(),200);
@@ -2067,7 +2025,7 @@ function openEdit(id) {
   const sgEl  = document.getElementById('cStatusGroup');
   const stEl  = document.getElementById('cStatus');
   const siEl  = document.getElementById('cStatusInfo');
-  if(sgEl) sgEl.style.display = 'flex';
+  if(sgEl) { sgEl.style.display = 'flex'; sgEl.dataset.editing = 'true'; }
   if(stEl) stEl.value = task.status || 'inbox';
   // Show completion/cancellation info for done/cancelled tasks
   if (siEl) {
@@ -2151,6 +2109,9 @@ function onTypeChange() {
   document.getElementById('verbWarn').classList.remove('show');
   document.getElementById('ideaHint').style.display  = isIdea?'block':'none';
   document.getElementById('recurWrap').style.display = isIdea?'none':'block';
+  // #71: Status field doesn't apply to ideas — they route via category (someday) or stay as idea
+  const sg = document.getElementById('cStatusGroup');
+  if (sg && sg.dataset.editing !== 'true') sg.style.display = isIdea ? 'none' : 'flex';
 }
 
 function populateProjectSelect(selected) {
@@ -2212,7 +2173,7 @@ async function saveTask() {
     type:             isRecurring ? 'recurring' : type,
     status:           editingTaskId
       ? (()=>{ const s=document.getElementById('cStatus')?.value; return (s&&s!=='done'&&s!=='cancelled')?s:undefined; })()
-      : (isIdea && catPickerSel.length > 0 ? 'someday' : 'inbox'),
+      : (isIdea ? (catPickerSel.length > 0 ? 'someday' : 'inbox') : (document.getElementById('cStatus')?.value || 'next')),
     importance_speed: document.getElementById('cIQ').value||null,
     context:          document.getElementById('cContext').value||null,
     due_date:         due||null,
@@ -2858,8 +2819,10 @@ function goToInboxFiltered(type, id, taskType, taskStatus) {
 }
 
 // ── 24. INBOX ─────────────────────────────────────────────────────
-
-let processingTaskId = null;
+// #71: Inbox no longer has a "Process" step. New tasks normally save
+// as status=next. Inbox only receives tasks from bulk imports / direct
+// DB inserts that bypass the form (e.g. SQL imports). Opening a task
+// here just uses the normal edit form, which has a Status field.
 
 function renderInbox() {
   // Sync search from input
@@ -2946,56 +2909,12 @@ function renderInbox() {
   if (!tasks.length) {
     list.innerHTML = hasFilter
       ? pipelineEmpty('🔍','No matches','Try different filters or clear them.')
-      : pipelineEmpty('📥','Inbox zero!','Nothing to process. Great work.');
+      : pipelineEmpty('📥','Inbox zero!','Nothing needs review. Great work.');
     return;
   }
-  list.innerHTML = tasks.map(t => renderPipelineCard(t,
-    `<button class="btn-icon" style="font-size:12px;color:var(--accent)" title="Process" onclick="openProcess('${t.id}')">→</button>`
-  )).join('');
-}
-
-function openProcess(id) {
-  const task = state.tasks.find(t=>t.id===id);
-  if (!task) return;
-  processingTaskId = id;
-  document.getElementById('processTaskName').textContent = task.name;
-  document.getElementById('processStatus').value = 'next';
-  document.getElementById('processDueDate').value = task.due_date||'';
-  document.getElementById('processCancelReasonGroup').style.display = 'none';
-  document.getElementById('processDueDateGroup').style.display = 'flex';
-  document.getElementById('processRevisitGroup').style.display = 'none';
-  document.getElementById('processModal').classList.add('open');
-}
-
-document.addEventListener('change', e => {
-  if (e.target.id === 'processStatus') {
-    const v = e.target.value;
-    document.getElementById('processCancelReasonGroup').style.display = v==='cancelled'?'flex':'none';
-    document.getElementById('processDueDateGroup').style.display      = v==='next'||v==='waiting'?'flex':'none';
-    document.getElementById('processRevisitGroup').style.display      = v==='someday'?'flex':'none';
-  }
-});
-
-async function confirmProcess() {
-  const id     = processingTaskId;
-  const task   = state.tasks.find(t=>t.id===id);
-  const status = document.getElementById('processStatus').value;
-  if (status==='cancelled') {
-    const reason = document.getElementById('processCancelReason').value;
-    if (!reason) { toast('Please select a cancel reason','error'); return; }
-    await supa(`tasks?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({status:'cancelled',cancelled_at:new Date().toISOString(),cancellation_reason:reason})});
-  } else {
-    const patch = { status };
-    const due = document.getElementById('processDueDate').value;
-    const revisit = document.getElementById('processRevisitDate').value;
-    if (due) patch.due_date = due;
-    if (revisit) patch.revisit_date = revisit;
-    await supa(`tasks?id=eq.${id}`,{method:'PATCH',body:JSON.stringify(patch)});
-  }
-  toast('Task processed ✓','success');
-  closeModal('processModal');
-  await loadTasks();
-  renderInbox(); renderFocus(); renderNext(); renderWaiting(); renderSomeday();
+  // Each card's edit (✎) button already opens the normal edit form,
+  // which has the Status field — that replaces the old Process modal.
+  list.innerHTML = tasks.map(t => renderPipelineCard(t)).join('');
 }
 
 // ── 25. NEXT ACTIONS ──────────────────────────────────────────────
