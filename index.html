@@ -331,7 +331,6 @@ option[value="done"],option[value="cancelled"]{color:var(--text3)}
     <nav class="app-nav">
       <!-- Primary tabs -->
       <button class="nav-btn active" data-view="focus"    onclick="switchView('focus')">Focus</button>
-      <button class="nav-btn"        data-view="inbox"    onclick="switchView('inbox')">Inbox</button>
       <button class="nav-btn"        data-view="projects" onclick="switchView('projects')">Projects</button>
       <button class="nav-btn"        data-view="areas"    onclick="switchView('areas')">Life Areas</button>
       <button class="nav-btn"        data-view="calendar" onclick="switchView('calendar')">Calendar</button>
@@ -339,11 +338,13 @@ option[value="done"],option[value="cancelled"]{color:var(--text3)}
       <div class="nav-more-wrap" id="navMoreWrap">
         <button class="nav-more-btn" id="navMoreBtn" onclick="toggleNavMore()">More ▾</button>
         <div class="nav-dropdown" id="navDropdown">
+          <button class="nav-dropdown-btn" data-view="inbox"     onclick="switchView('inbox');closeNavMore()">📥 Inbox</button>
           <button class="nav-dropdown-btn" data-view="next"      onclick="switchView('next');closeNavMore()">⚡ Next</button>
           <button class="nav-dropdown-btn" data-view="waiting"   onclick="switchView('waiting');closeNavMore()">⏳ Waiting</button>
           <button class="nav-dropdown-btn" data-view="someday"   onclick="switchView('someday');closeNavMore()">🌙 Someday</button>
           <button class="nav-dropdown-btn" data-view="reference" onclick="switchView('reference');closeNavMore()">📚 Reference</button>
           <button class="nav-dropdown-btn" data-view="ideas"     onclick="switchView('ideas');closeNavMore()">💡 Ideas</button>
+          <button class="nav-dropdown-btn" data-view="analytics" onclick="switchView('analytics');closeNavMore()">📊 Analytics</button>
         </div>
       </div>
       <!-- Icon buttons -->
@@ -794,6 +795,40 @@ option[value="done"],option[value="cancelled"]{color:var(--text3)}
       </div>
     </div>
     <div id="calGrid" style="max-width:900px;width:100%;margin:0 auto"></div>
+  </main>
+
+  <!-- ANALYTICS VIEW -->
+  <main class="app-view" id="viewAnalytics" style="display:none;max-width:900px;width:100%">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Eisenhower Matrix</div>
+        <div style="font-family:'Instrument Serif',serif;font-size:28px;letter-spacing:-.8px;line-height:1">Analytics</div>
+      </div>
+    </div>
+
+    <!-- Completed vs Yet to Complete toggle -->
+    <div style="display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px;gap:2px;width:fit-content">
+      <button id="anStateCompleted" onclick="setAnalyticsState('completed')" style="background:var(--accent);color:#0a0a0b;border:none;padding:6px 14px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;cursor:pointer">Completed</button>
+      <button id="anStateOpen" onclick="setAnalyticsState('open')" style="background:none;color:var(--text2);border:none;padding:6px 14px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;cursor:pointer">Yet to Complete</button>
+    </div>
+
+    <!-- Day/Week/Month toggle — only relevant for Completed -->
+    <div id="anPeriodToggle" style="display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px;gap:2px;width:fit-content">
+      <button class="an-period-btn active" data-period="day"   onclick="setAnalyticsPeriod('day')" style="background:var(--surface3);color:var(--text);border:none;padding:5px 12px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;cursor:pointer">Day</button>
+      <button class="an-period-btn" data-period="week"  onclick="setAnalyticsPeriod('week')" style="background:none;color:var(--text2);border:none;padding:5px 12px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;cursor:pointer">Week</button>
+      <button class="an-period-btn" data-period="month" onclick="setAnalyticsPeriod('month')" style="background:none;color:var(--text2);border:none;padding:5px 12px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;cursor:pointer">Month</button>
+    </div>
+
+    <!-- Chart -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px" id="anChartWrap">
+      <div id="anChart" style="display:flex;flex-direction:column;gap:18px"></div>
+      <div style="display:flex;gap:16px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)"><span style="width:10px;height:10px;border-radius:2px;background:var(--accent);display:inline-block"></span> Done</div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)"><span style="width:10px;height:10px;border-radius:2px;background:var(--text3);display:inline-block"></span> Cancelled</div>
+      </div>
+    </div>
+
+    <div id="anInsight" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;font-size:13px;color:var(--text2);line-height:1.6"></div>
   </main>
 </div>
 
@@ -1800,7 +1835,12 @@ async function completeTask(id) {
     await finishRecurring(id, null); return;
   }
   await supa(`tasks?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({status:'done',completed_at:new Date().toISOString()})});
-  toast('Done ✓','success');
+  const prevStatus = task.status;
+  toastWithUndo('Done ✓', async () => {
+    await supa(`tasks?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({status:prevStatus,completed_at:null})});
+    toast('Undone — restored','success');
+    await loadTasks(); renderFocus();
+  });
   await loadTasks(); renderFocus();
 }
 
@@ -1900,9 +1940,18 @@ async function confirmReschedule() {
   if(!reason){toast('Please select a reason','error');return;}
   if(reason==='other'&&!other){toast('Please describe the reason','error');return;}
   const finalReason=reason==='other'?other:reason;
-  const newCount=(task.reschedule_count||0)+1;
-  await supa(`tasks?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({due_date:newDate,reschedule_count:newCount,reschedule_reasons:[...(task.reschedule_reasons||[]),finalReason]})});
-  toast('Task rescheduled','success'); closeModal('rescheduleModal'); await loadTasks(); renderFocus();
+  const prevDate = task.due_date;
+  const prevCount = task.reschedule_count || 0;
+  const prevReasons = task.reschedule_reasons || [];
+  const newCount=prevCount+1;
+  await supa(`tasks?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({due_date:newDate,reschedule_count:newCount,reschedule_reasons:[...prevReasons,finalReason]})});
+  closeModal('rescheduleModal');
+  toastWithUndo('Task rescheduled', async () => {
+    await supa(`tasks?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({due_date:prevDate,reschedule_count:prevCount,reschedule_reasons:prevReasons})});
+    toast('Undone — restored','success');
+    await loadTasks(); renderFocus();
+  });
+  await loadTasks(); renderFocus();
 }
 
 // ── CAPTURE ───────────────────────────────────────────────
@@ -3967,6 +4016,7 @@ async function confirmCancel() {
   if (reason === 'other' && !other) { toast('Please describe the reason', 'error'); return; }
   const finalReason = reason === 'other' ? other : reason;
 
+  const prevStatus = task.status;
   await supa(`tasks?id=eq.${id}`, {
     method: 'PATCH',
     body: JSON.stringify({
@@ -3977,15 +4027,24 @@ async function confirmCancel() {
   });
 
   // If recurring — also deactivate the recurrence template
+  let wasRecurringDeactivated = false;
   if (task.type === 'recurring' && task.recurrence_id) {
     await supa(`recurrences?id=eq.${task.recurrence_id}`, {
       method: 'PATCH',
       body: JSON.stringify({ is_active: false })
     });
+    wasRecurringDeactivated = true;
   }
 
-  toast('Task cancelled', 'success');
   closeModal('cancelModal');
+  toastWithUndo('Task cancelled', async () => {
+    await supa(`tasks?id=eq.${id}`, {method:'PATCH', body:JSON.stringify({status:prevStatus, cancelled_at:null, cancellation_reason:null})});
+    if (wasRecurringDeactivated) {
+      await supa(`recurrences?id=eq.${task.recurrence_id}`, {method:'PATCH', body:JSON.stringify({is_active:true})});
+    }
+    toast('Undone — restored','success');
+    await loadTasks(); renderFocus();
+  });
   await loadTasks();
   renderFocus();
   renderCalendar();
@@ -4308,6 +4367,159 @@ async function changePassword(){
   else{const e=await res.json();errEl.textContent=e.message||'Could not update.';errEl.classList.add('show');}
 }
 
+
+// ── ANALYTICS — EISENHOWER MATRIX (#38) ──────────────────────────
+
+let analyticsState  = 'completed'; // 'completed' | 'open'
+let analyticsPeriod = 'day';       // 'day' | 'week' | 'month'
+
+const IQ_QUADRANTS = [
+  { key: 'important_urgent',         label: 'Important + Urgent' },
+  { key: 'important_not_urgent',     label: 'Important + Not Urgent' },
+  { key: 'not_important_urgent',     label: 'Not Important + Urgent' },
+  { key: 'not_important_not_urgent', label: 'Not Important + Not Urgent' },
+];
+
+function setAnalyticsState(state_) {
+  analyticsState = state_;
+  document.getElementById('anStateCompleted').style.background = state_==='completed' ? 'var(--accent)' : 'none';
+  document.getElementById('anStateCompleted').style.color      = state_==='completed' ? '#0a0a0b' : 'var(--text2)';
+  document.getElementById('anStateOpen').style.background      = state_==='open' ? 'var(--accent)' : 'none';
+  document.getElementById('anStateOpen').style.color           = state_==='open' ? '#0a0a0b' : 'var(--text2)';
+  // Period toggle only matters for Completed
+  document.getElementById('anPeriodToggle').style.display = state_==='completed' ? 'flex' : 'none';
+  renderAnalytics();
+}
+
+function setAnalyticsPeriod(period) {
+  analyticsPeriod = period;
+  document.querySelectorAll('.an-period-btn').forEach(b => {
+    const active = b.dataset.period === period;
+    b.style.background = active ? 'var(--surface3)' : 'none';
+    b.style.color       = active ? 'var(--text)' : 'var(--text2)';
+  });
+  renderAnalytics();
+}
+
+function getAnalyticsDateRange() {
+  const now = new Date();
+  let start;
+  if (analyticsPeriod === 'day') {
+    start = new Date(now); start.setHours(0,0,0,0);
+  } else if (analyticsPeriod === 'week') {
+    start = new Date(now);
+    const dow = now.getDay();
+    const diffToMon = dow === 0 ? -6 : 1 - dow;
+    start.setDate(now.getDate() + diffToMon); start.setHours(0,0,0,0);
+  } else {
+    start = new Date(now.getFullYear(), now.getMonth(), 1);
+  }
+  return start;
+}
+
+function renderAnalytics() {
+  const uniqueTasks = [...new Map(state.tasks.map(t=>[t.id,t])).values()];
+  let dataset;
+  let isTimeBound = analyticsState === 'completed';
+
+  if (analyticsState === 'completed') {
+    const start = getAnalyticsDateRange();
+    dataset = uniqueTasks.filter(t => {
+      if (t.status !== 'done' && t.status !== 'cancelled') return false;
+      const ts = t.status === 'done' ? t.completed_at : t.cancelled_at;
+      if (!ts) return false;
+      return new Date(ts) >= start;
+    });
+  } else {
+    // Yet to complete — all open/active tasks regardless of date
+    dataset = uniqueTasks.filter(t => t.status !== 'done' && t.status !== 'cancelled');
+  }
+
+  // Group by quadrant
+  const buckets = {};
+  IQ_QUADRANTS.forEach(q => buckets[q.key] = { done: 0, cancelled: 0, open: 0, doneMins: 0, cancelledMins: 0, openMins: 0 });
+  let untagged = { done: 0, cancelled: 0, open: 0 };
+
+  dataset.forEach(t => {
+    const mins = t.estimated_mins || 0;
+    const bucket = t.importance_speed && buckets[t.importance_speed] ? buckets[t.importance_speed] : null;
+    if (analyticsState === 'completed') {
+      if (t.status === 'done') {
+        if (bucket) { bucket.done++; bucket.doneMins += mins; } else untagged.done++;
+      } else if (t.status === 'cancelled') {
+        if (bucket) { bucket.cancelled++; bucket.cancelledMins += mins; } else untagged.cancelled++;
+      }
+    } else {
+      if (bucket) { bucket.open++; bucket.openMins += mins; } else untagged.open++;
+    }
+  });
+
+  // Find max for bar scaling
+  let maxVal = 1;
+  IQ_QUADRANTS.forEach(q => {
+    const b = buckets[q.key];
+    const total = analyticsState === 'completed' ? (b.done + b.cancelled) : b.open;
+    if (total > maxVal) maxVal = total;
+  });
+
+  // Render bar chart
+  const chartEl = document.getElementById('anChart');
+  chartEl.innerHTML = IQ_QUADRANTS.map(q => {
+    const b = buckets[q.key];
+    if (analyticsState === 'completed') {
+      const donePct = (b.done / maxVal) * 100;
+      const cancPct = (b.cancelled / maxVal) * 100;
+      const total = b.done + b.cancelled;
+      return `<div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline">
+          <span style="font-size:12px;color:var(--text2)">${q.label}</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3)">${total} task${total!==1?'s':''}</span>
+        </div>
+        <div style="display:flex;height:20px;border-radius:4px;overflow:hidden;background:var(--surface2)">
+          <div style="width:${donePct}%;background:var(--accent);transition:width .4s"></div>
+          <div style="width:${cancPct}%;background:var(--text3);transition:width .4s"></div>
+        </div>
+      </div>`;
+    } else {
+      const openPct = (b.open / maxVal) * 100;
+      return `<div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline">
+          <span style="font-size:12px;color:var(--text2)">${q.label}</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3)">${b.open} task${b.open!==1?'s':''}</span>
+        </div>
+        <div style="display:flex;height:20px;border-radius:4px;overflow:hidden;background:var(--surface2)">
+          <div style="width:${openPct}%;background:var(--accent);transition:width .4s"></div>
+        </div>
+      </div>`;
+    }
+  }).join('');
+
+  // Untagged note
+  const untaggedTotal = analyticsState === 'completed' ? (untagged.done + untagged.cancelled) : untagged.open;
+  if (untaggedTotal > 0) {
+    chartEl.innerHTML += `<div style="font-size:11px;color:var(--text3);padding-top:8px;border-top:1px solid var(--border)">+ ${untaggedTotal} task${untaggedTotal!==1?'s':''} with no importance/speed set</div>`;
+  }
+
+  // Insight text
+  const insightEl = document.getElementById('anInsight');
+  if (!dataset.length) {
+    insightEl.textContent = analyticsState === 'completed'
+      ? `No tasks completed or cancelled in this ${analyticsPeriod === 'day' ? 'day' : analyticsPeriod === 'week' ? 'week' : 'month'}.`
+      : 'No open tasks right now — Next, Waiting, and Someday are all clear.';
+  } else if (analyticsState === 'completed') {
+    const totalDone = IQ_QUADRANTS.reduce((s,q)=>s+buckets[q.key].done,0) + untagged.done;
+    const totalCancelled = IQ_QUADRANTS.reduce((s,q)=>s+buckets[q.key].cancelled,0) + untagged.cancelled;
+    const iuDone = buckets.important_urgent.done;
+    const inuDone = buckets.important_not_urgent.done;
+    const pctIU = totalDone ? Math.round((iuDone/totalDone)*100) : 0;
+    insightEl.innerHTML = `<strong style="color:var(--text)">${totalDone} done, ${totalCancelled} cancelled.</strong> ${pctIU}% of completed work was Important+Urgent` + (inuDone < iuDone ? ' — consider shifting more time to Important+Not Urgent to reduce firefighting.' : '.');
+  } else {
+    const totalOpen = IQ_QUADRANTS.reduce((s,q)=>s+buckets[q.key].open,0) + untagged.open;
+    const iuOpen = buckets.important_urgent.open;
+    insightEl.innerHTML = `<strong style="color:var(--text)">${totalOpen} open tasks.</strong>` + (iuOpen > 0 ? ` ${iuOpen} are Important+Urgent — these need attention first.` : ' Nothing urgent and important pending right now.');
+  }
+}
+
 // ── VIEW SWITCHING ────────────────────────────────────────
 function switchView(view){
   document.querySelectorAll('.app-view').forEach(v=>v.style.display='none');
@@ -4341,6 +4553,7 @@ function switchView(view){
   if(view==='someday')   renderSomeday();
   if(view==='reference') renderReference();
   if(view==='ideas')     renderIdeas();
+  if(view==='analytics') renderAnalytics();
 }
 
 function openSettingsPage() {
@@ -4358,6 +4571,30 @@ function toast(msg,type=''){
   const el=document.createElement('div');el.className=`toast${type?' '+type:''}`;el.textContent=msg;
   wrap.appendChild(el);setTimeout(()=>el.remove(),3200);
 }
+
+// #73: Toast with an Undo action — used for complete/cancel/reschedule
+function toastWithUndo(msg, undoFn) {
+  const wrap = document.getElementById('toastWrap');
+  const el = document.createElement('div');
+  el.className = 'toast success';
+  el.style.display = 'flex';
+  el.style.alignItems = 'center';
+  el.style.gap = '12px';
+  const msgSpan = document.createElement('span');
+  msgSpan.textContent = msg;
+  const undoBtn = document.createElement('button');
+  undoBtn.textContent = 'Undo';
+  undoBtn.style.cssText = 'background:none;border:1px solid currentColor;color:inherit;padding:3px 10px;border-radius:5px;font-family:JetBrains Mono,monospace;font-size:11px;font-weight:600;cursor:pointer;flex-shrink:0';
+  undoBtn.onclick = async () => {
+    el.remove();
+    await undoFn();
+  };
+  el.appendChild(msgSpan);
+  el.appendChild(undoBtn);
+  wrap.appendChild(el);
+  setTimeout(()=>el.remove(), 5000);
+}
+
 function escHtml(str){return(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function todayStr(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 document.querySelectorAll('.modal-overlay').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');}));
