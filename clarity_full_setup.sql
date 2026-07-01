@@ -828,3 +828,20 @@ alter table recurrences
  
 -- Confirm
 select 'skip_blackouts column added ✓' as status;
+
+
+-- ============================================================
+-- CLARITY GTD — ADD BULK REVIEW FIELDS
+-- Run in Supabase SQL Editor
+-- ============================================================
+ 
+-- 1. Add skipped_at to tasks (for recurring skip occurrence)
+alter table tasks
+  add column if not exists skipped_at timestamptz;
+ 
+-- 2. Add last_review_date to workspaces (cross-device first-login detection)
+alter table workspaces
+  add column if not exists last_review_date date;
+ 
+-- Confirm
+select 'skipped_at and last_review_date added ✓' as status;
