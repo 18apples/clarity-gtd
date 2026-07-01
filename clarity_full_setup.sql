@@ -845,3 +845,15 @@ alter table workspaces
  
 -- Confirm
 select 'skipped_at and last_review_date added ✓' as status;
+
+
+-- ============================================================
+-- CLARITY GTD — ADD DUE DATE TO SUBTASKS (#76)
+-- Run in Supabase SQL Editor
+-- ============================================================
+ 
+alter table subtasks
+  add column if not exists due_date date;
+ 
+-- Confirm
+select 'subtask due_date column added ✓' as status;
