@@ -405,7 +405,7 @@ option[value="done"],option[value="cancelled"]{color:var(--text3)}
     </div>
 
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:4px 4px 4px 16px;display:flex;align-items:center;gap:8px" id="captureBar">
-      <input id="quickInput" placeholder="Quick capture — type and press Enter..." style="background:none;border:none;flex:1;font-size:14px;padding:8px 0;color:var(--text);font-family:'Instrument Sans',sans-serif" onkeydown="if(event.key==='Enter')quickCapture()">
+      <input id="quickInput" placeholder="Quick capture — type and press Enter..." style="background:none;border:none;flex:1;font-size:14px;padding:8px 0;color:var(--text);font-family:'Instrument Sans',sans-serif" onkeydown="if(event.key==='Enter')quickCapture()" autocomplete="off" data-lpignore="true" data-form-type="other">
       <button class="btn btn-sm" style="flex-shrink:0" onclick="quickCapture()">Capture</button>
       <button class="btn btn-sm btn-secondary" style="flex-shrink:0;font-size:11px" onclick="openBulkReview(false)" title="Review today's tasks">📋 Review</button>
     </div>
@@ -866,7 +866,7 @@ option[value="done"],option[value="cancelled"]{color:var(--text3)}
     <div class="modal-title" id="captureTitle">Capture Task</div>
     <div class="form-group">
       <label class="form-label">Name</label>
-      <input type="text" id="cName" placeholder="Start with an action verb — Call, Write, Review..." oninput="onNameInput()">
+      <input type="text" id="cName" placeholder="Start with an action verb — Call, Write, Review..." oninput="onNameInput()" autocomplete="off" autocorrect="off" autocapitalize="sentences" data-lpignore="true" data-form-type="other">
       <div class="hint verb-warn" id="verbWarn">⚠ Start with an action verb — e.g. Call, Email, Write, Review, Research, Schedule, Book, Fix, Read, Decide, Check, Update, Plan, Buy, Meet, Create, Send, Draft, Sign, Pay, Attend, Watch, Learn, Build, Organize, Find, Ask, Submit, Discuss, Confirm</div>
       <div class="hint" id="ideaHint" style="display:none">💡 Ideas don't need action verbs</div>
     </div>
@@ -1016,7 +1016,7 @@ option[value="done"],option[value="cancelled"]{color:var(--text3)}
     </div>
     <div class="form-group">
       <label class="form-label">Notes (optional)</label>
-      <textarea id="cNotes" placeholder="Context, links, details..."></textarea>
+      <textarea id="cNotes" placeholder="Context, links, details..." autocomplete="off" data-lpignore="true" data-form-type="other"></textarea>
     </div>
 
     <!-- SUBTASKS -->
@@ -1027,7 +1027,7 @@ option[value="done"],option[value="cancelled"]{color:var(--text3)}
       <div id="subtaskInputRow" style="display:flex;gap:8px;align-items:center">
         <input type="text" id="subtaskInput" placeholder="Add a subtask..." style="flex:1;min-width:0"
                onkeydown="if(event.key==='Enter'){event.preventDefault();addSubtask();}"
-               autocomplete="off" autocorrect="off" autocapitalize="sentences">
+               autocomplete="off" autocorrect="off" autocapitalize="sentences" data-lpignore="true" data-form-type="other">
         <button class="btn btn-sm btn-secondary" type="button"
                 ontouchend="event.preventDefault();addSubtask();"
                 onclick="addSubtask()"
@@ -1421,7 +1421,7 @@ option[value="done"],option[value="cancelled"]{color:var(--text3)}
       <span style="font-size:18px">🔍</span>
       <input type="text" id="globalSearchInput" placeholder="Search all tasks, notes..."
         style="flex:1;background:none;border:none;font-size:16px;color:var(--text);font-family:'Instrument Sans',sans-serif"
-        oninput="renderGlobalSearch()" autocomplete="off">
+        oninput="renderGlobalSearch()" autocomplete="off" data-lpignore="true" data-form-type="other">
       <button class="btn-icon" onclick="closeModal('searchOverlay')" style="flex-shrink:0">✕</button>
     </div>
     <div id="globalSearchResults" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:6px;padding-top:12px"></div>
