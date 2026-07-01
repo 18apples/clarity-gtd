@@ -914,7 +914,7 @@ option[value="done"],option[value="cancelled"]{color:var(--text3)}
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">Due Date</label>
-        <input type="date" id="cDue" onchange="onDueDateChange(this.value)">
+        <input type="date" id="cDue" onchange="onDueDateChange(this.value);syncSubtaskDates(this.value)">
         <div id="cDueBlackoutWarn" style="display:none;background:#f0a85510;border:1px solid #f0a85530;border-radius:var(--r-sm);padding:8px 10px;margin-top:4px">
           <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--orange);line-height:1.5;margin-bottom:6px" id="cDueBlackoutMsg"></div>
           <div style="display:flex;gap:6px">
@@ -2095,7 +2095,7 @@ function openEdit(id) {
   document.getElementById('cType').value      = task.type==='idea'?'idea':'task';
   document.getElementById('cIQ').value        = task.importance_speed||'';
   document.getElementById('cContext').value   = task.context||'';
-  document.getElementById('cDue').value       = task.due_date||'';
+  document.getElementById('cDue').value       = task.due_date||''; document.getElementById('cDue').dataset.prevDate = task.due_date||'';
   document.getElementById('cEstimated').value = task.estimated_mins||'';
   document.getElementById('cNotes').value     = task.notes||'';
   document.getElementById('verbWarn').classList.remove('show');
@@ -3780,7 +3780,7 @@ let currentSubtasks = []; // {id, name, is_done, isNew, toDelete}
 async function loadSubtasks(taskId) {
   if (!taskId) { currentSubtasks = []; renderSubtaskList(); return; }
   try {
-    const res  = await supa(`subtasks?task_id=eq.${taskId}&select=id,name,is_done,sort_order&order=sort_order`);
+    const res  = await supa(`subtasks?task_id=eq.${taskId}&select=id,name,is_done,sort_order,due_date&order=sort_order`);
     const data = await res.json();
     currentSubtasks = Array.isArray(data) ? data.map(s => ({...s, isNew:false, toDelete:false})) : [];
   } catch(e) {
@@ -3794,19 +3794,49 @@ function renderSubtaskList() {
   if (!list) return;
   const visible = currentSubtasks.filter(s => !s.toDelete);
   list.innerHTML = visible.length ? visible.map((s, i) => `
-    <div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--border)">
-      <input type="checkbox" ${s.is_done?'checked':''} onchange="toggleSubtaskByIndex(${i})"
-        style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent);flex-shrink:0">
-      <span style="flex:1;font-size:13px;${s.is_done?'text-decoration:line-through;color:var(--text3)':''}">${escHtml(s.name)}</span>
-      <div style="display:flex;gap:2px;flex-shrink:0">
-        <button class="btn-icon" style="width:24px;height:24px;font-size:11px" title="Move up"
-          onclick="moveSubtask(${i},-1)" ${i===0?'disabled style="opacity:.3;cursor:default"':''}>↑</button>
-        <button class="btn-icon" style="width:24px;height:24px;font-size:11px" title="Move down"
-          onclick="moveSubtask(${i},1)" ${i===visible.length-1?'disabled style="opacity:.3;cursor:default"':''}>↓</button>
-        <button class="btn-icon" style="width:24px;height:24px;font-size:10px;color:var(--red)"
-          onclick="removeSubtaskByIndex(${i})">✕</button>
+    <div style="display:flex;flex-direction:column;gap:4px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:6px">
+        <input type="checkbox" ${s.is_done?'checked':''} onchange="toggleSubtaskByIndex(${i})"
+          style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent);flex-shrink:0">
+        <span style="flex:1;font-size:13px;${s.is_done?'text-decoration:line-through;color:var(--text3)':''}">${escHtml(s.name)}</span>
+        <div style="display:flex;gap:2px;flex-shrink:0">
+          <button class="btn-icon" style="width:24px;height:24px;font-size:11px" title="Move up"
+            onclick="moveSubtask(${i},-1)" ${i===0?'disabled style="opacity:.3;cursor:default"':''}>↑</button>
+          <button class="btn-icon" style="width:24px;height:24px;font-size:11px" title="Move down"
+            onclick="moveSubtask(${i},1)" ${i===visible.length-1?'disabled style="opacity:.3;cursor:default"':''}>↓</button>
+          <button class="btn-icon" style="width:24px;height:24px;font-size:10px;color:var(--red)"
+            onclick="removeSubtaskByIndex(${i})">✕</button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;padding-left:22px">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)">📅</span>
+        <input type="date" value="${s.due_date||''}"
+          onchange="setSubtaskDate(${i}, this.value)"
+          style="font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text2);background:none;border:none;border-bottom:1px solid var(--border);padding:2px 4px;cursor:pointer;width:130px">
       </div>
     </div>`).join('') : '<div style="font-size:12px;color:var(--text3);padding:4px 0">No subtasks yet</div>';
+}
+
+function syncSubtaskDates(newParentDate) {
+  // #76: When parent date changes, update subtasks that still match the OLD parent date
+  // We detect "old parent date" as the most common date among undone subtasks
+  // If all subtasks have the same date (default state), move them all to the new date
+  const visible = currentSubtasks.filter(s => !s.toDelete);
+  if (!visible.length) return;
+  const oldDate = document.getElementById('cDue').dataset.prevDate;
+  visible.forEach(s => {
+    if (!s.due_date || s.due_date === oldDate) {
+      s.due_date = newParentDate || null;
+    }
+  });
+  document.getElementById('cDue').dataset.prevDate = newParentDate;
+  renderSubtaskList();
+}
+
+function setSubtaskDate(i, value) {
+  const visible = currentSubtasks.filter(s => !s.toDelete);
+  if (visible[i]) visible[i].due_date = value || null;
+  // Don't re-render — just update the value in memory
 }
 
 function toggleSubtaskByIndex(i) {
@@ -3840,9 +3870,12 @@ function addSubtask() {
   const input = document.getElementById('subtaskInput');
   const name  = input?.value.trim();
   if (!name) return;
+  // Inherit parent due date by default
+  const parentDue = document.getElementById('cDue')?.value || null;
   currentSubtasks.push({
     id: null, name, is_done: false,
     sort_order: currentSubtasks.length,
+    due_date: parentDue,
     isNew: true, toDelete: false
   });
   input.value = '';
@@ -3873,7 +3906,7 @@ async function saveSubtasks(taskId) {
   const toUpdate = currentSubtasks.filter(s => !s.isNew && !s.toDelete && s.id);
   for (const s of toUpdate) {
     await supa(`subtasks?id=eq.${s.id}`, {method:'PATCH', prefer:'return=minimal',
-      body: JSON.stringify({is_done: s.is_done, name: s.name})});
+      body: JSON.stringify({is_done: s.is_done, name: s.name, due_date: s.due_date||null})});
   }
   // Insert new
   const toInsert = currentSubtasks.filter(s => s.isNew && !s.toDelete);
@@ -3881,8 +3914,16 @@ async function saveSubtasks(taskId) {
     await supa('subtasks', {method:'POST', prefer:'return=minimal',
       body: JSON.stringify(toInsert.map((s, i) => ({
         task_id: taskId, name: s.name, is_done: s.is_done,
-        sort_order: (toUpdate.length + i)
+        sort_order: (toUpdate.length + i),
+        due_date: s.due_date||null
       })))});
+  }
+
+  // #76: Update parent task due date to earliest undone subtask date
+  const undone = currentSubtasks.filter(s => !s.toDelete && !s.is_done && s.due_date);
+  if (undone.length) {
+    const earliest = undone.map(s=>s.due_date).sort()[0];
+    await supa(`tasks?id=eq.${taskId}`,{method:'PATCH',body:JSON.stringify({due_date:earliest})});
   }
 }
 
