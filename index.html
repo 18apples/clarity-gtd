@@ -407,6 +407,7 @@ option[value="done"],option[value="cancelled"]{color:var(--text3)}
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:4px 4px 4px 16px;display:flex;align-items:center;gap:8px" id="captureBar">
       <input id="quickInput" placeholder="Quick capture — type and press Enter..." style="background:none;border:none;flex:1;font-size:14px;padding:8px 0;color:var(--text);font-family:'Instrument Sans',sans-serif" onkeydown="if(event.key==='Enter')quickCapture()">
       <button class="btn btn-sm" style="flex-shrink:0" onclick="quickCapture()">Capture</button>
+      <button class="btn btn-sm btn-secondary" style="flex-shrink:0;font-size:11px" onclick="openBulkReview(false)" title="Review today's tasks">📋 Review</button>
     </div>
     <div id="inboxAlert" style="display:none;background:#f0a85510;border:1px solid #f0a85530;border-radius:var(--r);padding:12px 16px;align-items:center;justify-content:space-between;gap:12px;font-size:13px;color:var(--orange)">
       <span id="inboxAlertText"></span>
@@ -1424,6 +1425,44 @@ option[value="done"],option[value="cancelled"]{color:var(--text3)}
       <button class="btn-icon" onclick="closeModal('searchOverlay')" style="flex-shrink:0">✕</button>
     </div>
     <div id="globalSearchResults" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:6px;padding-top:12px"></div>
+  </div>
+</div>
+
+<!-- BULK REVIEW MODAL -->
+<div class="modal-overlay" id="bulkReviewModal" style="align-items:flex-start;padding:0">
+  <div class="modal" style="max-width:680px;width:100%;max-height:100vh;height:100vh;border-radius:0;margin:0;display:flex;flex-direction:column;gap:0;padding:0">
+    <!-- Header -->
+    <div style="padding:20px 20px 16px;border-bottom:1px solid var(--border);flex-shrink:0">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-family:'Instrument Serif',serif;font-size:22px;letter-spacing:-.5px">📋 Task Review</div>
+        <button class="btn-icon" onclick="closeModal('bulkReviewModal')" style="font-size:16px">✕</button>
+      </div>
+      <div id="brHeader" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3)"></div>
+    </div>
+    <!-- Task list -->
+    <div id="brTaskList" style="flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:20px"></div>
+    <!-- Footer -->
+    <div style="padding:16px 20px;border-top:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div id="brDecisionCount" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3)"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm btn-secondary" onclick="closeModal('bulkReviewModal')">Cancel</button>
+        <button class="btn btn-sm" onclick="applyBulkReview()">Apply all →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BULK REVIEW DATE PICKER (inline) -->
+<div class="modal-overlay" id="brDateModal" style="z-index:310">
+  <div class="modal" style="max-width:320px">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Move to date</div>
+    <div id="brDateTaskName" style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.4"></div>
+    <div class="form-group"><label class="form-label">New due date</label><input type="date" id="brDatePicker"></div>
+    <div class="modal-actions">
+      <button class="btn btn-sm btn-secondary" onclick="closeModal('brDateModal')">Cancel</button>
+      <button class="btn btn-sm" onclick="confirmBrDate()">Move</button>
+    </div>
   </div>
 </div>
 
