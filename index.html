@@ -684,14 +684,16 @@ option[value="done"],option[value="cancelled"]{color:var(--text3)}
     <div id="nextList" style="display:flex;flex-direction:column;gap:8px"></div>
   </main>
   <!-- WAITING VIEW -->
-  <main class="app-view" id="viewWaiting" style="display:none">
+  <main class="app-view" id="viewWaiting" style="display:none;max-width:900px;width:100%">
     <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap">
       <div>
         <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Blocked on others</div>
-        <div style="font-family:'Instrument Serif',serif;font-size:28px;letter-spacing:-.8px;line-height:1">Waiting For</div>
+        <div style="font-family:'Instrument Serif',serif;font-size:28px;letter-spacing:-.8px;line-height:1">Waiting</div>
       </div>
       <span id="waitingCount" class="tag tag-cat" style="font-size:12px"></span>
     </div>
+    <!-- Overdue follow-ups banner -->
+    <div id="waitingOverdueBanner" style="display:none;background:#f0606015;border:1px solid #f0606030;border-radius:var(--r-sm);padding:10px 14px;font-size:13px;color:var(--red)"></div>
     <div id="waitingList" style="display:flex;flex-direction:column;gap:8px"></div>
   </main>
   <!-- SOMEDAY VIEW -->
@@ -699,7 +701,7 @@ option[value="done"],option[value="cancelled"]{color:var(--text3)}
     <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap">
       <div>
         <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Parked deliberately</div>
-        <div style="font-family:'Instrument Serif',serif;font-size:28px;letter-spacing:-.8px;line-height:1">Someday</div>
+        <div style="font-family:'Instrument Serif',serif;font-size:28px;letter-spacing:-.8px;line-height:1">Parked</div>
       </div>
       <span id="somedayCount" class="tag tag-cat" style="font-size:12px"></span>
     </div>
@@ -958,7 +960,7 @@ option[value="done"],option[value="cancelled"]{color:var(--text3)}
     </div>
     <div class="form-group" id="cStatusGroup" style="display:none">
       <label class="form-label">Status</label>
-      <select id="cStatus">
+      <select id="cStatus" onchange="onStatusChange()">
         <option value="inbox">📥 Inbox</option>
         <option value="active">⚡ Active</option>
         <option value="waiting">⏳ Waiting For</option>
@@ -1678,7 +1680,7 @@ async function loadTasks() {
   try {
     // Performance fix: single nested join instead of 3 sequential round trips
     // Gets tasks + categories + subtask progress in one query
-    const res = await supa('tasks?select=id,name,notes,type,status,importance_speed,context,due_date,revisit_date,estimated_mins,reschedule_count,reschedule_reasons,recurrence_id,recur_pattern,current_count,target_count,project_id,completed_at,cancelled_at,cancellation_reason,skipped_at,created_at,task_categories(category_id),subtasks(id,is_done,due_date)&order=created_at.desc');
+    const res = await supa('tasks?select=id,name,notes,type,status,importance_speed,context,due_date,revisit_date,estimated_mins,reschedule_count,reschedule_reasons,recurrence_id,recur_pattern,current_count,target_count,project_id,completed_at,cancelled_at,cancellation_reason,skipped_at,waiting_for,follow_up_date,created_at,task_categories(category_id),subtasks(id,is_done,due_date)&order=created_at.desc');
     const data = await res.json();
     if (!Array.isArray(data)) {
       console.error('loadTasks error:', data);
@@ -2208,6 +2210,13 @@ function openEdit(id) {
   const siEl  = document.getElementById('cStatusInfo');
   if(sgEl) { sgEl.style.display = 'flex'; sgEl.dataset.editing = 'true'; }
   if(stEl) stEl.value = task.status || 'inbox';
+  // Show/hide waiting fields
+  const wfEl = document.getElementById('cWaitingFor');
+  const fuEl = document.getElementById('cFollowUpDate');
+  const wgEl = document.getElementById('waitingFieldsGroup');
+  if (wfEl) wfEl.value = task.waiting_for || '';
+  if (fuEl) fuEl.value = task.follow_up_date || '';
+  if (wgEl) wgEl.style.display = task.status === 'waiting' ? 'flex' : 'none';
   // Show completion/cancellation info for done/cancelled tasks
   if (siEl) {
     if (task.status === 'done') {
@@ -2352,6 +2361,8 @@ async function saveTask() {
     name,
     notes:            document.getElementById('cNotes').value.trim()||null,
     type:             isRecurring ? 'recurring' : type,
+    waiting_for:      document.getElementById('cWaitingFor')?.value.trim()||null,
+    follow_up_date:   document.getElementById('cFollowUpDate')?.value||null,
     status:           editingTaskId
       ? (()=>{ const s=document.getElementById('cStatus')?.value; return (s&&s!=='done'&&s!=='cancelled')?s:undefined; })()
       : (isIdea ? (catPickerSel.length > 0 ? 'someday' : 'inbox') : (document.getElementById('cStatus')?.value || 'next')),
@@ -2985,18 +2996,37 @@ function clearInboxFilters() {
 
 // Navigate to inbox pre-filtered by domain
 function goToInboxFiltered(type, id, taskType, taskStatus) {
-  clearInboxFilters();
-  inboxFilters.showAll = true;
+  // Phase 3: Redirect to Search view instead of Inbox
+  clearSearchView();
+  // Pre-apply domain/category filter
   if (type === 'domain') {
-    inboxFilters.domainIds = [id];
+    searchFilters.domainId = id;
+    const sel = document.getElementById('searchDomain');
+    if (sel) sel.value = id;
   } else if (type === 'category') {
-    inboxFilters.catIds = [id];
     const cat = state.categories.find(c=>c.id===id);
-    if (cat) inboxFilters.domainIds = [cat.domain_id];
+    if (cat) {
+      searchFilters.domainId = cat.domain_id;
+      const sel = document.getElementById('searchDomain');
+      if (sel) sel.value = cat.domain_id;
+    }
   }
-  if (taskType && taskType !== 'all') inboxFilters.taskType = taskType;
-  if (taskStatus) inboxFilters.statusFilter = taskStatus;
-  switchView('inbox');
+  // Pre-apply type filter
+  if (taskType && taskType !== 'all') {
+    searchFilters.type = taskType;
+    document.querySelectorAll('[data-searchtype]').forEach(b=>
+      b.classList.toggle('active', b.dataset.searchtype===taskType));
+  }
+  // Pre-apply status filter
+  if (taskStatus) {
+    searchFilters.status = taskStatus;
+    document.querySelectorAll('[data-searchstatus]').forEach(b=>
+      b.classList.toggle('active', b.dataset.searchstatus===taskStatus));
+  }
+  switchView('search');
+  // Auto-open filters to show what's pre-applied
+  if (!searchFilterOpen) toggleSearchFilters();
+  renderSearchView();
 }
 
 // ── 24. INBOX ─────────────────────────────────────────────────────
@@ -3128,13 +3158,65 @@ function renderNext() {
 // ── 26. WAITING ───────────────────────────────────────────────────
 
 function renderWaiting() {
-  const tasks = [...new Map(state.tasks.map(t=>[t.id,t])).values()].filter(t=>t.status==='waiting');
-  document.getElementById('waitingCount').textContent = `${tasks.length} items`;
+  const today = todayStr();
+  const tasks = [...new Map(state.tasks.map(t=>[t.id,t])).values()]
+    .filter(t=>t.status==='waiting')
+    .sort((a,b)=>{
+      // Overdue follow-ups first, then by follow_up_date asc, then no date last
+      const af = a.follow_up_date || '9999-99-99';
+      const bf = b.follow_up_date || '9999-99-99';
+      return af.localeCompare(bf);
+    });
+
+  document.getElementById('waitingCount').textContent = `${tasks.length} item${tasks.length!==1?'s':''}`;
+
+  // Overdue follow-up banner
+  const overdue = tasks.filter(t => t.follow_up_date && t.follow_up_date < today);
+  const banner = document.getElementById('waitingOverdueBanner');
+  if (banner) {
+    banner.style.display = overdue.length ? 'block' : 'none';
+    banner.textContent = overdue.length
+      ? `⚠ ${overdue.length} follow-up${overdue.length>1?'s':''} overdue — check in with ${overdue.map(t=>t.waiting_for||'someone').join(', ')}`
+      : '';
+  }
+
   const list = document.getElementById('waitingList');
-  if (!tasks.length) { list.innerHTML = pipelineEmpty('⏳','Nothing waiting','Great — no dependencies blocking you.'); return; }
-  list.innerHTML = tasks.map(t => renderPipelineCard(t,
-    `<button class="btn-icon" style="font-size:11px;color:var(--accent)" title="Move to Next" onclick="moveToNext('${t.id}')">⚡</button>`
-  )).join('');
+  if (!tasks.length) { list.innerHTML = pipelineEmpty('⏳','Nothing waiting','Great — no one is blocking you.'); return; }
+
+  list.innerHTML = tasks.map(t => {
+    const isOverdue = t.follow_up_date && t.follow_up_date < today;
+    const daysUntil = t.follow_up_date
+      ? Math.round((new Date(t.follow_up_date) - new Date(today)) / 86400000)
+      : null;
+    const followUpLabel = t.follow_up_date
+      ? isOverdue
+        ? `<span style="color:var(--red);font-weight:600">⚠ Follow up overdue (${Math.abs(daysUntil)}d ago)</span>`
+        : daysUntil === 0
+          ? `<span style="color:var(--orange)">📅 Follow up today</span>`
+          : `<span style="color:var(--text2)">📅 Follow up in ${daysUntil}d (${t.follow_up_date})</span>`
+      : '<span style="color:var(--text3)">No follow-up date set</span>';
+
+    const waitingForLabel = t.waiting_for
+      ? `<span style="font-weight:600;color:var(--text)">Waiting on: ${escHtml(t.waiting_for)}</span>`
+      : '<span style="color:var(--text3)">Waiting on: —</span>';
+
+    const cats = (t._categories||[]).map(c=>`<span class="tag tag-cat">${escHtml(c.name)}</span>`).join('');
+
+    return `<div class="task-card${isOverdue?' is-overdue':''}" data-id="${t.id}" data-status="waiting"
+      style="${isOverdue?'border-left:3px solid var(--red)':'border-left:3px solid var(--orange)'}">
+      <div class="task-body" style="gap:6px">
+        <div class="task-name">${escHtml(t.name)}</div>
+        <div style="font-size:12px;line-height:1.6">${waitingForLabel}</div>
+        <div style="font-size:12px">${followUpLabel}</div>
+        ${cats?`<div class="task-meta">${cats}</div>`:''}
+      </div>
+      <div class="task-actions">
+        <button class="btn-icon" style="font-size:11px;color:var(--accent)" title="Move to Active" onclick="moveToNext('${t.id}')">⚡</button>
+        <button class="btn-icon" style="font-size:12px" title="Edit" onclick="openEdit('${t.id}')">✎</button>
+        <button class="btn-icon" style="font-size:12px;color:var(--red)" title="Cancel" onclick="openCancel('${t.id}')">✕</button>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 async function moveToNext(id) {
@@ -4163,6 +4245,15 @@ async function setTaskStatus(newStatus) {
       if (v==='ideas')     renderIdeas();
     }
   });
+}
+
+
+// ── WAITING STATUS FIELDS ─────────────────────────────────────────
+
+function onStatusChange() {
+  const status = document.getElementById('cStatus')?.value;
+  const wg = document.getElementById('waitingFieldsGroup');
+  if (wg) wg.style.display = status === 'waiting' ? 'flex' : 'none';
 }
 
 // ── CANCEL TASK ───────────────────────────────────────────
