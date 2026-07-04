@@ -110,9 +110,9 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
 /* TASK CARDS */
 .task-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;display:flex;align-items:flex-start;gap:12px;transition:border-color .15s;position:relative;overflow:hidden}
 .task-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:transparent}
-.task-card[data-status="next"]::before{background:var(--accent)}
+.task-card[data-status="active"]::before{background:var(--accent)}
 .task-card[data-status="waiting"]::before{background:var(--orange)}
-.task-card[data-status="someday"]::before{background:var(--blue)}
+.task-card[data-status="parked"]::before{background:var(--blue)}
 .task-card[data-status="inbox"]::before{background:var(--border2)}
 .task-card:hover{border-color:var(--border2)}
 .task-card.is-done{opacity:.6;background:var(--surface2)}
@@ -333,16 +333,17 @@ option[value="done"],option[value="cancelled"]{color:var(--text3)}
       <button class="nav-btn active" data-view="focus"    onclick="switchView('focus')">Focus</button>
       <button class="nav-btn"        data-view="projects" onclick="switchView('projects')">Projects</button>
       <button class="nav-btn"        data-view="areas"    onclick="switchView('areas')">Life Areas</button>
+      <button class="nav-btn"        data-view="search"   onclick="switchView('search')">Search</button>
       <button class="nav-btn"        data-view="calendar" onclick="switchView('calendar')">Calendar</button>
       <!-- More dropdown -->
       <div class="nav-more-wrap" id="navMoreWrap">
         <button class="nav-more-btn" id="navMoreBtn" onclick="toggleNavMore()">More ▾</button>
         <div class="nav-dropdown" id="navDropdown">
           <button class="nav-dropdown-btn" data-view="inbox"     onclick="switchView('inbox');closeNavMore()">📥 Inbox</button>
-          <button class="nav-dropdown-btn" data-view="next"      onclick="switchView('next');closeNavMore()">⚡ Next</button>
+          <button class="nav-dropdown-btn" data-view="active"      onclick="switchView('next');closeNavMore()">⚡ Active</button>
           <button class="nav-dropdown-btn" data-view="waiting"   onclick="switchView('waiting');closeNavMore()">⏳ Waiting</button>
-          <button class="nav-dropdown-btn" data-view="someday"   onclick="switchView('someday');closeNavMore()">🌙 Someday</button>
-          <button class="nav-dropdown-btn" data-view="reference" onclick="switchView('reference');closeNavMore()">📚 Reference</button>
+          <button class="nav-dropdown-btn" data-view="parked"   onclick="switchView('someday');closeNavMore()">🌙 Parked</button>
+          <button class="nav-dropdown-btn" data-view="reference" onclick="switchView('reference');closeNavMore()"></button>
           <button class="nav-dropdown-btn" data-view="ideas"     onclick="switchView('ideas');closeNavMore()">💡 Ideas</button>
           <button class="nav-dropdown-btn" data-view="analytics" onclick="switchView('analytics');closeNavMore()">📊 Analytics</button>
         </div>
@@ -585,6 +586,84 @@ option[value="done"],option[value="cancelled"]{color:var(--text3)}
 
     <div id="inboxList" style="display:flex;flex-direction:column;gap:8px"></div>
   </main>
+  <!-- SEARCH VIEW -->
+  <main class="app-view" id="viewSearch" style="display:none;max-width:900px;width:100%">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Universal</div>
+        <div style="font-family:'Instrument Serif',serif;font-size:28px;letter-spacing:-.8px;line-height:1">Search</div>
+      </div>
+      <div id="searchMissingBadge" style="display:none;background:#f0a85515;border:1px solid #f0a85530;border-radius:var(--r-sm);padding:6px 12px;font-size:12px;color:var(--orange);cursor:pointer" onclick="applySearchMissingFilter()"></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:4px 4px 4px 14px">
+      <span style="color:var(--text3)">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search tasks by name or notes..."
+        style="flex:1;background:none;border:none;font-size:14px;color:var(--text);font-family:'Instrument Sans',sans-serif"
+        oninput="renderSearchView()" autocomplete="off" data-lpignore="true">
+      <button class="btn btn-sm btn-secondary" onclick="clearSearchView()">Clear</button>
+    </div>
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer" onclick="toggleSearchFilters()">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase">Filters</span>
+          <span id="searchFilterBadge" style="display:none;background:var(--accent);color:#0a0a0b;border-radius:10px;padding:1px 7px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600"></span>
+        </div>
+        <span id="searchFilterChevron" style="color:var(--text3);font-size:11px;transition:transform .2s">▶</span>
+      </div>
+      <div id="searchFilterPanel" style="display:none;flex-direction:column;gap:12px;padding:0 14px 14px;border-top:1px solid var(--border)">
+        <div style="height:8px"></div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            <button class="filter-chip active" data-searchstatus="all"       onclick="setSearchStatus('all')">All</button>
+            <button class="filter-chip"        data-searchstatus="active"    onclick="setSearchStatus('active')">⚡ Active</button>
+            <button class="filter-chip"        data-searchstatus="waiting"   onclick="setSearchStatus('waiting')">⏳ Waiting</button>
+            <button class="filter-chip"        data-searchstatus="parked"    onclick="setSearchStatus('parked')">🌙 Parked</button>
+            <button class="filter-chip"        data-searchstatus="delegated" onclick="setSearchStatus('delegated')">👤 Delegated</button>
+            <button class="filter-chip"        data-searchstatus="done"      onclick="setSearchStatus('done')">✓ Done</button>
+            <button class="filter-chip"        data-searchstatus="cancelled" onclick="setSearchStatus('cancelled')">✕ Cancelled</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Importance</label>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            <button class="filter-chip active" data-searchiq="all"                      onclick="setSearchIQ('all')">All</button>
+            <button class="filter-chip"        data-searchiq="important_urgent"         onclick="setSearchIQ('important_urgent')">🔴 Imp+Urgent</button>
+            <button class="filter-chip"        data-searchiq="important_not_urgent"     onclick="setSearchIQ('important_not_urgent')">🟢 Imp+Not Urgent</button>
+            <button class="filter-chip"        data-searchiq="not_important_urgent"     onclick="setSearchIQ('not_important_urgent')">🟡 Not Imp+Urgent</button>
+            <button class="filter-chip"        data-searchiq="not_important_not_urgent" onclick="setSearchIQ('not_important_not_urgent')">🔵 Not Imp+Not Urgent</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Life Area</label>
+          <select id="searchDomain" onchange="renderSearchView()">
+            <option value="">All areas</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Type</label>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            <button class="filter-chip active" data-searchtype="all"       onclick="setSearchType('all')">All</button>
+            <button class="filter-chip"        data-searchtype="task"      onclick="setSearchType('task')">Task</button>
+            <button class="filter-chip"        data-searchtype="recurring" onclick="setSearchType('recurring')">🔄 Recurring</button>
+            <button class="filter-chip"        data-searchtype="idea"      onclick="setSearchType('idea')">💡 Idea</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Missing fields</label>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            <button class="filter-chip" data-searchmissing="importance" onclick="toggleSearchMissing('importance')">No importance</button>
+            <button class="filter-chip" data-searchmissing="due_date"   onclick="toggleSearchMissing('due_date')">No due date</button>
+            <button class="filter-chip" data-searchmissing="category"   onclick="toggleSearchMissing('category')">No category</button>
+            <button class="filter-chip" data-searchmissing="estimated"  onclick="toggleSearchMissing('estimated')">No time estimate</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="searchCount" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3)"></div>
+    <div id="searchResults" style="display:flex;flex-direction:column;gap:8px"></div>
+  </main>
+
   <!-- NEXT ACTIONS VIEW -->
   <main class="app-view" id="viewNext" style="display:none">
     <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap">
@@ -616,7 +695,7 @@ option[value="done"],option[value="cancelled"]{color:var(--text3)}
     <div id="waitingList" style="display:flex;flex-direction:column;gap:8px"></div>
   </main>
   <!-- SOMEDAY VIEW -->
-  <main class="app-view" id="viewSomeday" style="display:none">
+  <main class="app-view" id="viewParked" style="display:none">
     <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap">
       <div>
         <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Parked deliberately</div>
@@ -881,10 +960,10 @@ option[value="done"],option[value="cancelled"]{color:var(--text3)}
       <label class="form-label">Status</label>
       <select id="cStatus">
         <option value="inbox">📥 Inbox</option>
-        <option value="next">⚡ Next Action</option>
+        <option value="active">⚡ Active</option>
         <option value="waiting">⏳ Waiting For</option>
-        <option value="someday">🌙 Someday</option>
-        <option value="reference">📚 Reference</option>
+        <option value="parked">🌙 Parked</option>
+        <option value="reference"></option>
         <option value="done" style="color:var(--text3)">✓ Done</option>
         <option value="cancelled" style="color:var(--text3)">✕ Cancelled</option>
       </select>
@@ -1406,10 +1485,10 @@ option[value="done"],option[value="cancelled"]{color:var(--text3)}
     <div id="statusTaskName" style="font-size:13px;color:var(--text2);padding:8px 12px;background:var(--surface2);border-radius:var(--r-sm);margin-bottom:4px;line-height:1.4"></div>
     <div style="display:flex;flex-direction:column;gap:6px">
       <button class="btn btn-secondary" onclick="setTaskStatus('inbox')">📥 Inbox</button>
-      <button class="btn btn-secondary" onclick="setTaskStatus('next')">⚡ Next Action</button>
+      <button class="btn btn-secondary" onclick="setTaskStatus('active')">⚡ Active</button>
       <button class="btn btn-secondary" onclick="setTaskStatus('waiting')">⏳ Waiting For</button>
-      <button class="btn btn-secondary" onclick="setTaskStatus('someday')">🌙 Someday</button>
-      <button class="btn btn-secondary" onclick="setTaskStatus('reference')">📚 Reference</button>
+      <button class="btn btn-secondary" onclick="setTaskStatus('parked')">🌙 Parked</button>
+      <button class="btn btn-secondary" </button>
     </div>
   </div>
 </div>
@@ -1597,7 +1676,9 @@ async function loadCoreData() {
 
 async function loadTasks() {
   try {
-    const res = await supa('tasks?select=id,name,notes,type,status,importance_speed,context,due_date,revisit_date,estimated_mins,reschedule_count,reschedule_reasons,recurrence_id,recur_pattern,current_count,target_count,project_id,completed_at,cancelled_at,cancellation_reason,created_at&order=created_at.desc');
+    // Performance fix: single nested join instead of 3 sequential round trips
+    // Gets tasks + categories + subtask progress in one query
+    const res = await supa('tasks?select=id,name,notes,type,status,importance_speed,context,due_date,revisit_date,estimated_mins,reschedule_count,reschedule_reasons,recurrence_id,recur_pattern,current_count,target_count,project_id,completed_at,cancelled_at,cancellation_reason,skipped_at,created_at,task_categories(category_id),subtasks(id,is_done,due_date)&order=created_at.desc');
     const data = await res.json();
     if (!Array.isArray(data)) {
       console.error('loadTasks error:', data);
@@ -1605,63 +1686,42 @@ async function loadTasks() {
       toast('Could not load tasks: ' + (data.message||'unknown'), 'error');
       return;
     }
-    state.tasks = data;
-    // Diagnostic: check for duplicate ids from Supabase
-    const idCounts = {};
-    data.forEach(t => idCounts[t.id] = (idCounts[t.id]||0)+1);
-    const dupIds = Object.entries(idCounts).filter(([,c])=>c>1).map(([id])=>id);
-    if (dupIds.length) console.warn('Duplicate task ids from Supabase:', dupIds);
-    // Attach categories
-    if (state.tasks.length) {
-      const ids = state.tasks.map(t=>t.id).join(',');
-      const cr  = await supa(`task_categories?task_id=in.(${ids})&select=task_id,category_id`);
-      const tcs = await cr.json();
-      const tcsArr = Array.isArray(tcs) ? tcs : [];
-      state.tasks.forEach(t => {
-        // Deduplicate category ids per task
-        const catIds = [...new Set(tcsArr.filter(tc=>tc.task_id===t.id).map(tc=>tc.category_id))];
-        t._categories = state.categories.filter(c=>catIds.includes(c.id));
-      });
-    }
-    // B23: Deduplicate tasks by id before processing
-    // Supabase can return duplicate rows in some join scenarios
+
+    // Process nested join results
+    state.tasks = data.map(t => {
+      // Map category ids to category objects from state
+      const catIds = [...new Set((t.task_categories||[]).map(tc=>tc.category_id))];
+      t._categories = state.categories.filter(c=>catIds.includes(c.id));
+      delete t.task_categories;
+
+      // Build subtask progress from nested subtasks
+      const subs = t.subtasks||[];
+      t._subtaskProgress = subs.length ? {
+        total: subs.length,
+        done:  subs.filter(s=>s.is_done).length
+      } : null;
+      delete t.subtasks;
+
+      return t;
+    });
+
+    // Deduplicate by id (safety net)
     const taskMap = new Map();
     state.tasks.forEach(t => { if (!taskMap.has(t.id)) taskMap.set(t.id, t); });
     state.tasks = Array.from(taskMap.values());
 
-    // Load subtask progress for all tasks
-    if (state.tasks.length) {
-      const tids = state.tasks.map(t=>t.id).join(',');
-      const sr   = await supa(`subtasks?task_id=in.(${tids})&select=id,task_id,is_done`);
-      const subs = await sr.json();
-      if (Array.isArray(subs)) {
-        state.tasks.forEach(t => {
-          const taskSubs = subs.filter(s=>s.task_id===t.id);
-          if (taskSubs.length) {
-            t._subtaskProgress = {
-              total: taskSubs.length,
-              done:  taskSubs.filter(s=>s.is_done).length
-            };
-          } else {
-            t._subtaskProgress = null;
-          }
-        });
-      }
-    }
     // B22: Deduplicate recurring tasks — keep only latest instance per recurrence_id
-    const seen = new Map();
-    const deduped = [];
-    // Sort by created_at desc first so we keep the latest
     state.tasks.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
-    for (const t of state.tasks) {
+    const seen = new Map();
+    state.tasks = state.tasks.filter(t => {
       if (t.recurrence_id && t.status !== 'done' && t.status !== 'cancelled') {
-        if (seen.has(t.recurrence_id)) continue; // skip older instances
+        if (seen.has(t.recurrence_id)) return false;
         seen.set(t.recurrence_id, true);
       }
-      deduped.push(t);
-    }
-    state.tasks = deduped;
-    console.log(`loadTasks: ${state.tasks.length} tasks (deduped from ${state.tasks.length + (state.tasks.length - deduped.length)})`);
+      return true;
+    });
+
+    console.log(`loadTasks: ${state.tasks.length} tasks (1 query)`);
   } catch(e) {
     console.error('loadTasks:', e);
     state.tasks = [];
@@ -1775,21 +1835,53 @@ function pruneOldCapacityKeys() {
 function renderFocus() {
   if (!Array.isArray(state.tasks)) state.tasks = [];
   const today  = todayStr();
-  const active = state.tasks.filter(t => t.status !== 'done' && t.status !== 'cancelled');
-  // Only show tasks due today or overdue — no date = inbox only
-  const overdue = active.filter(t => t.due_date && t.due_date < today);
-  const focus   = active.filter(t => t.due_date === today);
-  const inbox   = active.filter(t => t.status === 'inbox' && t.type !== 'idea');
+  const active = state.tasks.filter(t => t.status !== 'done' && t.status !== 'cancelled' && t.status !== 'skipped');
 
-  // Overdue
-  const od = document.getElementById('overdueSection');
-  od.style.display = overdue.length ? 'block' : 'none';
-  if (overdue.length) document.getElementById('overdueList').innerHTML = overdue.map(t=>renderCard(t,true)).join('');
+  // Tasks due today or overdue — both shown, grouped together by quadrant
+  const focusTasks = active.filter(t => t.due_date && t.due_date <= today);
+  const inbox      = active.filter(t => t.status === 'inbox' && t.type !== 'idea');
 
-  // Focus
+  // Group by Eisenhower quadrant, sort by estimated time asc within each
+  const QUADRANTS = [
+    { key: 'important_urgent',         label: '🔴 Important + Urgent' },
+    { key: 'important_not_urgent',     label: '🟢 Important + Not Urgent' },
+    { key: 'not_important_urgent',     label: '🟡 Not Important + Urgent' },
+    { key: 'not_important_not_urgent', label: '🔵 Not Important + Not Urgent' },
+    { key: null,                        label: '⚪ Untagged' },
+  ];
+
+  const buckets = {};
+  QUADRANTS.forEach(q => buckets[q.key||'__null__'] = []);
+  focusTasks.forEach(t => {
+    const k = t.importance_speed || '__null__';
+    (buckets[k]||buckets['__null__']).push(t);
+  });
+  QUADRANTS.forEach(q => {
+    const k = q.key||'__null__';
+    if (buckets[k]) buckets[k].sort((a,b)=>(a.estimated_mins||0)-(b.estimated_mins||0));
+  });
+
   const fl = document.getElementById('focusList');
-  fl.innerHTML = focus.length ? focus.map(t=>renderCard(t)).join('') :
-    '<div class="empty-state" style="padding:32px 0"><div class="empty-icon">✦</div><div class="empty-title">All clear</div><div class="empty-sub">No tasks for today.</div></div>';
+  const odSection = document.getElementById('overdueSection');
+  if (odSection) odSection.style.display = 'none'; // merged into quadrant view
+
+  if (!focusTasks.length) {
+    fl.innerHTML = '<div class="empty-state" style="padding:32px 0"><div class="empty-icon">✦</div><div class="empty-title">All clear</div><div class="empty-sub">No tasks for today.</div></div>';
+  } else {
+    fl.innerHTML = QUADRANTS.map(q => {
+      const k = q.key||'__null__';
+      const tasks = buckets[k]||[];
+      if (!tasks.length) return '';
+      const hasOverdue = tasks.some(t => t.due_date < today);
+      return `<div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text3)">${q.label}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)">${tasks.reduce((s,t)=>s+(t.estimated_mins||0),0)}m</div>
+        </div>
+        ${tasks.map(t => renderCard(t, t.due_date < today)).join('')}
+      </div>`;
+    }).filter(Boolean).join('');
+  }
 
   // Inbox alert
   const ia = document.getElementById('inboxAlert');
@@ -1800,7 +1892,6 @@ function renderFocus() {
     ia.style.display = 'none';
   }
 
-  // Capacity planner
   renderCapacityPlanner();
 }
 
@@ -1903,7 +1994,7 @@ async function finishRecurring(id, adhocDate) {
     }
     const nr = await supa('tasks',{method:'POST',body:JSON.stringify({
       workspace_id:state.workspaceId, recurrence_id:tmpl.id, name:tmpl.name, notes:tmpl.notes,
-      type:'recurring', status:'next', importance_speed:tmpl.importance_speed, context:tmpl.context,
+      type:'recurring', status:'active', importance_speed:tmpl.importance_speed, context:tmpl.context,
       estimated_mins:tmpl.estimated_mins, due_date:nextDate, current_count:0, target_count:adjustedTarget,
       recur_pattern:tmpl.recur_pattern, reschedule_count:0, reschedule_reasons:[], ai_suggestions:{},
     })});
@@ -2927,7 +3018,7 @@ function renderInbox() {
   // B23: Deduplicate before filtering
   const uniqueForInbox = [...new Map(state.tasks.map(t=>[t.id,t])).values()];
   let tasks = inboxFilters.showAll
-    ? uniqueForInbox.filter(t => t.status !== 'done' && t.status !== 'cancelled')
+    ? uniqueForInbox.filter(t => t.status !== 'done' && t.status !== 'cancelled' && t.status !== 'skipped')
     : uniqueForInbox.filter(t => t.status === 'inbox' && t.type !== 'idea');
   const total = tasks.length;
 
@@ -3018,7 +3109,7 @@ function setNextFilter(ctx) {
 }
 
 function renderNext() {
-  let tasks = [...new Map(state.tasks.map(t=>[t.id,t])).values()].filter(t=>t.status==='next'&&t.type!=='idea');
+  let tasks = [...new Map(state.tasks.map(t=>[t.id,t])).values()].filter(t=>t.status==='active'&&t.type!=='idea');
   if (nextContextFilter !== 'all') tasks = tasks.filter(t=>t.context===nextContextFilter);
   document.getElementById('nextCount').textContent = `${tasks.length} actions`;
   const list = document.getElementById('nextList');
@@ -3047,7 +3138,7 @@ function renderWaiting() {
 }
 
 async function moveToNext(id) {
-  await supa(`tasks?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({status:'next'})});
+  await supa(`tasks?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({status:'active'})});
   toast('Moved to Next Actions','success');
   await loadTasks(); renderWaiting(); renderNext();
 }
@@ -3056,8 +3147,8 @@ async function moveToNext(id) {
 
 let revisitingTaskId = null;
 
-function renderSomeday() {
-  const tasks = [...new Map(state.tasks.map(t=>[t.id,t])).values()].filter(t=>t.status==='someday');
+function renderParked() {
+  const tasks = [...new Map(state.tasks.map(t=>[t.id,t])).values()].filter(t=>t.status==='parked');
   document.getElementById('somedayCount').textContent = `${tasks.length} items`;
   const list = document.getElementById('somedayList');
   if (!tasks.length) { list.innerHTML = pipelineEmpty('🌙','Nothing parked','Someday items live here.'); return; }
@@ -3080,7 +3171,7 @@ async function confirmRevisit() {
   await supa(`tasks?id=eq.${revisitingTaskId}`,{method:'PATCH',body:JSON.stringify({revisit_date:date})});
   toast('Revisit date set','success');
   closeModal('revisitModal');
-  await loadTasks(); renderSomeday();
+  await loadTasks(); renderParked();
 }
 
 // ── 28. REFERENCE ─────────────────────────────────────────────────
@@ -3129,7 +3220,7 @@ function openPromote(id) {
 }
 
 async function promoteToTask() {
-  await supa(`tasks?id=eq.${promotingTaskId}`,{method:'PATCH',body:JSON.stringify({type:'task',status:'next'})});
+  await supa(`tasks?id=eq.${promotingTaskId}`,{method:'PATCH',body:JSON.stringify({type:'task',status:'active'})});
   toast('Idea promoted to task ✓','success');
   closeModal('promoteModal');
   await loadTasks(); renderIdeas(); renderNext();
@@ -3205,7 +3296,7 @@ function renderProjectCard(p) {
   const tasks      = state.tasks.filter(t=>t.project_id===p.id&&t.status!=='done'&&t.status!=='cancelled');
   const allTasks   = state.tasks.filter(t=>t.project_id===p.id);
   const doneTasks  = allTasks.filter(t=>t.status==='done').length;
-  const nextAction = tasks.find(t=>t.status==='next')||tasks[0];
+  const nextAction = tasks.find(t=>t.status==='active')||tasks[0];
   const isStalled  = p.status==='active'&&tasks.length===0&&allTasks.length>0;
   const sLabels    = {active:'Active',on_hold:'⏸ On Hold',complete:'✓ Complete',cancelled:'✕ Cancelled'};
   const pLabels    = {high:'🔴 High',medium:'🟡 Medium',low:'🔵 Low'};
@@ -3420,7 +3511,7 @@ async function saveProject() {
   if (!editingProjectId && firstAction && projectId) {
     await supa('tasks', {method:'POST', body:JSON.stringify({
       workspace_id:state.workspaceId, project_id:projectId, name:firstAction,
-      type:'task', status:'next', reschedule_count:0, reschedule_reasons:[], ai_suggestions:{},
+      type:'task', status:'active', reschedule_count:0, reschedule_reasons:[], ai_suggestions:{},
     })});
   }
 
@@ -3468,7 +3559,7 @@ async function confirmOnHold() {
 async function reactivateProject(id) {
   await supa(`projects?id=eq.${id}`, {method:'PATCH', body:JSON.stringify({status:'active', on_hold_until:null, on_hold_reason:null})});
   // Restore waiting tasks back to next
-  await supa(`tasks?project_id=eq.${id}&status=eq.waiting`, {method:'PATCH', body:JSON.stringify({status:'next'})});
+  await supa(`tasks?project_id=eq.${id}&status=eq.waiting`, {method:'PATCH', body:JSON.stringify({status:'active'})});
   toast('Project reactivated','success');
   await loadProjects(); await loadTasks(); renderProjectDetail();
 }
@@ -3512,9 +3603,9 @@ function taskBreakdownChips(tasks, filterType, filterId) {
   const recurring = tasks.filter(t => t.type==='recurring').length;
   const ideas     = tasks.filter(t => t.type==='idea').length;
   const inbox     = tasks.filter(t => t.status==='inbox').length;
-  const next      = tasks.filter(t => t.status==='next').length;
+  const next      = tasks.filter(t => t.status==='active').length;
   const waiting   = tasks.filter(t => t.status==='waiting').length;
-  const someday   = tasks.filter(t => t.status==='someday').length;
+  const someday   = tasks.filter(t => t.status==='parked').length;
 
   const chip = (label, count, type, status) => count > 0
     ? `<span class="tag tag-cat" style="cursor:pointer;font-size:10px" onclick="goToInboxFiltered('${filterType}','${filterId}','${type||''}','${status||''}')">${label}: ${count}</span>`
@@ -3525,9 +3616,9 @@ function taskBreakdownChips(tasks, filterType, filterId) {
     chip('🔄 Recurring', recurring, 'recurring', ''),
     chip('💡 Ideas',     ideas,     'idea',      ''),
     chip('📥 Inbox',     inbox,     '',          'inbox'),
-    chip('⚡ Next',      next,      '',          'next'),
+    chip('⚡ Active',      next,      '',          'next'),
     chip('⏳ Waiting',   waiting,   '',          'waiting'),
-    chip('🌙 Someday',   someday,   '',          'someday'),
+    chip('🌙 Parked',   someday,   '',          'someday'),
   ].filter(Boolean).join('');
 }
 
@@ -4060,14 +4151,14 @@ async function setTaskStatus(newStatus) {
   await loadTasks();
   renderFocus();
   // Re-render current pipeline view if open
-  const views = ['inbox','next','waiting','someday','reference','ideas'];
+  const views = ['inbox','active','waiting','parked','reference','ideas'];
   views.forEach(v => {
     const el = document.getElementById('view' + v.charAt(0).toUpperCase() + v.slice(1));
     if (el && el.style.display !== 'none') {
       if (v==='inbox')     renderInbox();
-      if (v==='next')      renderNext();
+      if (v==='active')      renderNext();
       if (v==='waiting')   renderWaiting();
-      if (v==='someday')   renderSomeday();
+      if (v==='parked')   renderParked();
       if (v==='reference') renderReference();
       if (v==='ideas')     renderIdeas();
     }
@@ -4152,7 +4243,7 @@ document.addEventListener('click', e => {
 
 function updateNavMoreBtn() {
   // Check if current active view is in the dropdown
-  const dropdownViews = ['next','waiting','someday','reference','ideas'];
+  const dropdownViews = ['next','waiting','parked','reference','ideas'];
   const activeBtn = document.querySelector('.nav-dropdown-btn.active');
   const moreBtn = document.getElementById('navMoreBtn');
   if (moreBtn) {
@@ -4815,6 +4906,177 @@ function renderAnalytics() {
   }
 }
 
+
+// ── SEARCH VIEW ──────────────────────────────────────────────────
+
+let searchFilters = {
+  query:    '',
+  status:   'all',
+  iq:       'all',
+  type:     'all',
+  domainId: '',
+  missing:  [],
+};
+let searchFilterOpen = false;
+
+function initSearchDomainSelect() {
+  const sel = document.getElementById('searchDomain');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">All areas</option>' +
+    state.domains.map(d=>`<option value="${d.id}">${d.icon||''} ${escHtml(d.name)}</option>`).join('');
+}
+
+function toggleSearchFilters() {
+  searchFilterOpen = !searchFilterOpen;
+  const panel   = document.getElementById('searchFilterPanel');
+  const chevron = document.getElementById('searchFilterChevron');
+  if (panel)   panel.style.display   = searchFilterOpen ? 'flex' : 'none';
+  if (chevron) chevron.style.transform = searchFilterOpen ? 'rotate(90deg)' : 'rotate(0)';
+}
+
+function setSearchStatus(v) {
+  searchFilters.status = v;
+  document.querySelectorAll('[data-searchstatus]').forEach(b=>
+    b.classList.toggle('active', b.dataset.searchstatus===v));
+  renderSearchView();
+}
+
+function setSearchIQ(v) {
+  searchFilters.iq = v;
+  document.querySelectorAll('[data-searchiq]').forEach(b=>
+    b.classList.toggle('active', b.dataset.searchiq===v));
+  renderSearchView();
+}
+
+function setSearchType(v) {
+  searchFilters.type = v;
+  document.querySelectorAll('[data-searchtype]').forEach(b=>
+    b.classList.toggle('active', b.dataset.searchtype===v));
+  renderSearchView();
+}
+
+function toggleSearchMissing(field) {
+  const idx = searchFilters.missing.indexOf(field);
+  if (idx > -1) searchFilters.missing.splice(idx, 1);
+  else searchFilters.missing.push(field);
+  document.querySelectorAll('[data-searchmissing]').forEach(b=>
+    b.classList.toggle('active', searchFilters.missing.includes(b.dataset.searchmissing)));
+  renderSearchView();
+}
+
+function clearSearchView() {
+  searchFilters = { query:'', status:'all', iq:'all', type:'all', domainId:'', missing:[] };
+  const inp = document.getElementById('searchInput');
+  if (inp) inp.value = '';
+  document.querySelectorAll('[data-searchstatus]').forEach(b=>b.classList.toggle('active',b.dataset.searchstatus==='all'));
+  document.querySelectorAll('[data-searchiq]').forEach(b=>b.classList.toggle('active',b.dataset.searchiq==='all'));
+  document.querySelectorAll('[data-searchtype]').forEach(b=>b.classList.toggle('active',b.dataset.searchtype==='all'));
+  document.querySelectorAll('[data-searchmissing]').forEach(b=>b.classList.remove('active'));
+  document.getElementById('searchDomain').value = '';
+  renderSearchView();
+}
+
+function applySearchMissingFilter() {
+  searchFilters.missing = ['importance','due_date','category','estimated'];
+  document.querySelectorAll('[data-searchmissing]').forEach(b=>b.classList.add('active'));
+  if (!searchFilterOpen) toggleSearchFilters();
+  renderSearchView();
+}
+
+function renderSearchView() {
+  initSearchDomainSelect();
+  const query = (document.getElementById('searchInput')?.value||'').toLowerCase().trim();
+  searchFilters.query   = query;
+  searchFilters.domainId = document.getElementById('searchDomain')?.value||'';
+
+  const unique = [...new Map(state.tasks.map(t=>[t.id,t])).values()];
+  let tasks = [...unique];
+
+  // Apply query
+  if (searchFilters.query) {
+    tasks = tasks.filter(t =>
+      t.name.toLowerCase().includes(searchFilters.query) ||
+      (t.notes||'').toLowerCase().includes(searchFilters.query)
+    );
+  }
+
+  // Apply status
+  if (searchFilters.status !== 'all') {
+    tasks = tasks.filter(t => t.status === searchFilters.status);
+  }
+
+  // Apply IQ
+  if (searchFilters.iq !== 'all') {
+    tasks = tasks.filter(t => t.importance_speed === searchFilters.iq);
+  }
+
+  // Apply type
+  if (searchFilters.type !== 'all') {
+    tasks = tasks.filter(t => t.type === searchFilters.type);
+  }
+
+  // Apply domain
+  if (searchFilters.domainId) {
+    const catIds = state.categories.filter(c=>c.domain_id===searchFilters.domainId).map(c=>c.id);
+    tasks = tasks.filter(t=>(t._categories||[]).some(c=>catIds.includes(c.id)));
+  }
+
+  // Apply missing fields
+  if (searchFilters.missing.includes('importance')) tasks = tasks.filter(t=>!t.importance_speed);
+  if (searchFilters.missing.includes('due_date'))   tasks = tasks.filter(t=>!t.due_date);
+  if (searchFilters.missing.includes('category'))   tasks = tasks.filter(t=>!(t._categories||[]).length);
+  if (searchFilters.missing.includes('estimated'))  tasks = tasks.filter(t=>!t.estimated_mins);
+
+  // Update filter badge
+  const activeFilters = [
+    searchFilters.status!=='all',
+    searchFilters.iq!=='all',
+    searchFilters.type!=='all',
+    !!searchFilters.domainId,
+    searchFilters.missing.length>0,
+  ].filter(Boolean).length;
+  const badge = document.getElementById('searchFilterBadge');
+  if (badge) {
+    badge.style.display = activeFilters ? 'inline' : 'none';
+    badge.textContent   = activeFilters + ' active';
+  }
+
+  // Update missing info badge
+  const missingTasks = unique.filter(t =>
+    t.status !== 'done' && t.status !== 'cancelled' &&
+    (!t.importance_speed || !t.due_date || !(t._categories||[]).length || !t.estimated_mins)
+  );
+  const missingBadge = document.getElementById('searchMissingBadge');
+  if (missingBadge) {
+    missingBadge.style.display = missingTasks.length ? 'block' : 'none';
+    missingBadge.textContent   = `⚠ ${missingTasks.length} tasks missing key info — tap to review`;
+  }
+
+  // Render results
+  const countEl = document.getElementById('searchCount');
+  const resultsEl = document.getElementById('searchResults');
+
+  // Show empty state if no filters active and no query
+  const hasAnyFilter = searchFilters.query || activeFilters > 0;
+  if (!hasAnyFilter) {
+    if (countEl) countEl.textContent = '';
+    if (resultsEl) resultsEl.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text3)">
+      <div style="font-size:32px;margin-bottom:12px">🔍</div>
+      <div style="font-size:14px;font-weight:500;color:var(--text2);margin-bottom:6px">Search all your tasks</div>
+      <div style="font-size:13px;line-height:1.6">Type to search, or use the filters above to browse.<br>Searches across all statuses, projects, and life areas.</div>
+    </div>`;
+    return;
+  }
+
+  if (countEl) countEl.textContent = `${tasks.length} task${tasks.length!==1?'s':''}`;
+  if (!resultsEl) return;
+  if (!tasks.length) {
+    resultsEl.innerHTML = pipelineEmpty('🔍','No results','Try different search terms or filters.');
+    return;
+  }
+  resultsEl.innerHTML = tasks.map(t => renderPipelineCard(t)).join('');
+}
+
 // ── VIEW SWITCHING ────────────────────────────────────────
 function switchView(view){
   document.querySelectorAll('.app-view').forEach(v=>v.style.display='none');
@@ -4843,9 +5105,9 @@ function switchView(view){
       toggleInboxFilterPanel();
     }
   }
-  if(view==='next')      renderNext();
+  if(view==='active')      renderNext();
   if(view==='waiting')   renderWaiting();
-  if(view==='someday')   renderSomeday();
+  if(view==='parked')   renderParked();
   if(view==='reference') renderReference();
   if(view==='ideas')     renderIdeas();
   if(view==='analytics') renderAnalytics();
