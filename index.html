@@ -1138,10 +1138,10 @@ option[value="done"],option[value="cancelled"]{color:var(--text3)}
     <button class="modal-close" onclick="closeModal('rescheduleModal')">✕</button>
     <div class="modal-title">Reschedule Task</div>
     <div id="rescheduleWarn" style="background:#f0a85510;border:1px solid #f0a85530;border-radius:var(--r-sm);padding:10px 12px;font-size:12px;color:var(--orange);font-family:'JetBrains Mono',monospace;line-height:1.5"></div>
-    <div class="form-group"><label class="form-label">New Due Date</label><input type="date" id="rNewDate"></div>
+    <div class="form-group"><label class="form-label">New Due Date</label><input type="date" id="rNewDate" onchange="onRescheduleDateChange()"></div>
     <div class="form-group">
       <label class="form-label">Reason (required)</label>
-      <select id="rReason">
+      <select id="rReason" onchange="onRescheduleReasonChange()">
         <option value="">— select a reason —</option>
         <option value="waiting_on_someone">Waiting on someone else</option>
         <option value="need_more_info">Need more information first</option>
@@ -1154,6 +1154,21 @@ option[value="done"],option[value="cancelled"]{color:var(--text3)}
     <div class="form-group" id="rOtherGroup" style="display:none">
       <label class="form-label">Describe reason</label>
       <input type="text" id="rOtherReason" placeholder="Brief description..." autocomplete="off" data-lpignore="true" data-form-type="other">
+    </div>
+    <!-- Waiting fields — shown when reason = waiting_on_someone -->
+    <div id="rWaitingGroup" style="display:none;flex-direction:column;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text3)">Waiting details</div>
+      <div class="form-group">
+        <label class="form-label">Waiting for</label>
+        <input type="text" id="rWaitingFor" placeholder="e.g. Vikram, Bank, Doctor's office..."
+          autocomplete="off" data-lpignore="true" data-form-type="other">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Follow-up date</label>
+        <input type="date" id="rFollowUpDate" onchange="onRescheduleFollowUpChange()">
+        <div class="hint">When you will check in. Defaults to same as due date.</div>
+      </div>
+      <div id="rFollowUpWarn" style="display:none;font-size:11px;color:var(--red);font-family:'JetBrains Mono',monospace">⚠ Follow-up date is after due date — you may miss the deadline before following up.</div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-sm btn-secondary" onclick="closeModal('rescheduleModal')">Cancel</button>
@@ -2056,36 +2071,88 @@ function openReschedule(id) {
   reschedulingId = id;
   const count = task.reschedule_count||0;
   document.getElementById('rescheduleWarn').textContent = count===0 ? 'Rescheduling requires a reason.' : `Rescheduled ${count} time${count>1?'s':''} already.`;
-  document.getElementById('rNewDate').value = task.due_date||todayStr();
-  document.getElementById('rReason').value  = '';
-  document.getElementById('rOtherGroup').style.display = 'none';
+  document.getElementById('rNewDate').value      = task.due_date||todayStr();
+  document.getElementById('rFollowUpDate').value = task.due_date||todayStr();
+  document.getElementById('rReason').value       = '';
+  document.getElementById('rWaitingFor').value   = task.waiting_for||'';
+  document.getElementById('rOtherGroup').style.display   = 'none';
+  document.getElementById('rWaitingGroup').style.display = 'none';
+  document.getElementById('rFollowUpWarn').style.display = 'none';
   document.getElementById('rescheduleModal').classList.add('open');
 }
+
 document.addEventListener('change',e=>{
-  if(e.target.id==='rReason') document.getElementById('rOtherGroup').style.display=e.target.value==='other'?'flex':'none';
   if(e.target.id==='cancelReason') document.getElementById('cancelOtherGroup').style.display=e.target.value==='other'?'flex':'none';
 });
+
+function onRescheduleReasonChange() {
+  const reason = document.getElementById('rReason').value;
+  document.getElementById('rOtherGroup').style.display   = reason==='other'              ? 'flex' : 'none';
+  document.getElementById('rWaitingGroup').style.display = reason==='waiting_on_someone' ? 'flex' : 'none';
+  if (reason==='waiting_on_someone') {
+    document.getElementById('rFollowUpDate').value = document.getElementById('rNewDate').value;
+    checkFollowUpWarning();
+  }
+}
+
+function onRescheduleDateChange() {
+  if (document.getElementById('rReason').value==='waiting_on_someone') {
+    const fu = document.getElementById('rFollowUpDate').value;
+    if (!fu) document.getElementById('rFollowUpDate').value = document.getElementById('rNewDate').value;
+    checkFollowUpWarning();
+  }
+}
+
+function onRescheduleFollowUpChange() { checkFollowUpWarning(); }
+
+function checkFollowUpWarning() {
+  const due = document.getElementById('rNewDate').value;
+  const fu  = document.getElementById('rFollowUpDate').value;
+  const w   = document.getElementById('rFollowUpWarn');
+  if (w) w.style.display = (due && fu && fu > due) ? 'block' : 'none';
+}
+
 async function confirmReschedule() {
   const id=reschedulingId, task=state.tasks.find(t=>t.id===id);
-  const newDate=document.getElementById('rNewDate').value;
-  const reason=document.getElementById('rReason').value;
-  const other=document.getElementById('rOtherReason').value.trim();
+  const newDate = document.getElementById('rNewDate').value;
+  const reason  = document.getElementById('rReason').value;
+  const other   = document.getElementById('rOtherReason').value.trim();
   if(!newDate){toast('Please select a new date','error');return;}
-  if(!reason){toast('Please select a reason','error');return;}
+  if(!reason) {toast('Please select a reason','error');return;}
   if(reason==='other'&&!other){toast('Please describe the reason','error');return;}
-  const finalReason=reason==='other'?other:reason;
-  const prevDate = task.due_date;
-  const prevCount = task.reschedule_count || 0;
-  const prevReasons = task.reschedule_reasons || [];
-  const newCount=prevCount+1;
-  await supa(`tasks?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({due_date:newDate,reschedule_count:newCount,reschedule_reasons:[...prevReasons,finalReason]})});
+  const finalReason = reason==='other' ? other : reason;
+  const prevDate    = task.due_date;
+  const prevCount   = task.reschedule_count||0;
+  const prevReasons = task.reschedule_reasons||[];
+
+  const patch = {
+    due_date:           newDate,
+    reschedule_count:   prevCount+1,
+    reschedule_reasons: [...prevReasons, finalReason],
+  };
+
+  if (reason==='waiting_on_someone') {
+    patch.status         = 'waiting';
+    patch.waiting_for    = document.getElementById('rWaitingFor').value.trim()||null;
+    patch.follow_up_date = document.getElementById('rFollowUpDate').value||newDate;
+  }
+
+  await supa(`tasks?id=eq.${id}`,{method:'PATCH',body:JSON.stringify(patch)});
   closeModal('rescheduleModal');
-  toastWithUndo('Task rescheduled', async () => {
-    await supa(`tasks?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({due_date:prevDate,reschedule_count:prevCount,reschedule_reasons:prevReasons})});
+
+  toastWithUndo(reason==='waiting_on_someone'?'Moved to Waiting':'Task rescheduled', async () => {
+    await supa(`tasks?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({
+      due_date:           prevDate,
+      reschedule_count:   prevCount,
+      reschedule_reasons: prevReasons,
+      status:             task.status,
+      waiting_for:        task.waiting_for||null,
+      follow_up_date:     task.follow_up_date||null,
+    })});
     toast('Undone — restored','success');
     await loadTasks(); renderFocus();
   });
-  await loadTasks(); renderFocus();
+  await loadTasks(); renderFocus(); renderWaiting();
 }
 
 // ── CAPTURE ───────────────────────────────────────────────
