@@ -4886,11 +4886,19 @@ async function applyBulkReview() {
     if (!task) continue;
     c[dec.action]=(c[dec.action]||0)+1;
     if (dec.action==='keep') continue;
+
+    const isRecurring = task.type === 'recurring' && task.recurrence_id;
+
     if (dec.action==='done') {
-      await supa(`tasks?id=eq.${taskId}`,{method:'PATCH',body:JSON.stringify({status:'done',completed_at:now})});
+      if (isRecurring) {
+        // Complete recurring — generate next instance (same as normal complete)
+        await finishRecurringQuiet(taskId);
+      } else {
+        await supa(`tasks?id=eq.${taskId}`,{method:'PATCH',body:JSON.stringify({status:'done',completed_at:now})});
+      }
     } else if (dec.action==='cancel') {
       await supa(`tasks?id=eq.${taskId}`,{method:'PATCH',body:JSON.stringify({status:'cancelled',cancelled_at:now,cancellation_reason:'Bulk review'})});
-      if (task.type==='recurring'&&task.recurrence_id)
+      if (isRecurring)
         await supa(`recurrences?id=eq.${task.recurrence_id}`,{method:'PATCH',body:JSON.stringify({is_active:false})});
     } else if (dec.action==='move'&&dec.date) {
       await supa(`tasks?id=eq.${taskId}`,{method:'PATCH',body:JSON.stringify({
@@ -4898,9 +4906,15 @@ async function applyBulkReview() {
         reschedule_count:(task.reschedule_count||0)+1,
         reschedule_reasons:[...(task.reschedule_reasons||[]),'Bulk review — rescheduled']
       })});
-    } else if (dec.action==='skip'&&task.type==='recurring') {
+      // Also update recurrence template next_occurrence if recurring
+      if (isRecurring) {
+        await supa(`recurrences?id=eq.${task.recurrence_id}`,{method:'PATCH',body:JSON.stringify({next_occurrence:dec.date})});
+      }
+    } else if (dec.action==='skip'&&isRecurring) {
+      // Skip: mark this instance as skipped, generate next occurrence
       await supa(`tasks?id=eq.${taskId}`,{method:'PATCH',body:JSON.stringify({status:'skipped',skipped_at:now})});
-      await finishRecurring(taskId, null);
+      // Generate next instance without marking done
+      await generateNextAfterSkip(taskId);
     }
   }
   closeModal('bulkReviewModal');
@@ -4912,6 +4926,76 @@ async function applyBulkReview() {
   if(c.done)   parts.push(`✓ ${c.done} done`);
   if(c.cancel) parts.push(`✕ ${c.cancel} cancelled`);
   toast(parts.join(' · ')||'Review complete','success');
+}
+
+// Complete a recurring task silently (no toast, no re-render — bulk review handles that)
+async function finishRecurringQuiet(id) {
+  const task = state.tasks.find(t=>t.id===id);
+  if (!task) return;
+  const today = todayStr();
+  await supa(`tasks?id=eq.${id}`,{method:'PATCH',body:JSON.stringify({status:'done',completed_at:new Date().toISOString()})});
+  const res = await supa(`recurrences?id=eq.${task.recurrence_id}&select=*`);
+  const templates = await res.json();
+  if (!Array.isArray(templates)||!templates.length) return;
+  const tmpl = templates[0];
+  const nextDate = calcNextDate(tmpl);
+  if (!nextDate) return;
+  const nr = await supa('tasks',{method:'POST',body:JSON.stringify({
+    workspace_id:state.workspaceId, recurrence_id:tmpl.id, name:tmpl.name, notes:tmpl.notes,
+    type:'recurring', status:'active', importance_speed:tmpl.importance_speed, context:tmpl.context,
+    estimated_mins:tmpl.estimated_mins, due_date:nextDate, current_count:0,
+    target_count:tmpl.recur_times_per_day||1, recur_pattern:tmpl.recur_pattern,
+    reschedule_count:0, reschedule_reasons:[], ai_suggestions:{},
+  })});
+  if (nr.ok) {
+    const nd = await nr.json();
+    const newId = nd[0]?.id;
+    if (newId) {
+      const rcRes = await supa(`recurrence_categories?recurrence_id=eq.${tmpl.id}&select=category_id`);
+      const rcs   = await rcRes.json();
+      if (Array.isArray(rcs)&&rcs.length) {
+        await supa('task_categories',{method:'POST',prefer:'return=minimal',
+          body:JSON.stringify(rcs.map(r=>({task_id:newId,category_id:r.category_id})))});
+      }
+    }
+  }
+  await supa(`recurrences?id=eq.${tmpl.id}`,{method:'PATCH',body:JSON.stringify({
+    last_occurrence:today, next_occurrence:nextDate, last_generated_at:new Date().toISOString()
+  })});
+}
+
+// Generate next recurring instance after a skip (current instance stays as 'skipped')
+async function generateNextAfterSkip(id) {
+  const task = state.tasks.find(t=>t.id===id);
+  if (!task||!task.recurrence_id) return;
+  const res = await supa(`recurrences?id=eq.${task.recurrence_id}&select=*`);
+  const templates = await res.json();
+  if (!Array.isArray(templates)||!templates.length) return;
+  const tmpl = templates[0];
+  const nextDate = calcNextDate(tmpl);
+  if (!nextDate) return;
+  const nr = await supa('tasks',{method:'POST',body:JSON.stringify({
+    workspace_id:state.workspaceId, recurrence_id:tmpl.id, name:tmpl.name, notes:tmpl.notes,
+    type:'recurring', status:'active', importance_speed:tmpl.importance_speed, context:tmpl.context,
+    estimated_mins:tmpl.estimated_mins, due_date:nextDate, current_count:0,
+    target_count:tmpl.recur_times_per_day||1, recur_pattern:tmpl.recur_pattern,
+    reschedule_count:0, reschedule_reasons:[], ai_suggestions:{},
+  })});
+  if (nr.ok) {
+    const nd = await nr.json();
+    const newId = nd[0]?.id;
+    if (newId) {
+      const rcRes = await supa(`recurrence_categories?recurrence_id=eq.${tmpl.id}&select=category_id`);
+      const rcs   = await rcRes.json();
+      if (Array.isArray(rcs)&&rcs.length) {
+        await supa('task_categories',{method:'POST',prefer:'return=minimal',
+          body:JSON.stringify(rcs.map(r=>({task_id:newId,category_id:r.category_id})))});
+      }
+    }
+  }
+  await supa(`recurrences?id=eq.${tmpl.id}`,{method:'PATCH',body:JSON.stringify({
+    next_occurrence:nextDate, last_generated_at:new Date().toISOString()
+  })});
 }
 
 function scheduleBrChecks() {
