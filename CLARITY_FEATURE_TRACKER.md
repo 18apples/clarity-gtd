@@ -173,10 +173,42 @@ out loud before speccing any AI feature.
 
 **AI feature ideas (parked, cost-profiled):**
 - *Day planning by time block* — match today's tasks + available Morning/Anytime/After-Hours blocks →
-  proposed plan. Ties to #61. ⚡ AI-only · large · on-demand. (Headline use.)
+  proposed plan. Ties to #61. ⚡ AI-only · large · on-demand. (Headline use.) **Staged — see #79.**
 - *Bulk review assistant* — AI drafts keep/move/skip suggestions inside #75. ♢ Enhances · medium · on-demand.
 - *Capture enrichment* — propose category/importance/time estimate at capture. ♢ Enhances · small · per-capture.
+  **Specced — see #80.**
 - *Recurrence "explain the pattern"* — optional nuance layer on top of #78. ⚡ AI-only · small–medium · on-demand.
+
+---
+
+## 🗓 #61 / #79 — TIME BLOCKS & DAY PLANNING (staged)
+
+The day-planning ambition breaks into layers. Build bottom-up; each lower layer works without the one above,
+and the AI layer only sits on top once the free layers function. **2a is the true prerequisite** — nothing
+time-of-day-smart can happen until contexts actually drive Focus.
+
+**#61 / 2a — Context drives Focus (rules, no AI).** *(♢ · free — PREREQUISITE)*
+Make @home / @out-and-about / @laptop / after-hours *do something*: group or filter Focus by context and
+time-of-day block (Morning / Anytime / After-Hours), so Focus can show "what's doable given where I am."
+Today contexts are tagged but don't surface anywhere. This is the long-deferred #61 work and the foundation
+for everything below. **Needs a proper spec next.**
+
+**#79 / 2b — Capacity-aware planning (rules, no AI).** *(♢ · free)*
+User already enters capacity per block. Rules pass: "you have 30 min this morning → here are the ≤30-min
+tasks that fit." Fitting tasks into a time budget is arithmetic, not AI.
+
+**#79 / 2c — AI day plan.** *(⚡ AI-only · large · on-demand, user-initiated)*
+Given today's tasks (times, contexts, importance) + available blocks, propose an *ordered* plan across
+Morning/Anytime/After-Hours — sequencing and trade-offs, what to defer. "Plan my day" button; never automatic.
+Unplug test passes cleanly: turning AI off leaves 2a + 2b fully working, the AI plan just vanishes.
+
+**#80 — Capture enrichment (importance + time estimate suggestions).** *(♢ Enhances)*
+On-demand "✨ suggest" per field at capture — you pull help when a task is ambiguous, skip it when obvious.
+- *1a Importance/urgency* — propose a quadrant from name/notes. ⚡ AI-only slice · small · on-demand.
+- *1b Time estimate* — propose a duration instead of the 30-min default. **Rules first:** verb→duration
+  lookup ("call"→5, "email"→10, "buy/shop"→45) handles common cases free; AI only for ambiguous ones.
+- Unplug test: ♢ Enhances — fields are pre-filled *suggestions* you accept/override; AI off → type them
+  yourself as today. On-demand (button) chosen over auto-fire-per-capture to control cost.
 
 ---
 
