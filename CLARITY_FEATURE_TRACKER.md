@@ -179,6 +179,44 @@ out loud before speccing any AI feature.
   **Specced — see #80.**
 - *Recurrence "explain the pattern"* — optional nuance layer on top of #78. ⚡ AI-only · small–medium · on-demand.
 
+### AI idea backlog (added, not yet specced — cost-profiled + unplug-tested)
+
+**Cheap wins — generators, ♢ Enhances, small tokens, on-demand:**
+- **#81 — Task name cleanup.** Rewrite "groceries" → "Buy groceries" on request. Extends the existing
+  action-verb warning from flag to fix. ♢ · small · on-demand button.
+- **#82 — Subtask generation.** ✨ on a task → AI proposes subtasks ("Renew passport" → check docs, book
+  appt, photos, submit). Drafts what you now do by hand. Pairs with #77 checklist + projects.
+  ♢ · small–medium · on-demand. *(High-leverage for a project-heavy workflow.)*
+- **#83 — Weekly reflection summary.** On-demand narration of analytics data ("23 done, 6 cancelled, most
+  reschedules were quarterly recurring"). ♢ · small · weekly on-demand.
+- **#84 — Duplicate/similar detection at capture.** Flags a near-identical existing task. Helps B23.
+  Rules-based fuzzy match may do most of this free; AI only for nuance. ♢ · small · per-capture (on-demand).
+
+**Medium value — on-demand:**
+- **#85 — Parked/Ideas resurfacing.** "40 parked items — here are 3 worth revisiting given the season / recent
+  activity." AI finds the relevant needle; a date rule can't judge relevance. ⚡ AI-only · medium · on-demand.
+  *(High-leverage — Parked list will otherwise become a graveyard.)*
+- **#86 — Project decomposition.** Bigger sibling of #82. "Plan Japan trip" → full project structure: tasks,
+  rough sequence, what to research. ⚡ AI-only · medium–large · on-demand.
+- **#87 — Waiting follow-up drafting.** When a follow-up date arrives, AI drafts the chase message.
+  Turns a reminder into a done thing. ♢ Enhances (reminder still fires without it) · small · on-demand.
+
+**Judgment-heavy — ⚡ AI-only, larger, fail louder when wrong:**
+- **#88 — Natural-language capture.** "Call plumber about the leak next Tuesday afternoon, urgent" → parses
+  name/date/importance/context in one shot. Highest-leverage capture, riskiest to misread — careful design.
+  ⚡ AI-only · medium · per-capture (on-demand).
+- **#89 — "What should I do right now?"** Single tap: given current time, context, and free minutes, surface
+  the best 1–2 things now. Impulse cousin of the full day plan (#79). ⚡ AI-only · medium · on-demand.
+- **#90 — Weekly load rebalancing.** Sees Tuesday overloaded / Thursday empty → proposes moves. Uses capacity
+  data + judgment about what's movable. ⚡ AI-only · large · on-demand.
+
+**Steer AWAY from AI (deterministic — keep free):** sorting, filtering, quadrant math, due-date logic,
+recurrence calculation. And never fire AI automatically on every capture/load — keep it on tapped buttons.
+
+**Pattern:** cheapest + safest AI features are **generators** (draft this subtask list / message / summary —
+you stay in control). Riskier ones are **interpreters** (parse this / decide for me) — higher value, fail
+louder. Prefer generators first.
+
 ---
 
 ## 🗓 #61 / #79 — TIME BLOCKS & DAY PLANNING (staged)
