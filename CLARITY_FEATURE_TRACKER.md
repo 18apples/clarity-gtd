@@ -98,6 +98,18 @@ twice inside the recurring modal. Needs a fresh approach (separate modal, or iso
 **#69 — Pull forward tasks with extra capacity.** "I have capacity" button in Focus surfaces near-term
 upcoming tasks; selecting sets due date to today, logged "Pulled forward — extra capacity." Session-only.
 
+**#78 — Recurring cadence review (rules-based, no AI).** *(♢ Enhances — zero API cost)* An occasional,
+on-demand bulk review of recurring tasks that flags cadences worth adjusting, using data already stored
+(`reschedule_count`, `reschedule_reasons`, skips, completions) — no AI required.
+- Trigger: on-demand button (e.g. in Settings or the recurring/analytics area); not automatic.
+- Rule signal (starting point): if the last N instances of a recurrence were each rescheduled ≥1 time,
+  suggest lengthening the interval (e.g. quarterly → every 4 months). Inverse: consistently completed
+  early/on time with room to spare → could tighten. Tune thresholds during build.
+- Output: a list of "consider changing X from A → B" suggestions; user accepts (updates the recurrence)
+  or dismisses per item. Nothing changes without confirmation.
+- Explicitly rules-based; an optional AI "explain the pattern / seasonal nuance" layer can sit on top later
+  (would then be ⚡ AI-only and gated by the master switch — see AI section).
+
 ### 🟠 Medium
 **#59 — Project close: bulk task review.** Review step on project close with bulk + per-task actions.
 **#62 — Calendar drag-and-drop reschedule.** Drag chip → reason modal pre-filled. Desktop drag API;
@@ -135,8 +147,36 @@ but the time-of-day dimension isn't built. Tied to AI + Google Calendar directio
 **Calendar design overhaul.** Current calendar not user-friendly; redesign needed before daily use.
 
 ### 🔮 Deferred directions (not yet specced)
-- **AI integration** — day planning by time block, smart surfacing by context/time.
 - **Google Calendar sync** — real free/busy blocks, drag tasks onto the calendar.
+
+---
+
+## 🤖 AI FRAMEWORK (agreed principles — not yet built)
+
+**Core principle — the "unplug test":** the app must remain fully functional with AI OFF. Every AI
+feature is tagged:
+- **♢ Enhances** — works fully without AI; AI just supercharges it. (Baseline intact.)
+- **⚡ AI-only** — doesn't exist without AI; turning AI off makes it disappear cleanly without
+  removing/breaking any pre-existing flow.
+- **✗ Breaks** — turning AI off would strand a flow. **Do not build** these; redesign until they pass.
+AI is always additive, never load-bearing for something the manual flow depended on. Run this test
+out loud before speccing any AI feature.
+
+**AI settings scaffolding (to build):**
+- New **Settings → AI** sub-tab.
+- **Master switch** — one toggle gating all AI; off = zero API calls.
+- **API spend calculator** — running usage/cost estimate (Anthropic key already in Admin).
+- **Per-feature toggles** — added as each AI feature ships; granularity TBD.
+- Each AI feature documents a **cost profile**: tokens/call (small/medium/large) · trigger frequency
+  (per capture / per day / on-demand) · initiator (automatic vs. user-tapped).
+  Cheap = on-demand + user-initiated + small. Expensive = automatic + per-capture + large.
+
+**AI feature ideas (parked, cost-profiled):**
+- *Day planning by time block* — match today's tasks + available Morning/Anytime/After-Hours blocks →
+  proposed plan. Ties to #61. ⚡ AI-only · large · on-demand. (Headline use.)
+- *Bulk review assistant* — AI drafts keep/move/skip suggestions inside #75. ♢ Enhances · medium · on-demand.
+- *Capture enrichment* — propose category/importance/time estimate at capture. ♢ Enhances · small · per-capture.
+- *Recurrence "explain the pattern"* — optional nuance layer on top of #78. ⚡ AI-only · small–medium · on-demand.
 
 ---
 
