@@ -72,6 +72,12 @@ header{display:flex;align-items:center;justify-content:space-between;padding:0 2
 .settings-tab{background:none;border:none;color:var(--text2);padding:7px 14px;border-radius:var(--r-sm);cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;transition:all .15s;white-space:nowrap}
 .settings-tab:hover{color:var(--text);background:var(--surface3)}
 .settings-tab.active{background:var(--accent);color:#0a0a0b;font-weight:600}
+.ai-switch{position:relative;display:inline-block;width:42px;height:24px;flex-shrink:0}
+.ai-switch input{opacity:0;width:0;height:0}
+.ai-switch-slider{position:absolute;cursor:pointer;inset:0;background:var(--surface3);border:1px solid var(--border);border-radius:24px;transition:.2s}
+.ai-switch-slider:before{position:absolute;content:"";height:16px;width:16px;left:3px;bottom:3px;background:var(--text3);border-radius:50%;transition:.2s}
+.ai-switch input:checked+.ai-switch-slider{background:var(--accent);border-color:var(--accent)}
+.ai-switch input:checked+.ai-switch-slider:before{transform:translateX(18px);background:#0a0a0b}
 .settings-panel{display:none;flex-direction:column;gap:20px}
 .settings-panel.active{display:flex}
 .settings-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:14px}
@@ -751,6 +757,7 @@ option[value="done"],option[value="cancelled"]{color:var(--text3)}
         <button class="settings-tab"        data-stab="contexts"    onclick="switchSettingsTab('contexts')">Contexts</button>
         <button class="settings-tab"        data-stab="blackouts"   onclick="switchSettingsTab('blackouts')">Blackout Periods</button>
         <button class="settings-tab"        data-stab="users"       onclick="switchSettingsTab('users')">Users & Permissions</button>
+        <button class="settings-tab"        data-stab="ai"          onclick="switchSettingsTab('ai')">AI</button>
         <button class="settings-tab"        data-stab="admin"       onclick="switchSettingsTab('admin')">Admin</button>
       </div>
 
@@ -831,6 +838,75 @@ option[value="done"],option[value="cancelled"]{color:var(--text3)}
       </div>
 
       <!-- ADMIN -->
+      <div class="settings-panel" id="stab-ai">
+        <div class="settings-section">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <div class="settings-section-title">🤖 AI Features</div>
+            <div id="aiMasterState" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3)">Off</div>
+          </div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:14px">
+            Clarity works fully without AI. When enabled, AI features add optional suggestions you can accept or ignore — they never change anything automatically. Turn this off any time to stop all API calls.
+          </div>
+
+          <!-- Master switch -->
+          <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:16px">
+            <div>
+              <div style="font-size:14px;font-weight:500">Enable AI features</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:2px">Master switch — off means zero API calls</div>
+            </div>
+            <label class="ai-switch">
+              <input type="checkbox" id="aiMasterSwitch" onchange="toggleAiMaster()">
+              <span class="ai-switch-slider"></span>
+            </label>
+          </div>
+
+          <!-- No key warning -->
+          <div id="aiNoKeyWarn" style="display:none;background:#f0a85510;border:1px solid #f0a85530;border-radius:var(--r-sm);padding:10px 12px;font-size:12px;color:var(--orange);line-height:1.5;margin-bottom:16px">
+            ⚠ No Anthropic API key set. Add one in the Admin tab to use AI features.
+          </div>
+
+          <!-- Feature toggles -->
+          <div id="aiFeatureList" style="display:none;flex-direction:column;gap:10px;margin-bottom:20px">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text3)">Features</div>
+            <!-- #81 Name cleanup -->
+            <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 14px">
+              <div style="flex:1">
+                <div style="font-size:13px;font-weight:500">✨ Task name cleanup</div>
+                <div style="font-size:11px;color:var(--text3);margin-top:2px;line-height:1.5">Suggests a cleaner, action-phrased task name on request. <span style="color:var(--text2)">Cost: tiny · ~$0.0001/use · on-demand</span></div>
+              </div>
+              <label class="ai-switch">
+                <input type="checkbox" id="aiFeat_name_cleanup" onchange="toggleAiFeature('name_cleanup')">
+                <span class="ai-switch-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Usage / spend -->
+          <div id="aiUsagePanel" style="display:none;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text3)">Usage & spend</div>
+              <button class="btn-icon" style="font-size:11px" title="Refresh" onclick="loadAiUsage()">↻</button>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <div style="flex:1;min-width:130px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 14px">
+                <div style="font-size:11px;color:var(--text3)">This month</div>
+                <div style="font-size:20px;font-weight:600;font-family:'JetBrains Mono',monospace" id="aiMonthCost">$0.00</div>
+                <div style="font-size:10px;color:var(--text3)" id="aiMonthCalls">0 calls</div>
+              </div>
+              <div style="flex:1;min-width:130px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 14px">
+                <div style="font-size:11px;color:var(--text3)">All time</div>
+                <div style="font-size:20px;font-weight:600;font-family:'JetBrains Mono',monospace" id="aiAllCost">$0.00</div>
+                <div style="font-size:10px;color:var(--text3)" id="aiAllCalls">0 calls</div>
+              </div>
+            </div>
+            <div id="aiModelBreakdown" style="display:flex;flex-direction:column;gap:6px"></div>
+            <div style="font-size:10px;color:var(--text3);line-height:1.5;margin-top:4px">
+              Costs are estimated from actual token counts × current Haiku pricing ($1/$5 per 1M in/out). For your true billed amount and to set a spend cap, check your Anthropic Console.
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="settings-panel" id="stab-admin">
         <div class="settings-section">
           <div style="display:flex;align-items:center;justify-content:space-between">
@@ -947,7 +1023,20 @@ option[value="done"],option[value="cancelled"]{color:var(--text3)}
     <div class="modal-title" id="captureTitle">Capture Task</div>
     <div class="form-group">
       <label class="form-label">Name</label>
-      <input type="text" id="cName" placeholder="Start with an action verb — Call, Write, Review..." oninput="onNameInput()" autocomplete="off" autocorrect="off" autocapitalize="sentences" data-lpignore="true" data-form-type="other">
+      <div style="display:flex;gap:6px;align-items:center">
+        <input type="text" id="cName" placeholder="Start with an action verb — Call, Write, Review..." oninput="onNameInput()" autocomplete="off" autocorrect="off" autocapitalize="sentences" data-lpignore="true" data-form-type="other" style="flex:1">
+        <button type="button" id="aiNameBtn" onclick="suggestNameCleanup()" title="Suggest a cleaner name (AI)" style="flex-shrink:0;background:none;border:1px solid var(--border);color:var(--text2);border-radius:var(--r-sm);padding:8px 10px;cursor:pointer;font-size:13px">✨</button>
+      </div>
+      <div id="aiNameSuggestion" style="display:none;align-items:center;justify-content:space-between;gap:8px;background:var(--surface2);border:1px solid var(--accent);border-radius:var(--r-sm);padding:8px 10px;margin-top:6px">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace">✨ SUGGESTION</div>
+          <div id="aiNameSuggestionText" style="font-size:13px;color:var(--text)"></div>
+        </div>
+        <div style="display:flex;gap:4px;flex-shrink:0">
+          <button type="button" onclick="acceptNameSuggestion()" style="background:var(--accent);color:#0a0a0b;border:none;border-radius:var(--r-sm);padding:4px 10px;cursor:pointer;font-size:11px;font-weight:600;font-family:'JetBrains Mono',monospace">Use</button>
+          <button type="button" onclick="dismissNameSuggestion()" style="background:none;border:1px solid var(--border);color:var(--text3);border-radius:var(--r-sm);padding:4px 8px;cursor:pointer;font-size:11px">✕</button>
+        </div>
+      </div>
       <div class="hint verb-warn" id="verbWarn">⚠ Start with an action verb — e.g. Call, Email, Write, Review, Research, Schedule, Book, Fix, Read, Decide, Check, Update, Plan, Buy, Meet, Create, Send, Draft, Sign, Pay, Attend, Watch, Learn, Build, Organize, Find, Ask, Submit, Discuss, Confirm</div>
       <div class="hint" id="ideaHint" style="display:none">💡 Ideas don't need action verbs</div>
     </div>
@@ -1663,6 +1752,7 @@ async function bootApp() {
   await loadCoreData();
   await Promise.all([loadTasks(), loadProjects()]);
   renderFocus();
+  await loadAiState();
   // #75: Check if this is first login of the day — auto-prompt bulk review if needed
   checkFirstLoginReview();
 }
@@ -4438,6 +4528,7 @@ function switchSettingsTab(tab) {
   // Load dynamic content per tab
   if (tab === 'contexts')  renderSettingsContexts();
   if (tab === 'blackouts') renderSettingsBlackouts();
+  if (tab === 'ai')        renderAiSettings();
   if (tab === 'workspace') {
     document.getElementById('settingsWsName').value = state.workspaceName||'Personal';
     document.getElementById('settingsWsId').textContent = state.workspaceId||'—';
@@ -5331,6 +5422,197 @@ function renderSearchView() {
     return;
   }
   resultsEl.innerHTML = tasks.map(t => renderPipelineCard(t)).join('');
+}
+
+
+// ── AI SCAFFOLDING (#80-series foundation) ────────────────────────
+
+// Haiku 4.5 pricing (per token): $1/M input, $5/M output
+const AI_MODEL = 'claude-haiku-4-5';
+const AI_PRICE_IN  = 1.00 / 1_000_000;
+const AI_PRICE_OUT = 5.00 / 1_000_000;
+
+let aiState = {
+  enabled:  false,
+  flags:    {},          // { name_cleanup: true, ... }
+};
+
+// Load AI settings from workspace
+async function loadAiState() {
+  if (!state.workspaceId) return;
+  try {
+    const res  = await supa(`workspaces?id=eq.${state.workspaceId}&select=ai_enabled,ai_feature_flags`);
+    const data = await res.json();
+    if (Array.isArray(data) && data[0]) {
+      aiState.enabled = !!data[0].ai_enabled;
+      aiState.flags   = data[0].ai_feature_flags || {};
+    }
+  } catch(e) { console.warn('loadAiState:', e); }
+}
+
+// Is a given AI feature usable right now? (master on + feature on + key present)
+function aiFeatureOn(feature) {
+  return aiState.enabled && !!aiState.flags[feature] && !!AI_KEY;
+}
+
+async function toggleAiMaster() {
+  const on = document.getElementById('aiMasterSwitch').checked;
+  aiState.enabled = on;
+  await supa(`workspaces?id=eq.${state.workspaceId}`,{method:'PATCH',body:JSON.stringify({ai_enabled:on})});
+  renderAiSettings();
+}
+
+async function toggleAiFeature(feature) {
+  const on = document.getElementById('aiFeat_'+feature).checked;
+  aiState.flags = { ...aiState.flags, [feature]: on };
+  await supa(`workspaces?id=eq.${state.workspaceId}`,{method:'PATCH',body:JSON.stringify({ai_feature_flags:aiState.flags})});
+}
+
+function renderAiSettings() {
+  const hasKey = !!AI_KEY;
+  document.getElementById('aiMasterSwitch').checked = aiState.enabled;
+  document.getElementById('aiMasterState').textContent = aiState.enabled ? 'On' : 'Off';
+  document.getElementById('aiNoKeyWarn').style.display  = hasKey ? 'none' : 'block';
+  document.getElementById('aiFeatureList').style.display = aiState.enabled ? 'flex' : 'none';
+  document.getElementById('aiUsagePanel').style.display  = aiState.enabled ? 'flex' : 'none';
+  // Feature toggle states
+  const nc = document.getElementById('aiFeat_name_cleanup');
+  if (nc) nc.checked = !!aiState.flags.name_cleanup;
+  if (aiState.enabled) loadAiUsage();
+}
+
+// ── AI USAGE TRACKING ─────────────────────────────────────────────
+
+async function logAiUsage(feature, model, inTok, outTok) {
+  const cost = inTok*AI_PRICE_IN + outTok*AI_PRICE_OUT;
+  try {
+    await supa('ai_usage',{method:'POST',prefer:'return=minimal',body:JSON.stringify({
+      workspace_id: state.workspaceId, feature, model,
+      input_tokens: inTok, output_tokens: outTok, est_cost_usd: cost
+    })});
+  } catch(e) { console.warn('logAiUsage:', e); }
+}
+
+async function loadAiUsage() {
+  if (!state.workspaceId) return;
+  try {
+    const res  = await supa(`ai_usage?workspace_id=eq.${state.workspaceId}&select=model,input_tokens,output_tokens,est_cost_usd,created_at`);
+    const rows = await res.json();
+    if (!Array.isArray(rows)) return;
+
+    const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0,0,0,0);
+    let monthCost=0, monthCalls=0, allCost=0, allCalls=0;
+    const byModel = {};
+
+    rows.forEach(r => {
+      const cost = parseFloat(r.est_cost_usd)||0;
+      allCost += cost; allCalls++;
+      if (new Date(r.created_at) >= monthStart) { monthCost += cost; monthCalls++; }
+      if (!byModel[r.model]) byModel[r.model] = {calls:0,inTok:0,outTok:0,cost:0};
+      byModel[r.model].calls++;
+      byModel[r.model].inTok  += r.input_tokens||0;
+      byModel[r.model].outTok += r.output_tokens||0;
+      byModel[r.model].cost   += cost;
+    });
+
+    document.getElementById('aiMonthCost').textContent  = '$'+monthCost.toFixed(monthCost<0.01?4:2);
+    document.getElementById('aiMonthCalls').textContent = `${monthCalls} call${monthCalls!==1?'s':''}`;
+    document.getElementById('aiAllCost').textContent    = '$'+allCost.toFixed(allCost<0.01?4:2);
+    document.getElementById('aiAllCalls').textContent   = `${allCalls} call${allCalls!==1?'s':''}`;
+
+    const bd = document.getElementById('aiModelBreakdown');
+    const models = Object.entries(byModel);
+    bd.innerHTML = models.length ? models.map(([m,d])=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 12px;font-size:11px">
+        <span style="font-family:'JetBrains Mono',monospace">${m}</span>
+        <span style="color:var(--text3)">${d.calls} calls · ${(d.inTok/1000).toFixed(1)}k in · ${(d.outTok/1000).toFixed(1)}k out · <span style="color:var(--text2)">$${d.cost.toFixed(d.cost<0.01?4:2)}</span></span>
+      </div>`).join('') : '<div style="font-size:11px;color:var(--text3)">No usage yet.</div>';
+  } catch(e) { console.warn('loadAiUsage:', e); }
+}
+
+// ── CORE AI CALL HELPER ───────────────────────────────────────────
+// Returns { text, inTok, outTok } or throws. Logs usage automatically.
+
+async function callAI(feature, systemPrompt, userPrompt, maxTokens=200) {
+  if (!AI_KEY) throw new Error('No API key');
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': AI_KEY,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: AI_MODEL,
+      max_tokens: maxTokens,
+      system: systemPrompt,
+      messages: [{ role:'user', content:userPrompt }],
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(()=>({}));
+    throw new Error(err.error?.message || `API error ${res.status}`);
+  }
+  const data = await res.json();
+  const text = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('').trim();
+  const inTok  = data.usage?.input_tokens  || 0;
+  const outTok = data.usage?.output_tokens || 0;
+  await logAiUsage(feature, AI_MODEL, inTok, outTok);
+  return { text, inTok, outTok };
+}
+
+// ── #81 TASK NAME CLEANUP ─────────────────────────────────────────
+
+async function suggestNameCleanup() {
+  const input = document.getElementById('cName');
+  const raw = input?.value.trim();
+  if (!raw) { toast('Type a task name first','error'); return; }
+  if (!aiFeatureOn('name_cleanup')) {
+    toast('Enable AI + Task name cleanup in Settings → AI','error');
+    return;
+  }
+  const btn = document.getElementById('aiNameBtn');
+  const orig = btn ? btn.textContent : '';
+  if (btn) { btn.textContent = '…'; btn.disabled = true; }
+  try {
+    const { text } = await callAI(
+      'name_cleanup',
+      'You clean up personal task names. Rewrite the task as a short, clear, action-phrased task starting with a verb. Keep it concise. Return ONLY the rewritten task name, no quotes, no explanation, no alternatives.',
+      raw,
+      60
+    );
+    const suggestion = text.replace(/^["']|["']$/g,'').trim();
+    if (suggestion && suggestion.toLowerCase() !== raw.toLowerCase()) {
+      showNameSuggestion(suggestion);
+    } else {
+      toast('Looks good already ✓','success');
+    }
+  } catch(e) {
+    toast('AI error: '+e.message,'error');
+  } finally {
+    if (btn) { btn.textContent = orig; btn.disabled = false; }
+  }
+}
+
+function showNameSuggestion(suggestion) {
+  const box = document.getElementById('aiNameSuggestion');
+  if (!box) return;
+  box.dataset.suggestion = suggestion;
+  document.getElementById('aiNameSuggestionText').textContent = suggestion;
+  box.style.display = 'flex';
+}
+
+function acceptNameSuggestion() {
+  const box = document.getElementById('aiNameSuggestion');
+  const s = box?.dataset.suggestion;
+  if (s) { document.getElementById('cName').value = s; onNameInput(); }
+  if (box) box.style.display = 'none';
+}
+
+function dismissNameSuggestion() {
+  const box = document.getElementById('aiNameSuggestion');
+  if (box) box.style.display = 'none';
 }
 
 // ── VIEW SWITCHING ────────────────────────────────────────
