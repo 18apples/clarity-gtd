@@ -865,6 +865,12 @@ option[value="done"],option[value="cancelled"]{color:var(--text3)}
             ⚠ No Anthropic API key set. Add one in the Admin tab to use AI features.
           </div>
 
+          <!-- Key rotation reminder -->
+          <div id="aiKeyRotation" style="display:none;align-items:flex-start;justify-content:space-between;gap:10px;border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 12px;margin-bottom:16px">
+            <div class="rot-text" style="flex:1;font-size:12px;line-height:1.5;color:var(--text2)"></div>
+            <button type="button" onclick="markKeyRotated()" title="I've rotated my key" style="flex-shrink:0;background:none;border:1px solid var(--border);color:var(--text2);border-radius:var(--r-sm);padding:4px 10px;cursor:pointer;font-size:11px;font-family:'JetBrains Mono',monospace;white-space:nowrap">Rotated ✓</button>
+          </div>
+
           <!-- Feature toggles -->
           <div id="aiFeatureList" style="display:none;flex-direction:column;gap:10px;margin-bottom:20px">
             <div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text3)">Features</div>
@@ -4779,7 +4785,11 @@ function saveAdminSettings(){
   const ai=document.getElementById('adminAI').value.trim();
   if(url){SUPABASE_URL=url;localStorage.setItem('clarity_url',url);}
   if(key){SUPABASE_KEY=key;localStorage.setItem('clarity_key',key);}
-  if(ai){AI_KEY=ai;localStorage.setItem('clarity_ai',ai);}
+  if(ai){
+    // If the key actually changed, stamp the rotation date
+    if(ai!==AI_KEY){ localStorage.setItem('clarity_ai_set_date', todayStr()); }
+    AI_KEY=ai;localStorage.setItem('clarity_ai',ai);
+  }
   toast('Settings saved — reloading...','success');
   setTimeout(()=>location.reload(),1200);
 }
@@ -5479,6 +5489,45 @@ function renderAiSettings() {
   const nc = document.getElementById('aiFeat_name_cleanup');
   if (nc) nc.checked = !!aiState.flags.name_cleanup;
   if (aiState.enabled) loadAiUsage();
+  renderKeyRotationReminder();
+}
+
+// #AI key rotation reminder — best practice is quarterly (90 days)
+function markKeyRotated() {
+  localStorage.setItem('clarity_ai_set_date', todayStr());
+  toast('Rotation date reset — thanks for keeping it secure ✓','success');
+  renderKeyRotationReminder();
+}
+
+function renderKeyRotationReminder() {
+  const box = document.getElementById('aiKeyRotation');
+  if (!box) return;
+  if (!AI_KEY) { box.style.display = 'none'; return; }
+  const setDate = localStorage.getItem('clarity_ai_set_date');
+  if (!setDate) {
+    // Key exists but no date recorded — stamp today so the clock starts
+    localStorage.setItem('clarity_ai_set_date', todayStr());
+    box.style.display = 'none';
+    return;
+  }
+  const days = Math.floor((new Date(todayStr()) - new Date(setDate)) / 86400000);
+  const ROTATE_DAYS = 90;
+  if (days >= ROTATE_DAYS) {
+    box.style.display = 'flex';
+    box.style.borderColor = '#f0606030';
+    box.style.background   = '#f0606010';
+    box.querySelector('.rot-text').innerHTML =
+      `<span style="color:var(--red)">🔑 Your API key was set ${days} days ago.</span> Security best practice is to rotate it every 90 days. Generate a new key in the Anthropic Console, then update it in the Admin tab.`;
+  } else if (days >= ROTATE_DAYS - 14) {
+    // Gentle heads-up in the last two weeks
+    box.style.display = 'flex';
+    box.style.borderColor = '#f0a85530';
+    box.style.background   = '#f0a85510';
+    box.querySelector('.rot-text').innerHTML =
+      `<span style="color:var(--orange)">🔑 Key rotation due in ${ROTATE_DAYS - days} day${ROTATE_DAYS-days!==1?'s':''}.</span> Plan to generate a fresh key in the Anthropic Console soon.`;
+  } else {
+    box.style.display = 'none';
+  }
 }
 
 // ── AI USAGE TRACKING ─────────────────────────────────────────────
