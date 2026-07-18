@@ -1,5 +1,5 @@
 # CLARITY GTD — Feature & Bug Tracker
-> Last updated: July 2026
+> Last updated: July 2026 — AI strategy rewritten this session (see 🤖 AI STRATEGY)
 > Single source of truth. Keep in GitHub alongside index.html and the SQL files.
 > Upload at the start of any session to restore context.
 
@@ -68,6 +68,17 @@ card color declutter · complete-from-edit · done/cancelled visual treatment ·
 - **LastPass autofill** — attributes added everywhere; ultimately fixed via the LastPass site setting
   "disable autofill on this site."
 
+### AI foundation (shipped — code was ahead of this tracker)
+- **AI scaffolding** — `workspaces.ai_enabled` + `ai_feature_flags` (JSON); master switch; per-feature
+  toggles; `aiFeatureOn(feature)` gate; Settings → AI sub-tab; 90-day API key rotation reminder
+  (`clarity_ai_set_date` in localStorage, amber at 76 days, red at 90).
+- **`callAI(feature, systemPrompt, userPrompt, maxTokens)`** — single call helper. Returns
+  `{text, inTok, outTok}`, logs usage automatically, throws on error. All AI features go through this.
+- **`ai_usage` table + spend panel** — logs model/tokens/est cost per call; Settings → AI shows
+  month + all-time cost, call counts, per-model breakdown. **Informational, not a governor.**
+- **#81 Task name cleanup** — ✨ button in capture bar; suggestion chip with accept/dismiss;
+  "Looks good already ✓" when no change needed. First shipped AI feature.
+
 ---
 
 ## 🐛 KNOWN BUGS
@@ -98,17 +109,12 @@ twice inside the recurring modal. Needs a fresh approach (separate modal, or iso
 **#69 — Pull forward tasks with extra capacity.** "I have capacity" button in Focus surfaces near-term
 upcoming tasks; selecting sets due date to today, logged "Pulled forward — extra capacity." Session-only.
 
-**#78 — Recurring cadence review (rules-based, no AI).** *(♢ Enhances — zero API cost)* An occasional,
-on-demand bulk review of recurring tasks that flags cadences worth adjusting, using data already stored
-(`reschedule_count`, `reschedule_reasons`, skips, completions) — no AI required.
-- Trigger: on-demand button (e.g. in Settings or the recurring/analytics area); not automatic.
-- Rule signal (starting point): if the last N instances of a recurrence were each rescheduled ≥1 time,
-  suggest lengthening the interval (e.g. quarterly → every 4 months). Inverse: consistently completed
-  early/on time with room to spare → could tighten. Tune thresholds during build.
-- Output: a list of "consider changing X from A → B" suggestions; user accepts (updates the recurrence)
-  or dismisses per item. Nothing changes without confirmation.
-- Explicitly rules-based; an optional AI "explain the pattern / seasonal nuance" layer can sit on top later
-  (would then be ⚡ AI-only and gated by the master switch — see AI section).
+**#78 — Recurring cadence review.** *(re-specced AI-native — see AI backlog Tier 3)* On-demand bulk
+review of recurring tasks that flags cadences worth adjusting. Feed the model each recurrence's history
+(`reschedule_count`, `reschedule_reasons`, skips, completion timing) and let it judge *and* explain —
+including seasonality a rule can't see. Output: "consider changing X from A → B" with a reason;
+accept (updates the recurrence) or dismiss per item. Nothing changes without confirmation.
+Judgment tier (Sonnet).
 
 ### 🟠 Medium
 **#59 — Project close: bulk task review.** Review step on project close with bulk + per-task actions.
@@ -151,102 +157,134 @@ but the time-of-day dimension isn't built. Tied to AI + Google Calendar directio
 
 ---
 
-## 🤖 AI FRAMEWORK (agreed principles — not yet built)
+## 🤖 AI STRATEGY (rewritten July 2026 — supersedes the earlier cost-cautious framing)
 
-**Core principle — the "unplug test":** the app must remain fully functional with AI OFF. Every AI
-feature is tagged:
-- **♢ Enhances** — works fully without AI; AI just supercharges it. (Baseline intact.)
-- **⚡ AI-only** — doesn't exist without AI; turning AI off makes it disappear cleanly without
-  removing/breaking any pre-existing flow.
-- **✗ Breaks** — turning AI off would strand a flow. **Do not build** these; redesign until they pass.
-AI is always additive, never load-bearing for something the manual flow depended on. Run this test
-out loud before speccing any AI feature.
+**The goal is not "add AI features." The goal is: less decision fatigue, less overwhelm.**
+Clarity already captures and organises well. What it does not do is *think for me*. Every AI feature
+is judged on one question: **does this remove a decision I currently have to make myself?**
+If it only saves typing, it is low priority. If it saves deciding, it is high priority.
 
-**AI settings scaffolding (to build):**
-- New **Settings → AI** sub-tab.
-- **Master switch** — one toggle gating all AI; off = zero API calls.
-- **API spend calculator** — running usage/cost estimate (Anthropic key already in Admin).
-- **Per-feature toggles** — added as each AI feature ships; granularity TBD.
-- Each AI feature documents a **cost profile**: tokens/call (small/medium/large) · trigger frequency
-  (per capture / per day / on-demand) · initiator (automatic vs. user-tapped).
-  Cheap = on-demand + user-initiated + small. Expensive = automatic + per-capture + large.
+### What changed from the previous framing
+The old section optimised for cost avoidance — rules-first, generators-before-interpreters,
+on-demand-everything, per-feature cost profiles as gates. That doubled the build work (write the
+rules engine *and* the AI layer) and produced timid features. **Dropped.** Cost is tracked in
+Settings → AI for visibility, not used to decide what gets built.
 
-**AI feature ideas (parked, cost-profiled):**
-- *Day planning by time block* — match today's tasks + available Morning/Anytime/After-Hours blocks →
-  proposed plan. Ties to #61. ⚡ AI-only · large · on-demand. (Headline use.) **Staged — see #79.**
-- *Bulk review assistant* — AI drafts keep/move/skip suggestions inside #75. ♢ Enhances · medium · on-demand.
-- *Capture enrichment* — propose category/importance/time estimate at capture. ♢ Enhances · small · per-capture.
-  **Specced — see #80.**
-- *Recurrence "explain the pattern"* — optional nuance layer on top of #78. ⚡ AI-only · small–medium · on-demand.
+Also dropped: the ♢ / ⚡ / ✗ tagging on every idea. It was a cost proxy. Replaced by one rule below.
 
-### AI idea backlog (added, not yet specced — cost-profiled + unplug-tested)
+### The one rule that stays: **don't brick**
+If the API is down, the key is bad, or AI is toggled off, the app must still open, capture, and
+complete tasks. Nothing on the critical path (create · view · complete · reschedule) may *require*
+an AI response to work. AI can be the best path through the app; it can never be the only path.
+Practically: every AI call needs a visible failure state and a manual way to do the same thing.
+That's it — no other gating.
 
-**Cheap wins — generators, ♢ Enhances, small tokens, on-demand:**
-- **#81 — Task name cleanup.** Rewrite "groceries" → "Buy groceries" on request. Extends the existing
-  action-verb warning from flag to fix. ♢ · small · on-demand button.
-- **#82 — Subtask generation.** ✨ on a task → AI proposes subtasks ("Renew passport" → check docs, book
-  appt, photos, submit). Drafts what you now do by hand. Pairs with #77 checklist + projects.
-  ♢ · small–medium · on-demand. *(High-leverage for a project-heavy workflow.)*
-- **#83 — Weekly reflection summary.** On-demand narration of analytics data ("23 done, 6 cancelled, most
-  reschedules were quarterly recurring"). ♢ · small · weekly on-demand.
-- **#84 — Duplicate/similar detection at capture.** Flags a near-identical existing task. Helps B23.
-  Rules-based fuzzy match may do most of this free; AI only for nuance. ♢ · small · per-capture (on-demand).
+### Model tiering (new)
+Haiku 4.5 is right for mechanical work. It is **not** right for judgment.
+| Tier | Model | Use for |
+|---|---|---|
+| Mechanical | `claude-haiku-4-5` | name cleanup, time estimates, subtask drafting, duplicate detection |
+| Judgment | `claude-sonnet-4-6` | triage, day planning, load rebalancing, parked resurfacing, decomposition |
+`callAI()` needs a **model parameter** (currently hardcoded to `AI_MODEL`). Small refactor, do it
+before the first judgment-tier feature.
 
-**Medium value — on-demand:**
-- **#85 — Parked/Ideas resurfacing.** "40 parked items — here are 3 worth revisiting given the season / recent
-  activity." AI finds the relevant needle; a date rule can't judge relevance. ⚡ AI-only · medium · on-demand.
-  *(High-leverage — Parked list will otherwise become a graveyard.)*
-- **#86 — Project decomposition.** Bigger sibling of #82. "Plan Japan trip" → full project structure: tasks,
-  rough sequence, what to research. ⚡ AI-only · medium–large · on-demand.
-- **#87 — Waiting follow-up drafting.** When a follow-up date arrives, AI drafts the chase message.
-  Turns a reminder into a done thing. ♢ Enhances (reminder still fires without it) · small · on-demand.
+### Interaction principle: propose, don't ask
+Overwhelm comes from open questions. A blank "what should I do?" is the problem, not the interface.
+So AI features should **arrive with an answer already filled in** that I accept, edit, or reject —
+never a prompt box, never a menu of options to choose between. Pre-filled decisions in a review
+shell (like #75) is the right shape. Chat is the wrong shape.
 
-**Judgment-heavy — ⚡ AI-only, larger, fail louder when wrong:**
-- **#88 — Natural-language capture.** "Call plumber about the leak next Tuesday afternoon, urgent" → parses
-  name/date/importance/context in one shot. Highest-leverage capture, riskiest to misread — careful design.
-  ⚡ AI-only · medium · per-capture (on-demand).
-- **#89 — "What should I do right now?"** Single tap: given current time, context, and free minutes, surface
-  the best 1–2 things now. Impulse cousin of the full day plan (#79). ⚡ AI-only · medium · on-demand.
-- **#90 — Weekly load rebalancing.** Sees Tuesday overloaded / Thursday empty → proposes moves. Uses capacity
-  data + judgment about what's movable. ⚡ AI-only · large · on-demand.
+### Automatic is now allowed
+The old rule was "never fire AI automatically, keep it on tapped buttons." That was cost fear.
+Reversed: **daily-cadence automatic calls are fine.** Once-per-day triage on first login, once-per-day
+plan generation — these are the whole point. Still avoid per-keystroke and per-page-load calls,
+for latency and noise reasons, not cost.
 
-**Steer AWAY from AI (deterministic — keep free):** sorting, filtering, quadrant math, due-date logic,
-recurrence calculation. And never fire AI automatically on every capture/load — keep it on tapped buttons.
+---
 
-**Pattern:** cheapest + safest AI features are **generators** (draft this subtask list / message / summary —
-you stay in control). Riskier ones are **interpreters** (parse this / decide for me) — higher value, fail
-louder. Prefer generators first.
+## 🎯 #91 — AI TRIAGE ACROSS ALL TASKS  *(new headline feature — spec in progress)*
+
+The backlog is where overwhelm actually lives. #75 bulk review only sees today + overdue; everything
+older silently rots. #91 looks at **everything not done or cancelled** and comes back with decisions
+already made.
+
+**Shape:** same full-screen review shell as #75, but pre-filled by AI instead of defaulting to Keep.
+Per task: a suggested action + a one-line reason. I sweep through accepting, override where wrong,
+Apply-all at the end.
+
+**Actions available:** Keep · Reschedule (with date) · Park · Cancel · Delegate · Move to Waiting ·
+Break into subtasks (hands to #82) · Promote to today.
+
+**Input per task:** name, notes, status, type, due date, created date, importance quadrant,
+life area/category, project, estimated mins, `reschedule_count`, `reschedule_reasons`, subtask
+progress, `waiting_for`/`follow_up_date`. Cheap to include everything — send it all.
+
+**Cadence:** on-demand button + a monthly nudge. Not daily (that's #75's job).
+
+**Open question to settle before building:** is triage's job to *clean up* (bias toward cancel/park —
+shrink the list) or to *rescue* (bias toward "this still matters, pull it forward")? Different prompts,
+different default actions. Leaning: **cleanup-biased, with a separate "worth reviving" section** so
+rescue candidates surface without diluting the cull.
+
+**Prerequisite:** `callAI()` model parameter (see tiering above). Sonnet tier.
+
+---
+
+## 🤖 AI FEATURE BACKLOG (reprioritised by decision-relief, not cost)
+
+### Tier 1 — build these, in this order
+**#91 — AI triage across all tasks.** See above. The backlog cull. *Spec in progress.*
+  Prereq: `callAI()` model parameter.
+**#79 / 2c — AI day plan.** "Plan my day" → ordered plan across Morning / Anytime / After-Hours using
+today's tasks, contexts, importance, and entered capacity. Automatic on first login is now allowed.
+**Note:** 2a (contexts drive Focus) is still a real prerequisite — AI can't plan around time-of-day
+if contexts don't surface anywhere. See #61.
+**#88 — Natural-language capture.** "Call plumber about the leak next Tuesday afternoon, urgent" →
+parses name/date/importance/context/life area in one shot. Kills the multi-field capture form as the
+default path. Highest-frequency decision relief in the app. Manual form stays as the fallback path.
+**#82 — Subtask generation.** ✨ on a task → proposed subtasks. Feeds #91's "break into subtasks"
+action and #77's checklist. Mechanical tier.
+**#85 — Parked/Ideas resurfacing.** "3 of your 40 parked items are worth revisiting now." Without
+this, Parked is a graveyard — and #91 will make Parked much bigger. Build alongside or just after #91.
+
+### Tier 2 — clear value, after Tier 1 lands
+**#89 — "What should I do right now?"** Given time of day, context, and free minutes, surface the best
+1–2 things. Impulse cousin of #79. Cheap to add once #79's plan logic exists.
+**#86 — Project decomposition.** "Plan Japan trip" → full project structure. Bigger sibling of #82.
+**#90 — Weekly load rebalancing.** Tuesday overloaded / Thursday empty → proposes moves.
+**#87 — Waiting follow-up drafting.** Follow-up date arrives → drafts the chase message.
+**#83 — Weekly reflection summary.** Narrates analytics ("23 done, 6 cancelled, most reschedules were
+quarterly recurring"). Low effort, good weekly ritual anchor.
+
+### Tier 3 — absorbed or downgraded
+**#80 — Capture enrichment.** *(Tier 3 — largely absorbed by #88)* Per-field ✨ suggestions at capture
+(importance quadrant, time estimate). Once #88 natural-language capture parses these inline, this is
+redundant on the primary path. Keep only as polish on the manual fallback form. The verb→duration lookup
+table originally planned here is **dropped** — AI handles it.
 
 ---
 
 ## 🗓 #61 / #79 — TIME BLOCKS & DAY PLANNING (staged)
 
-The day-planning ambition breaks into layers. Build bottom-up; each lower layer works without the one above,
-and the AI layer only sits on top once the free layers function. **2a is the true prerequisite** — nothing
-time-of-day-smart can happen until contexts actually drive Focus.
+The day-planning ambition breaks into layers. Build bottom-up. **2a is the true prerequisite** — nothing
+time-of-day-smart can happen until contexts actually drive Focus, AI included. 2a and 2b are deterministic
+because dates and minutes must be exact; 2c is where judgment enters.
 
-**#61 / 2a — Context drives Focus (rules, no AI).** *(♢ · free — PREREQUISITE)*
+**#61 / 2a — Context drives Focus (deterministic — PREREQUISITE, blocks #79 and #89).**
 Make @home / @out-and-about / @laptop / after-hours *do something*: group or filter Focus by context and
 time-of-day block (Morning / Anytime / After-Hours), so Focus can show "what's doable given where I am."
 Today contexts are tagged but don't surface anywhere. This is the long-deferred #61 work and the foundation
 for everything below. **Needs a proper spec next.**
 
-**#79 / 2b — Capacity-aware planning (rules, no AI).** *(♢ · free)*
+**#79 / 2b — Capacity-aware planning (deterministic).**
 User already enters capacity per block. Rules pass: "you have 30 min this morning → here are the ≤30-min
 tasks that fit." Fitting tasks into a time budget is arithmetic, not AI.
 
-**#79 / 2c — AI day plan.** *(⚡ AI-only · large · on-demand, user-initiated)*
+**#79 / 2c — AI day plan.** *(Tier 1 — judgment tier / Sonnet)*
 Given today's tasks (times, contexts, importance) + available blocks, propose an *ordered* plan across
-Morning/Anytime/After-Hours — sequencing and trade-offs, what to defer. "Plan my day" button; never automatic.
-Unplug test passes cleanly: turning AI off leaves 2a + 2b fully working, the AI plan just vanishes.
-
-**#80 — Capture enrichment (importance + time estimate suggestions).** *(♢ Enhances)*
-On-demand "✨ suggest" per field at capture — you pull help when a task is ambiguous, skip it when obvious.
-- *1a Importance/urgency* — propose a quadrant from name/notes. ⚡ AI-only slice · small · on-demand.
-- *1b Time estimate* — propose a duration instead of the 30-min default. **Rules first:** verb→duration
-  lookup ("call"→5, "email"→10, "buy/shop"→45) handles common cases free; AI only for ambiguous ones.
-- Unplug test: ♢ Enhances — fields are pre-filled *suggestions* you accept/override; AI off → type them
-  yourself as today. On-demand (button) chosen over auto-fire-per-capture to control cost.
+Morning/Anytime/After-Hours — sequencing and trade-offs, what to defer. "Plan my day" button **plus automatic generation on first login of the day** — the plan should be
+waiting for me, not something I have to ask for. 2a + 2b keep working if the call fails; the plan is
+just absent, replaced by the normal Focus view.
 
 ---
 
